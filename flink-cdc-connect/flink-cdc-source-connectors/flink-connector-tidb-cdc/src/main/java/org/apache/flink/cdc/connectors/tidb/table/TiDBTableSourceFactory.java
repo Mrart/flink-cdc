@@ -41,6 +41,7 @@ import static org.apache.flink.cdc.connectors.tidb.TDBSourceOptions.TIKV_BATCH_G
 import static org.apache.flink.cdc.connectors.tidb.TDBSourceOptions.TIKV_BATCH_SCAN_CONCURRENCY;
 import static org.apache.flink.cdc.connectors.tidb.TDBSourceOptions.TIKV_GRPC_SCAN_TIMEOUT;
 import static org.apache.flink.cdc.connectors.tidb.TDBSourceOptions.TIKV_GRPC_TIMEOUT;
+import static org.apache.flink.cdc.debezium.table.DebeziumOptions.DEBEZIUM_OPTIONS_PREFIX;
 import static org.apache.flink.cdc.debezium.utils.ResolvedSchemaUtils.getPhysicalSchema;
 
 /** Factory for creating configured instance of {@link TiDBTableSource}. */
@@ -53,6 +54,7 @@ public class TiDBTableSourceFactory implements DynamicTableSourceFactory {
         final FactoryUtil.TableFactoryHelper helper =
                 FactoryUtil.createTableFactoryHelper(this, context);
 
+        helper.validateExcept(DEBEZIUM_OPTIONS_PREFIX);
         final ReadableConfig config = helper.getOptions();
         String databaseName = config.get(DATABASE_NAME);
         String tableName = config.get(TABLE_NAME);
