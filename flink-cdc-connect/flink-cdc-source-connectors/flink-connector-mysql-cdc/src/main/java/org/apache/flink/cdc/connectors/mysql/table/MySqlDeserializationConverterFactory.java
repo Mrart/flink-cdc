@@ -42,7 +42,7 @@ import java.util.Map;
 import java.util.Optional;
 
 /** Used to create {@link DeserializationRuntimeConverterFactory} specified to MySQL. */
-public class MySqlDeserializationConverterFactory {
+    public class MySqlDeserializationConverterFactory {
 
     public static DeserializationRuntimeConverterFactory instance() {
         return new DeserializationRuntimeConverterFactory() {
