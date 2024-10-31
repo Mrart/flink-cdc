@@ -1,23 +1,9 @@
-/*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package org.apache.flink.cdc.connectors.tidb.table;
 
-import org.apache.flink.cdc.connectors.tidb.table.utils.OptionUtils;
+import org.apache.flink.cdc.connectors.base.options.StartupOptions;
+import org.apache.flink.cdc.connectors.base.utils.OptionUtils;
+import org.apache.flink.cdc.debezium.table.DebeziumOptions;
+import org.apache.flink.cdc.debezium.utils.JdbcUrlUtils;
 import org.apache.flink.configuration.ConfigOption;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.configuration.ReadableConfig;
@@ -27,54 +13,19 @@ import org.apache.flink.table.connector.source.DynamicTableSource;
 import org.apache.flink.table.factories.DynamicTableSourceFactory;
 import org.apache.flink.table.factories.FactoryUtil;
 
-import java.util.HashMap;
+import java.time.Duration;
+
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 
-import static org.apache.flink.cdc.connectors.tidb.TDBSourceOptions.DATABASE_NAME;
-import static org.apache.flink.cdc.connectors.tidb.TDBSourceOptions.HOST_MAPPING;
-import static org.apache.flink.cdc.connectors.tidb.TDBSourceOptions.PD_ADDRESSES;
-import static org.apache.flink.cdc.connectors.tidb.TDBSourceOptions.SCAN_STARTUP_MODE;
-import static org.apache.flink.cdc.connectors.tidb.TDBSourceOptions.TABLE_NAME;
-import static org.apache.flink.cdc.connectors.tidb.TDBSourceOptions.TIKV_BATCH_GET_CONCURRENCY;
-import static org.apache.flink.cdc.connectors.tidb.TDBSourceOptions.TIKV_BATCH_SCAN_CONCURRENCY;
-import static org.apache.flink.cdc.connectors.tidb.TDBSourceOptions.TIKV_GRPC_SCAN_TIMEOUT;
-import static org.apache.flink.cdc.connectors.tidb.TDBSourceOptions.TIKV_GRPC_TIMEOUT;
-import static org.apache.flink.cdc.debezium.table.DebeziumOptions.DEBEZIUM_OPTIONS_PREFIX;
+import static org.apache.flink.cdc.connectors.base.options.JdbcSourceOptions.*;
+import static org.apache.flink.cdc.connectors.tidb.source.config.TiDBSourceOptions.*;
 import static org.apache.flink.cdc.debezium.utils.ResolvedSchemaUtils.getPhysicalSchema;
 
-/** Factory for creating configured instance of {@link TiDBTableSource}. */
 public class TiDBTableSourceFactory implements DynamicTableSourceFactory {
-
     private static final String IDENTIFIER = "tidb-cdc";
-
-    @Override
-    public DynamicTableSource createDynamicTableSource(Context context) {
-        final FactoryUtil.TableFactoryHelper helper =
-                FactoryUtil.createTableFactoryHelper(this, context);
-
-        helper.validateExcept(DEBEZIUM_OPTIONS_PREFIX);
-        final ReadableConfig config = helper.getOptions();
-        String databaseName = config.get(DATABASE_NAME);
-        String tableName = config.get(TABLE_NAME);
-        String pdAddresses = config.get(PD_ADDRESSES);
-        String hostMapping = config.get(HOST_MAPPING);
-        StartupOptions startupOptions = getStartupOptions(config);
-        ResolvedSchema physicalSchema =
-                getPhysicalSchema(context.getCatalogTable().getResolvedSchema());
-
-        OptionUtils.printOptions(IDENTIFIER, ((Configuration) config).toMap());
-
-        return new TiDBTableSource(
-                physicalSchema,
-                databaseName,
-                tableName,
-                pdAddresses,
-                hostMapping,
-                startupOptions,
-                TiKVOptions.getTiKVOptions(context.getCatalogTable().getOptions()));
-    }
 
     @Override
     public String factoryIdentifier() {
@@ -84,9 +35,12 @@ public class TiDBTableSourceFactory implements DynamicTableSourceFactory {
     @Override
     public Set<ConfigOption<?>> requiredOptions() {
         Set<ConfigOption<?>> options = new HashSet<>();
-        options.add(DATABASE_NAME);
-        options.add(TABLE_NAME);
+        options.add(HOSTNAME);
+        options.add(USERNAME);
+        options.add(PASSWORD);
         options.add(PD_ADDRESSES);
+        options.add(TiDB_PORT);
+
         return options;
     }
 
@@ -94,62 +48,134 @@ public class TiDBTableSourceFactory implements DynamicTableSourceFactory {
     public Set<ConfigOption<?>> optionalOptions() {
         Set<ConfigOption<?>> options = new HashSet<>();
         options.add(SCAN_STARTUP_MODE);
+        options.add(SCAN_STARTUP_TIMESTAMP_MILLIS);
+
+        options.add(DATABASE_NAME);
+        options.add(TABLE_NAME);
+        options.add(TABLE_LIST);
+        options.add(CONNECT_TIMEOUT);
+        options.add(SERVER_TIME_ZONE);
         options.add(HOST_MAPPING);
-        options.add(TIKV_GRPC_TIMEOUT);
-        options.add(TIKV_GRPC_SCAN_TIMEOUT);
-        options.add(TIKV_BATCH_GET_CONCURRENCY);
-        options.add(TIKV_BATCH_SCAN_CONCURRENCY);
+        options.add(JDBC_DRIVER);
+
+//        options.add(SCAN_INCREMENTAL_SNAPSHOT_ENABLED);
+//        options.add(SCAN_INCREMENTAL_SNAPSHOT_CHUNK_SIZE);
+//        options.add(CHUNK_META_GROUP_SIZE);
+//        options.add(SCAN_SNAPSHOT_FETCH_SIZE);
+//
+//        options.add(CONNECTION_POOL_SIZE);
+//
+//        options.add(SPLIT_KEY_EVEN_DISTRIBUTION_FACTOR_UPPER_BOUND);
+//        options.add(SPLIT_KEY_EVEN_DISTRIBUTION_FACTOR_LOWER_BOUND);
+//        options.add(CONNECT_MAX_RETRIES);
+//        options.add(SCAN_NEWLY_ADDED_TABLE_ENABLED);
+//        options.add(SCAN_INCREMENTAL_CLOSE_IDLE_READER_ENABLED);
+//        options.add(HEARTBEAT_INTERVAL);
+//        options.add(SCAN_INCREMENTAL_SNAPSHOT_CHUNK_KEY_COLUMN);
+//        options.add(SCAN_INCREMENTAL_SNAPSHOT_BACKFILL_SKIP);
         return options;
     }
 
-    private static final String SCAN_STARTUP_MODE_VALUE_INITIAL = "initial";
-    private static final String SCAN_STARTUP_MODE_VALUE_LATEST = "latest-offset";
+    private static final String START_MODE_VALUE_INITIAL = "initial";
+    private static final String START_MODE_VALUE_LATEST_OFFSET = "latest-offset";
+    private static final String START_MODE_VALUE_SNAPSHOT = "snapshot";
+    private static final String START_MODE_VALUE_TIMESTAMP = "timestamp";
 
     private static StartupOptions getStartupOptions(ReadableConfig config) {
         String modeString = config.get(SCAN_STARTUP_MODE);
-
+        Long startupTimestamp = config.get(SCAN_STARTUP_TIMESTAMP_MILLIS);
         switch (modeString.toLowerCase()) {
-            case SCAN_STARTUP_MODE_VALUE_INITIAL:
+            case START_MODE_VALUE_INITIAL:
                 return StartupOptions.initial();
-
-            case SCAN_STARTUP_MODE_VALUE_LATEST:
+            case START_MODE_VALUE_SNAPSHOT:
+                return StartupOptions.snapshot();
+            case START_MODE_VALUE_LATEST_OFFSET:
                 return StartupOptions.latest();
-
+            case START_MODE_VALUE_TIMESTAMP:
+                return StartupOptions.timestamp(startupTimestamp);
             default:
                 throw new ValidationException(
                         String.format(
-                                "Invalid value for option '%s'. Supported values are [%s, %s], but was: %s",
+                                "Invalid value for option '%s'. Supported values are [%s, %s, %s, %s], but was: %s",
                                 SCAN_STARTUP_MODE.key(),
-                                SCAN_STARTUP_MODE_VALUE_INITIAL,
-                                SCAN_STARTUP_MODE_VALUE_LATEST,
+                                START_MODE_VALUE_INITIAL,
+                                START_MODE_VALUE_SNAPSHOT,
+                                START_MODE_VALUE_LATEST_OFFSET,
+                                START_MODE_VALUE_TIMESTAMP,
                                 modeString));
         }
     }
 
-    static class TiKVOptions {
-        private static final String TIKV_OPTIONS_PREFIX = "tikv.";
+    public static final String TIDB_PROPERTIES_PREFIX = "tidb.properties.";
 
-        public static Map<String, String> getTiKVOptions(Map<String, String> properties) {
-            Map<String, String> tikvOptions = new HashMap<>();
+    @Override
+    public DynamicTableSource createDynamicTableSource(Context context) {
+        final FactoryUtil.TableFactoryHelper helper =
+                FactoryUtil.createTableFactoryHelper(this, context);
 
-            if (hasTiKVOptions(properties)) {
-                properties.keySet().stream()
-                        .filter(key -> key.startsWith(TIKV_OPTIONS_PREFIX))
-                        .forEach(
-                                key -> {
-                                    final String value = properties.get(key);
-                                    tikvOptions.put(key, value);
-                                });
-            }
-            return tikvOptions;
-        }
 
-        /**
-         * Decides if the table options contains Debezium client properties that start with prefix
-         * 'debezium'.
-         */
-        private static boolean hasTiKVOptions(Map<String, String> options) {
-            return options.keySet().stream().anyMatch(k -> k.startsWith(TIKV_OPTIONS_PREFIX));
-        }
+        //作用
+        helper.validateExcept(
+                JdbcUrlUtils.PROPERTIES_PREFIX,
+                TIDB_PROPERTIES_PREFIX,
+                DebeziumOptions.DEBEZIUM_OPTIONS_PREFIX);
+
+        final ReadableConfig config = helper.getOptions();
+
+        String hostname = config.get(HOSTNAME);
+        String username = config.get(USERNAME);
+        String password = config.get(PASSWORD);
+        String databaseName = config.get(DATABASE_NAME);
+        String tableName = config.get(TABLE_NAME);
+        String tableList = config.get(TABLE_LIST);
+
+        int port = config.get(TiDB_PORT);
+        String serverTimeZone = config.get(SERVER_TIME_ZONE);
+        Duration connectTimeout = config.get(CONNECT_TIMEOUT);
+        String pdAddresses = config.get(PD_ADDRESSES);
+        String hostMapping = config.get(HOST_MAPPING);
+        String jdbcDriver = config.get(JDBC_DRIVER);
+
+        ResolvedSchema physicalSchema =
+                getPhysicalSchema(context.getCatalogTable().getResolvedSchema());
+
+        StartupOptions startupOptions = getStartupOptions(config);
+
+        Duration heartbeatInterval = config.get(HEARTBEAT_INTERVAL);
+
+        OptionUtils.printOptions(IDENTIFIER, ((Configuration) config).toMap());
+
+        return new TiDBTableSource(
+                physicalSchema,
+                port,
+                hostname,
+                databaseName,
+                tableName,
+                tableList,
+                username,
+                password,
+                serverTimeZone,
+                getProperties(context.getCatalogTable().getOptions(),TIDB_PROPERTIES_PREFIX),
+                JdbcUrlUtils.getJdbcProperties(context.getCatalogTable().getOptions()),
+                heartbeatInterval,
+                pdAddresses,
+                hostMapping,
+                connectTimeout,
+                jdbcDriver,
+                startupOptions
+        );
+    }
+
+    private Properties getProperties(Map<String, String> tableOptions, String prefix) {
+        Properties properties = new Properties();
+        tableOptions.keySet().stream()
+                .filter(key -> key.startsWith(prefix))
+                .forEach(
+                        key -> {
+                            final String value = tableOptions.get(key);
+                            final String subKey = key.substring(prefix.length());
+                            properties.put(subKey, value);
+                        });
+        return properties;
     }
 }
