@@ -30,4 +30,24 @@ public class TiDBDatabaseSchema extends RelationalDatabaseSchema {
         tableIdCaseInsensitive,
         customKeysMapper);
   }
+
+  public TiDBDatabaseSchema(
+      TiDBConnectorConfig config,
+      TopicSelector<TableId> topicSelector,
+      boolean tableIdCaseInsensitive) {
+    super(
+        config,
+        topicSelector,
+        config.getTableFilters().dataCollectionFilter(),
+        config.getColumnFilter(),
+        new TableSchemaBuilder(
+            new TiDBValueConverters(config),
+            config.schemaNameAdjustmentMode().createAdjuster(),
+            config.customConverterRegistry(),
+            config.getSourceInfoStructMaker().schema(),
+            config.getSanitizeFieldNames(),
+            false),
+        tableIdCaseInsensitive,
+        config.getKeyMapper());
+  }
 }

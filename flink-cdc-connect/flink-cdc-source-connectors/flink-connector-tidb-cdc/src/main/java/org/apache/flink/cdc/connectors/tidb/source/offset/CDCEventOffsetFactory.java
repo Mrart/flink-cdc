@@ -5,7 +5,7 @@ import org.apache.flink.cdc.connectors.base.source.meta.offset.OffsetFactory;
 
 import java.util.Map;
 
-public class LogMessageOffsetFactory extends OffsetFactory {
+public class CDCEventOffsetFactory extends OffsetFactory {
 
   @Override
   public Offset newOffset(Map<String, String> offset) {
