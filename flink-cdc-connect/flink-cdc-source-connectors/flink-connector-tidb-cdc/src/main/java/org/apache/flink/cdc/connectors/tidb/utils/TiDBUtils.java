@@ -11,8 +11,14 @@ import org.apache.flink.cdc.connectors.tidb.source.converter.TiDBValueConverters
 import org.apache.flink.cdc.connectors.tidb.source.schema.TiDBDatabaseSchema;
 import org.apache.flink.table.api.DataTypes;
 import org.apache.flink.table.types.DataType;
+import org.apache.flink.table.types.logical.RowType;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.Iterator;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class TiDBUtils {
   private static final String BIT = "BIT";
@@ -182,5 +188,189 @@ public class TiDBUtils {
 
   private static TiDBValueConverters getValueConverters(TiDBConnectorConfig dbzTiDBConfig) {
     return new TiDBValueConverters(dbzTiDBConfig);
+  }
+
+  public static PreparedStatement readTableSplitDataStatement(
+          JdbcConnection jdbc,
+          String sql,
+          boolean isFirstSplit,
+          boolean isLastSplit,
+          Object[] splitStart,
+          Object[] splitEnd,
+          int primaryKeyNum,
+          int fetchSize) {
+    try {
+      final PreparedStatement statement = initStatement(jdbc, sql, fetchSize);
+      if (isFirstSplit && isLastSplit) {
+        return statement;
+      }
+      if (isFirstSplit) {
+        for (int i = 0; i < primaryKeyNum; i++) {
+          statement.setObject(i + 1, splitEnd[i]);
+          statement.setObject(i + 1 + primaryKeyNum, splitEnd[i]);
+        }
+      } else if (isLastSplit) {
+        for (int i = 0; i < primaryKeyNum; i++) {
+          statement.setObject(i + 1, splitStart[i]);
+        }
+      } else {
+        for (int i = 0; i < primaryKeyNum; i++) {
+          statement.setObject(i + 1, splitStart[i]);
+          statement.setObject(i + 1 + primaryKeyNum, splitEnd[i]);
+          statement.setObject(i + 1 + 2 * primaryKeyNum, splitEnd[i]);
+        }
+      }
+      return statement;
+    } catch (Exception e) {
+      throw new RuntimeException("Failed to build the split data read statement.", e);
+    }
+  }
+
+  private static PreparedStatement initStatement(JdbcConnection jdbc, String sql, int fetchSize)
+          throws SQLException {
+    final Connection connection = jdbc.connection();
+    connection.setAutoCommit(false);
+    final PreparedStatement statement = connection.prepareStatement(sql);
+    statement.setFetchSize(fetchSize);
+    return statement;
+  }
+
+  public static String buildSplitScanQuery(
+          TableId tableId, RowType pkRowType, boolean isFirstSplit, boolean isLastSplit) {
+    return buildSplitQuery(tableId, pkRowType, isFirstSplit, isLastSplit, -1, true);
+  }
+  private static String buildSplitQuery(
+          TableId tableId,
+          RowType pkRowType,
+          boolean isFirstSplit,
+          boolean isLastSplit,
+          int limitSize,
+          boolean isScanningData) {
+    final String condition;
+
+    if (isFirstSplit && isLastSplit) {
+      condition = null;
+    } else if (isFirstSplit) {
+      final StringBuilder sql = new StringBuilder();
+      addPrimaryKeyColumnsToCondition(pkRowType, sql, " <= ?");
+      if (isScanningData) {
+        sql.append(" AND NOT (");
+        addPrimaryKeyColumnsToCondition(pkRowType, sql, " = ?");
+        sql.append(")");
+      }
+      condition = sql.toString();
+    } else if (isLastSplit) {
+      final StringBuilder sql = new StringBuilder();
+      addPrimaryKeyColumnsToCondition(pkRowType, sql, " >= ?");
+      condition = sql.toString();
+    } else {
+      final StringBuilder sql = new StringBuilder();
+      addPrimaryKeyColumnsToCondition(pkRowType, sql, " >= ?");
+      if (isScanningData) {
+        sql.append(" AND NOT (");
+        addPrimaryKeyColumnsToCondition(pkRowType, sql, " = ?");
+        sql.append(")");
+      }
+      sql.append(" AND ");
+      addPrimaryKeyColumnsToCondition(pkRowType, sql, " <= ?");
+      condition = sql.toString();
+    }
+
+    if (isScanningData) {
+      return buildSelectWithRowLimits(
+              tableId, limitSize, "*", Optional.ofNullable(condition), Optional.empty());
+    } else {
+      final String orderBy =
+              pkRowType.getFieldNames().stream().collect(Collectors.joining(", "));
+      return buildSelectWithBoundaryRowLimits(
+              tableId,
+              limitSize,
+              getPrimaryKeyColumnsProjection(pkRowType),
+              getMaxPrimaryKeyColumnsProjection(pkRowType),
+              Optional.ofNullable(condition),
+              orderBy);
+    }
+  }
+
+  private static void addPrimaryKeyColumnsToCondition(
+          RowType pkRowType, StringBuilder sql, String predicate) {
+    for (Iterator<String> fieldNamesIt = pkRowType.getFieldNames().iterator();
+         fieldNamesIt.hasNext(); ) {
+      sql.append(fieldNamesIt.next()).append(predicate);
+      if (fieldNamesIt.hasNext()) {
+        sql.append(" AND ");
+      }
+    }
+  }
+
+  private static String buildSelectWithBoundaryRowLimits(
+          TableId tableId,
+          int limit,
+          String projection,
+          String maxColumnProjection,
+          Optional<String> condition,
+          String orderBy) {
+    final StringBuilder sql = new StringBuilder("SELECT ");
+    sql.append(maxColumnProjection);
+    sql.append(" FROM (");
+    sql.append("SELECT ");
+    sql.append(projection);
+    sql.append(" FROM ");
+    sql.append(quotedTableIdString(tableId));
+    if (condition.isPresent()) {
+      sql.append(" WHERE ").append(condition.get());
+    }
+    sql.append(" ORDER BY ").append(orderBy).append(" LIMIT ").append(limit);
+    sql.append(") T");
+    return sql.toString();
+  }
+
+  private static String quotedTableIdString(TableId tableId) {
+    return tableId.toQuotedString('`');
+  }
+
+  private static String buildSelectWithRowLimits(
+          TableId tableId,
+          int limit,
+          String projection,
+          Optional<String> condition,
+          Optional<String> orderBy) {
+    final StringBuilder sql = new StringBuilder("SELECT ");
+    sql.append(projection).append(" FROM ");
+    sql.append(quotedTableIdString(tableId));
+    if (condition.isPresent()) {
+      sql.append(" WHERE ").append(condition.get());
+    }
+    if (orderBy.isPresent()) {
+      sql.append(" ORDER BY ").append(orderBy.get());
+    }
+    if (limit > 0) {
+      sql.append(" LIMIT ").append(limit);
+    }
+    return sql.toString();
+  }
+
+  private static String getPrimaryKeyColumnsProjection(RowType pkRowType) {
+    StringBuilder sql = new StringBuilder();
+    for (Iterator<String> fieldNamesIt = pkRowType.getFieldNames().iterator();
+         fieldNamesIt.hasNext(); ) {
+      sql.append(fieldNamesIt.next());
+      if (fieldNamesIt.hasNext()) {
+        sql.append(" , ");
+      }
+    }
+    return sql.toString();
+  }
+
+  private static String getMaxPrimaryKeyColumnsProjection(RowType pkRowType) {
+    StringBuilder sql = new StringBuilder();
+    for (Iterator<String> fieldNamesIt = pkRowType.getFieldNames().iterator();
+         fieldNamesIt.hasNext(); ) {
+      sql.append("MAX(" + fieldNamesIt.next() + ")");
+      if (fieldNamesIt.hasNext()) {
+        sql.append(" , ");
+      }
+    }
+    return sql.toString();
   }
 }
