@@ -10,11 +10,11 @@ import org.apache.flink.cdc.connectors.tidb.source.converter.TiDBValueConverters
 
 /** OceanBase database schema. */
 public class TiDBDatabaseSchema extends RelationalDatabaseSchema {
-  protected TiDBDatabaseSchema(
-      TiDBConnectorConfig config,
-      TopicSelector<TableId> topicSelector,
-      boolean tableIdCaseInsensitive,
-      Key.KeyMapper customKeysMapper) {
+  public TiDBDatabaseSchema(
+          TiDBConnectorConfig config,
+          TopicSelector<TableId> topicSelector,
+          boolean tableIdCaseInsensitive,
+          Key.KeyMapper customKeysMapper) {
     super(
         config,
         topicSelector,

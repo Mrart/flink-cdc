@@ -1,8 +1,14 @@
 package org.apache.flink.cdc.connectors.tidb.utils;
 
+import io.debezium.connector.tidb.TidbTopicSelector;
 import io.debezium.jdbc.JdbcConnection;
 import io.debezium.relational.Column;
+import io.debezium.relational.Key;
 import io.debezium.relational.TableId;
+import io.debezium.schema.TopicSelector;
+import org.apache.flink.cdc.connectors.tidb.source.config.TiDBConnectorConfig;
+import org.apache.flink.cdc.connectors.tidb.source.converter.TiDBValueConverters;
+import org.apache.flink.cdc.connectors.tidb.source.schema.TiDBDatabaseSchema;
 import org.apache.flink.table.api.DataTypes;
 import org.apache.flink.table.types.DataType;
 
@@ -159,5 +165,22 @@ public class TiDBUtils {
 
   public static String quote(String dbOrTableName) {
     return "`" + dbOrTableName + "`";
+  }
+
+  public static TiDBDatabaseSchema createTiDBDatabaseSchema(
+          TiDBConnectorConfig dbzTiDBConfig, boolean isTableIdCaseSensitive) {
+    TopicSelector<TableId> topicSelector = TidbTopicSelector.defaultSelector(dbzTiDBConfig);
+//        SchemaNameAdjuster schemaNameAdjuster = SchemaNameAdjuster.create();
+    Key.KeyMapper customKeysMapper = new CustomeKeyMapper();
+//        TiDBValueConverters valueConverters = getValueConverters(dbzTiDBConfig);
+    return new TiDBDatabaseSchema(
+            dbzTiDBConfig,
+            topicSelector,
+            isTableIdCaseSensitive,
+            customKeysMapper);
+  }
+
+  private static TiDBValueConverters getValueConverters(TiDBConnectorConfig dbzTiDBConfig) {
+    return new TiDBValueConverters(dbzTiDBConfig);
   }
 }
