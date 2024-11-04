@@ -15,13 +15,11 @@ import org.apache.flink.table.factories.FactoryUtil;
 
 import java.time.Duration;
 
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
+import java.util.*;
 
 import static org.apache.flink.cdc.connectors.base.options.JdbcSourceOptions.*;
 import static org.apache.flink.cdc.connectors.tidb.source.config.TiDBSourceOptions.*;
+import static org.apache.flink.cdc.debezium.table.DebeziumOptions.getDebeziumProperties;
 import static org.apache.flink.cdc.debezium.utils.ResolvedSchemaUtils.getPhysicalSchema;
 
 public class TiDBTableSourceFactory implements DynamicTableSourceFactory {
@@ -58,20 +56,19 @@ public class TiDBTableSourceFactory implements DynamicTableSourceFactory {
         options.add(HOST_MAPPING);
         options.add(JDBC_DRIVER);
 
-//        options.add(SCAN_INCREMENTAL_SNAPSHOT_ENABLED);
-//        options.add(SCAN_INCREMENTAL_SNAPSHOT_CHUNK_SIZE);
-//        options.add(CHUNK_META_GROUP_SIZE);
-//        options.add(SCAN_SNAPSHOT_FETCH_SIZE);
-//
-//        options.add(CONNECTION_POOL_SIZE);
-//
-//        options.add(SPLIT_KEY_EVEN_DISTRIBUTION_FACTOR_UPPER_BOUND);
-//        options.add(SPLIT_KEY_EVEN_DISTRIBUTION_FACTOR_LOWER_BOUND);
-//        options.add(CONNECT_MAX_RETRIES);
+//      increment snapshot options
+        options.add(SCAN_INCREMENTAL_SNAPSHOT_CHUNK_SIZE);
+        options.add(CHUNK_META_GROUP_SIZE);
+        options.add(CONNECTION_POOL_SIZE);
+        options.add(CONNECT_MAX_RETRIES);
+        options.add(SCAN_SNAPSHOT_FETCH_SIZE);
+        options.add(SCAN_INCREMENTAL_SNAPSHOT_CHUNK_KEY_COLUMN);
+        options.add(SPLIT_KEY_EVEN_DISTRIBUTION_FACTOR_UPPER_BOUND);
+        options.add(SPLIT_KEY_EVEN_DISTRIBUTION_FACTOR_LOWER_BOUND);
 //        options.add(SCAN_NEWLY_ADDED_TABLE_ENABLED);
 //        options.add(SCAN_INCREMENTAL_CLOSE_IDLE_READER_ENABLED);
 //        options.add(HEARTBEAT_INTERVAL);
-//        options.add(SCAN_INCREMENTAL_SNAPSHOT_CHUNK_KEY_COLUMN);
+
 //        options.add(SCAN_INCREMENTAL_SNAPSHOT_BACKFILL_SKIP);
         return options;
     }
@@ -106,7 +103,6 @@ public class TiDBTableSourceFactory implements DynamicTableSourceFactory {
         }
     }
 
-    public static final String TIDB_PROPERTIES_PREFIX = "tidb.properties.";
 
     @Override
     public DynamicTableSource createDynamicTableSource(Context context) {
@@ -117,7 +113,6 @@ public class TiDBTableSourceFactory implements DynamicTableSourceFactory {
         //作用
         helper.validateExcept(
                 JdbcUrlUtils.PROPERTIES_PREFIX,
-                TIDB_PROPERTIES_PREFIX,
                 DebeziumOptions.DEBEZIUM_OPTIONS_PREFIX);
 
         final ReadableConfig config = helper.getOptions();
@@ -135,6 +130,18 @@ public class TiDBTableSourceFactory implements DynamicTableSourceFactory {
         String pdAddresses = config.get(PD_ADDRESSES);
         String hostMapping = config.get(HOST_MAPPING);
         String jdbcDriver = config.get(JDBC_DRIVER);
+
+        //  increment snapshot options
+        int splitSize = config.get(SCAN_INCREMENTAL_SNAPSHOT_CHUNK_SIZE);
+        int splitMetaGroupSize = config.get(CHUNK_META_GROUP_SIZE);
+        int fetchSize = config.get(SCAN_SNAPSHOT_FETCH_SIZE);
+        int connectionPoolSize = config.get(CONNECTION_POOL_SIZE);
+        int connectMaxRetries = config.get(CONNECT_MAX_RETRIES);
+        String chunkKeyColumn =
+                config.getOptional(SCAN_INCREMENTAL_SNAPSHOT_CHUNK_KEY_COLUMN).orElse(null);
+        double distributionFactorUpper = config.get(SPLIT_KEY_EVEN_DISTRIBUTION_FACTOR_UPPER_BOUND);
+        double distributionFactorLower = config.get(SPLIT_KEY_EVEN_DISTRIBUTION_FACTOR_LOWER_BOUND);
+
 
         ResolvedSchema physicalSchema =
                 getPhysicalSchema(context.getCatalogTable().getResolvedSchema());
@@ -155,27 +162,50 @@ public class TiDBTableSourceFactory implements DynamicTableSourceFactory {
                 username,
                 password,
                 serverTimeZone,
-                getProperties(context.getCatalogTable().getOptions(),TIDB_PROPERTIES_PREFIX),
-                JdbcUrlUtils.getJdbcProperties(context.getCatalogTable().getOptions()),
+                getDebeziumProperties(context.getCatalogTable().getOptions()),
                 heartbeatInterval,
                 pdAddresses,
                 hostMapping,
                 connectTimeout,
+                TiKVOptions.getTiKVOptions(context.getCatalogTable().getOptions()),
+                splitSize,
+                splitMetaGroupSize,
+                fetchSize,
+                connectMaxRetries,
+                connectionPoolSize,
+                distributionFactorUpper,
+                distributionFactorLower,
+                chunkKeyColumn,
                 jdbcDriver,
                 startupOptions
         );
     }
 
-    private Properties getProperties(Map<String, String> tableOptions, String prefix) {
-        Properties properties = new Properties();
-        tableOptions.keySet().stream()
-                .filter(key -> key.startsWith(prefix))
-                .forEach(
-                        key -> {
-                            final String value = tableOptions.get(key);
-                            final String subKey = key.substring(prefix.length());
-                            properties.put(subKey, value);
-                        });
-        return properties;
+
+    static class TiKVOptions {
+        private static final String TIKV_OPTIONS_PREFIX = "tikv.";
+
+        public static Map<String, String> getTiKVOptions(Map<String, String> properties) {
+            Map<String, String> tikvOptions = new HashMap<>();
+
+            if (hasTiKVOptions(properties)) {
+                properties.keySet().stream()
+                        .filter(key -> key.startsWith(TIKV_OPTIONS_PREFIX))
+                        .forEach(
+                                key -> {
+                                    final String value = properties.get(key);
+                                    tikvOptions.put(key, value);
+                                });
+            }
+            return tikvOptions;
+        }
+
+        /**
+         * Decides if the table options contains Debezium client properties that start with prefix
+         * 'debezium'.
+         */
+        private static boolean hasTiKVOptions(Map<String, String> options) {
+            return options.keySet().stream().anyMatch(k -> k.startsWith(TIKV_OPTIONS_PREFIX));
+        }
     }
 }

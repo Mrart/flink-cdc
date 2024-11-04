@@ -1,20 +1,24 @@
 package org.apache.flink.cdc.connectors.tidb.table;
 
 import org.apache.flink.api.common.typeinfo.TypeInformation;
-import org.apache.flink.cdc.debezium.DebeziumDeserializationSchema;
-import org.apache.flink.cdc.debezium.table.MetadataConverter;
-import org.apache.flink.cdc.debezium.table.RowDataDebeziumDeserializeSchema;
+import org.apache.flink.cdc.connectors.base.source.jdbc.JdbcIncrementalSource;
+import org.apache.flink.cdc.connectors.tidb.source.TiDBSourceBuilder;
+import org.apache.flink.cdc.connectors.tidb.source.config.TiDBSourceOptions;
 import org.apache.flink.table.catalog.ResolvedSchema;
 import org.apache.flink.table.connector.ChangelogMode;
 import org.apache.flink.table.connector.source.DynamicTableSource;
 import org.apache.flink.table.connector.source.ScanTableSource;
+import org.apache.flink.table.connector.source.SourceProvider;
 import org.apache.flink.table.connector.source.abilities.SupportsReadingMetadata;
 import org.apache.flink.table.data.RowData;
 import org.apache.flink.table.types.DataType;
 import org.apache.flink.cdc.connectors.base.options.StartupOptions;
 import org.apache.flink.table.types.logical.RowType;
+import org.apache.flink.types.Row;
 import org.apache.flink.types.RowKind;
+import org.tikv.common.TiConfiguration;
 
+import javax.annotation.Nullable;
 import java.time.Duration;
 import java.time.ZoneId;
 import java.util.*;
@@ -44,8 +48,20 @@ public class TiDBTableSource implements ScanTableSource, SupportsReadingMetadata
     private final String password;
     private final Duration heartbeatInterval;
 
-    private final Properties jdbcProperties;
-    private final Properties ticdcProperties;
+
+    //  incremental snapshot options
+    private final int splitSize;
+    private final int splitMetaGroupSize;
+    private final int fetchSize;
+    private final int connectionPoolSize;
+    private final int connectMaxRetries;
+    private final double distributionFactorUpper;
+    private final double distributionFactorLower;
+    private final String chunkKeyColumn;
+
+    private final Properties dbzProperties;
+    private final Map<String, String> options;
+
 
 
     /** Data type that describes the final output of the source. */
@@ -64,12 +80,21 @@ public class TiDBTableSource implements ScanTableSource, SupportsReadingMetadata
             String username,
             String password,
             String serverTimeZone,
-            Properties ticdcProperties,
-            Properties jdbcProperties,
+            Properties dbzProperties,
             Duration heartbeatInterval,
             String pdAddresses,
             String hostMapping,
             Duration connectTimeout,
+            Map<String, String> options,
+            int splitSize,
+            int splitMetaGroupSize,
+            int fetchSize,
+            int connectMaxRetries,
+            int connectionPoolSize,
+            double distributionFactorUpper,
+            double distributionFactorLower,
+            @Nullable String chunkKeyColumn,
+
             String jdbcDriver,
             StartupOptions startupOptions
             ) {
@@ -81,9 +106,19 @@ public class TiDBTableSource implements ScanTableSource, SupportsReadingMetadata
         this.username = username;
         this.password = password;
         this.serverTimeZone = serverTimeZone;
-        this.ticdcProperties = ticdcProperties;
-        this.jdbcProperties = jdbcProperties;
+        this.dbzProperties = dbzProperties;
         this.hostName = hostName;
+        this.options = options;
+
+        //  incremental snapshot options
+        this.splitSize = splitSize;
+        this.splitMetaGroupSize = splitMetaGroupSize;
+        this.fetchSize = fetchSize;
+        this.connectMaxRetries = connectMaxRetries;
+        this.connectionPoolSize = connectionPoolSize;
+        this.distributionFactorUpper = distributionFactorUpper;
+        this.distributionFactorLower = distributionFactorLower;
+        this.chunkKeyColumn = chunkKeyColumn;
 
         this.heartbeatInterval = heartbeatInterval;
         this.jdbcDriver = jdbcDriver;
@@ -109,32 +144,78 @@ public class TiDBTableSource implements ScanTableSource, SupportsReadingMetadata
     @Override
     public ScanRuntimeProvider getScanRuntimeProvider(ScanContext scanContext) {
         //TIDB source  builder
-//        final TiConfiguration tiConf =
-//                TDBSourceOptions.getTiConfiguration(pdAddresses, hostMapping, options);
+        final TiConfiguration tiConf =
+                TiDBSourceOptions.getTiConfiguration(pdAddresses, hostMapping, options);
 
         RowType physicalDataType =
                 (RowType) physicalSchema.toPhysicalRowDataType().getLogicalType();
-        MetadataConverter[] metadataConverters = getMetadataConverters();
-        TypeInformation<RowData> resultTypeInfo = scanContext.createTypeInformation(producedDataType);
 
+        TypeInformation<RowData> typeInfo = scanContext.createTypeInformation(producedDataType);
+        TiKVMetadataConverter[] metadataConverters = getMetadataConverters();
 
-        //TidbDeserializationConverterFactory   metadataConverters
-        DebeziumDeserializationSchema<RowData> deserializer =
-                RowDataDebeziumDeserializeSchema.newBuilder()
-                        .setPhysicalRowType(physicalDataType)
-                        .setMetadataConverters(metadataConverters)
-                        .setResultTypeInfo(resultTypeInfo)
-                        .setServerTimeZone(serverTimeZone == null
-                                ? ZoneId.systemDefault()
-                                : ZoneId.of(serverTimeZone))
-                        .setUserDefinedConverterFactory(
-                                TidbDeserializationConverterFactory.instance())
-                        .build();
+        RowDataTiKVSnapshotEventDeserializationSchema snapshotEventDeserializationSchema =
+                new RowDataTiKVSnapshotEventDeserializationSchema(
+                        tiConf,
+                        database,
+                        tableName,
+                        typeInfo,
+                        metadataConverters,
+                        physicalDataType);
 
+        RowDataTiKVChangeEventDeserializationSchema changeEventDeserializationSchema =
+                new RowDataTiKVChangeEventDeserializationSchema(
+                        tiConf,
+                        database,
+                        tableName,
+                        typeInfo,
+                        metadataConverters,
+                        physicalDataType);
 
-        //todo  enableParallelRead 下  JdbcIncrementalSource<RowData> parallelSource =
-        //                       TiDBSourceBuilder.TiDBIncrementalSource.builder()
-        return null;
+//        RowType physicalDataType =
+//                (RowType) physicalSchema.toPhysicalRowDataType().getLogicalType();
+//        MetadataConverter[] metadataConverters = getMetadataConverters();
+//        TypeInformation<RowData> resultTypeInfo = scanContext.createTypeInformation(producedDataType);
+//
+//
+//        //TidbDeserializationConverterFactory   metadataConverters
+//        DebeziumDeserializationSchema<RowData> deserializer =
+//                RowDataDebeziumDeserializeSchema.newBuilder()
+//                        .setPhysicalRowType(physicalDataType)
+//                        .setMetadataConverters(metadataConverters)
+//                        .setResultTypeInfo(resultTypeInfo)
+//                        .setServerTimeZone(serverTimeZone == null
+//                                ? ZoneId.systemDefault()
+//                                : ZoneId.of(serverTimeZone))
+//                        .setUserDefinedConverterFactory(
+//                                TidbDeserializationConverterFactory.instance())
+//                        .build();
+
+        JdbcIncrementalSource<RowData> parallelSource = TiDBSourceBuilder.TiDBIncrementalSource.<RowData>builder()
+                .hostname(hostName)
+                .port(port)
+                .databaseList(database)
+                .tableList(database + "\\." + tableName)
+                .username(username)
+                .password(password)
+                .serverTimeZone(serverTimeZone.toString())
+                .splitSize(splitSize)
+                .splitMetaGroupSize(splitMetaGroupSize)
+                .distributionFactorUpper(distributionFactorUpper)
+                .distributionFactorLower(distributionFactorLower)
+                .fetchSize(fetchSize)
+                .connectTimeout(connectTimeout)
+                .connectionPoolSize(connectionPoolSize)
+                .chunkKeyColumn(chunkKeyColumn)
+                .driverClassName(jdbcDriver)
+                .connectMaxRetries(connectMaxRetries)
+                .debeziumProperties(dbzProperties)
+                .startupOptions(startupOptions)
+                .snapshotEventDeserializer(snapshotEventDeserializationSchema)
+                .changeEventDeserializer(changeEventDeserializationSchema)
+                .build();
+        //todo  JdbcIncrementalSource<RowData> parallelSource =
+        //                     TiDBSourceBuilder.TiDBIncrementalSource.builder()
+        return SourceProvider.of(parallelSource);
     }
 
     @Override
@@ -150,16 +231,23 @@ public class TiDBTableSource implements ScanTableSource, SupportsReadingMetadata
                         username,
                         password,
                         serverTimeZone,
-                        ticdcProperties,
-                        jdbcProperties,
+                        dbzProperties,
                         heartbeatInterval,
                         pdAddresses,
                         hostMapping,
                         connectTimeout,
+                        options,
+                        splitSize,
+                        splitMetaGroupSize,
+                        fetchSize,
+                        connectMaxRetries,
+                        connectionPoolSize,
+                        distributionFactorUpper,
+                        distributionFactorLower,
+                        chunkKeyColumn,
                         jdbcDriver,
                         startupOptions
                 );
-
         source.producedDataType = producedDataType;
         source.metadataKeys = metadataKeys;
 
@@ -185,8 +273,7 @@ public class TiDBTableSource implements ScanTableSource, SupportsReadingMetadata
                 && Objects.equals(username,that.username)
                 && Objects.equals(password,that.password)
                 && Objects.equals(serverTimeZone,that.serverTimeZone)
-                && Objects.equals(ticdcProperties,that.ticdcProperties)
-                && Objects.equals(jdbcProperties,that.jdbcProperties)
+                && Objects.equals(dbzProperties,that.dbzProperties)
                 && Objects.equals(heartbeatInterval,that.heartbeatInterval)
                 && Objects.equals(pdAddresses,that.pdAddresses)
                 && Objects.equals(hostMapping,that.hostMapping)
@@ -210,12 +297,20 @@ public class TiDBTableSource implements ScanTableSource, SupportsReadingMetadata
                 username,
                 password,
                 serverTimeZone,
-                ticdcProperties,
-                jdbcProperties,
+                dbzProperties,
                 heartbeatInterval,
                 pdAddresses,
                 hostMapping,
                 connectTimeout,
+                options,
+                splitSize,
+                splitMetaGroupSize,
+                fetchSize,
+                connectMaxRetries,
+                connectionPoolSize,
+                distributionFactorUpper,
+                distributionFactorLower,
+                chunkKeyColumn,
                 jdbcDriver,
                 startupOptions
         );
@@ -241,9 +336,9 @@ public class TiDBTableSource implements ScanTableSource, SupportsReadingMetadata
     }
 
     //TiKVMetadataConverter to  MetadataConverter
-    private MetadataConverter[] getMetadataConverters() {
+    private TiKVMetadataConverter[] getMetadataConverters() {
         if (metadataKeys.isEmpty()) {
-            return new MetadataConverter[0];
+            return new TiKVMetadataConverter[0];
         }
 
         return metadataKeys.stream()
@@ -256,6 +351,6 @@ public class TiDBTableSource implements ScanTableSource, SupportsReadingMetadata
                                         .findFirst()
                                         .orElseThrow(IllegalStateException::new))
                 .map(TiKVReadableMetadata::getConverter)
-                .toArray(MetadataConverter[]::new);
+                .toArray(TiKVMetadataConverter[]::new);
     }
 }
