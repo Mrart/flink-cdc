@@ -1,7 +1,6 @@
 package org.apache.flink.cdc.connectors.tidb.source.fetch;
 
 import io.debezium.config.Configuration;
-import io.debezium.connector.mysql.*;
 import io.debezium.connector.tidb.TiDBPartition;
 import io.debezium.heartbeat.Heartbeat;
 import io.debezium.pipeline.EventDispatcher;
@@ -50,6 +49,7 @@ public class TiDBScanFetchTask extends AbstractScanFetchTask {
 
   }
 
+  /** 创建并执行一个 TiDBSnapshotSplitReadTask */
   @Override
   protected void executeDataSnapshot(Context context) throws Exception {
     TiDBSourceFetchTaskContext sourceFetchContext = (TiDBSourceFetchTaskContext) context;
@@ -78,7 +78,7 @@ public class TiDBScanFetchTask extends AbstractScanFetchTask {
   }
 
   /**
-   * A wrapped task to fetch snapshot split of table.
+   * A wrapped task to fetch snapshot split of table. 负责从TiDB读取快照分片
    */
   public static class TiDBSnapshotSplitReadTask
     extends AbstractSnapshotChangeEventSource<TiDBPartition,CDCEventOffsetContext>{

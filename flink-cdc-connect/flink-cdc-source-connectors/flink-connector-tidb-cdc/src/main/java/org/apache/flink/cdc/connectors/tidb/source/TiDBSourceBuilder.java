@@ -139,7 +139,7 @@ public class TiDBSourceBuilder<T> {
 
   public TiDBIncrementalSource<T> build() {
     this.offsetFactory = new LogMessageOffsetFactory();
-    this.dialect = new TiDBDialect();
+    this.dialect = new TiDBDialect(configFactory.create(0));
     return new TiDBIncrementalSource<>(
         configFactory, checkNotNull(deserializer), offsetFactory, dialect);
   }

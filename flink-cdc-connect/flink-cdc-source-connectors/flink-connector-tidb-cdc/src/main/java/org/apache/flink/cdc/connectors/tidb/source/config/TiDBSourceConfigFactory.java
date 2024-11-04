@@ -47,7 +47,7 @@ public class TiDBSourceConfigFactory extends JdbcSourceConfigFactory {
   }
 
   @Override
-  public JdbcSourceConfig create(int subtask) {
+  public TiDBSourceConfig create(int subtask) {
     checkSupportCheckpointsAfterTasksFinished(closeIdleReaders);
     Properties props = new Properties();
     props.setProperty("database.server.name", "tidb_cdc");
