@@ -249,7 +249,6 @@ public class PostgresScanFetchTaskTest extends PostgresTestBase {
                             throw new RuntimeException(e);
                         }
                     };
-
             if (hookType == USE_POST_LOWWATERMARK_HOOK) {
                 hooks.setPostLowWatermarkAction(snapshotPhaseHook);
             } else if (hookType == USE_PRE_HIGHWATERMARK_HOOK) {
@@ -262,6 +261,8 @@ public class PostgresScanFetchTaskTest extends PostgresTestBase {
                             DataTypes.FIELD("name", DataTypes.STRING()),
                             DataTypes.FIELD("address", DataTypes.STRING()),
                             DataTypes.FIELD("phone_number", DataTypes.STRING()));
+
+            //调用获取splits
             List<SnapshotSplit> snapshotSplits = getSnapshotSplits(sourceConfig, postgresDialect);
 
             PostgresSourceFetchTaskContext postgresSourceFetchTaskContext =
@@ -315,6 +316,7 @@ public class PostgresScanFetchTaskTest extends PostgresTestBase {
 
     private List<SnapshotSplit> getSnapshotSplits(
             PostgresSourceConfig sourceConfig, JdbcDataSourceDialect sourceDialect) {
+
         List<TableId> discoverTables = sourceDialect.discoverDataCollections(sourceConfig);
         final ChunkSplitter chunkSplitter = sourceDialect.createChunkSplitter(sourceConfig);
 

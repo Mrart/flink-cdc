@@ -12,7 +12,10 @@ import org.apache.flink.cdc.connectors.base.source.assigner.splitter.ChunkSplitt
 import org.apache.flink.cdc.connectors.base.source.meta.offset.Offset;
 import org.apache.flink.cdc.connectors.base.source.meta.split.SourceSplitBase;
 import org.apache.flink.cdc.connectors.base.source.reader.external.FetchTask;
+import org.apache.flink.cdc.connectors.tidb.source.config.TiDBSourceConfig;
 import org.apache.flink.cdc.connectors.tidb.source.schema.TiDBSchema;
+import org.apache.flink.cdc.connectors.tidb.source.splitter.TiDBChunkSplitter;
+import org.apache.flink.cdc.connectors.tidb.utils.TableDiscoveryUtils;
 import org.apache.flink.cdc.connectors.tidb.utils.TiDBConnectionUtils;
 import org.apache.flink.util.FlinkRuntimeException;
 
@@ -24,8 +27,12 @@ public class TiDBDialect implements JdbcDataSourceDialect {
 
   private static final String QUOTED_CHARACTER = "`";
   private static final long serialVersionUID = 1L;
-
+  private final TiDBSourceConfig sourceConfig;
   private transient TiDBSchema tiDBSchema;
+
+  public TiDBDialect(TiDBSourceConfig sourceConfig) {
+    this.sourceConfig = sourceConfig;
+  }
 
   @Override
   public String getName() {
@@ -48,7 +55,7 @@ public class TiDBDialect implements JdbcDataSourceDialect {
 
   @Override
   public ChunkSplitter createChunkSplitter(JdbcSourceConfig sourceConfig) {
-    return null;
+    return new TiDBChunkSplitter(sourceConfig,this);
   }
 
   @Override
@@ -63,7 +70,12 @@ public class TiDBDialect implements JdbcDataSourceDialect {
 
   @Override
   public List<TableId> discoverDataCollections(JdbcSourceConfig sourceConfig) {
-    return null;
+    try (JdbcConnection jdbc = openJdbcConnection(sourceConfig)){
+          return TableDiscoveryUtils.listTables(
+                  sourceConfig.getDatabaseList().get(0),jdbc,sourceConfig.getTableFilters());
+    }catch (SQLException e){
+          throw  new FlinkRuntimeException("Error to discover tables:" + e.getMessage(),e);
+    }
   }
 
   @Override
