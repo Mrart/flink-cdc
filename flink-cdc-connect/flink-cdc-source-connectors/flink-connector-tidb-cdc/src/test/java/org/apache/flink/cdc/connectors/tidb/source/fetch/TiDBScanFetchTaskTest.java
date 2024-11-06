@@ -1,14 +1,35 @@
 package org.apache.flink.cdc.connectors.tidb.source.fetch;
 
+import io.debezium.relational.TableId;
 import org.apache.flink.cdc.connectors.base.config.JdbcSourceConfig;
+import org.apache.flink.cdc.connectors.base.dialect.JdbcDataSourceDialect;
+import org.apache.flink.cdc.connectors.base.source.assigner.splitter.ChunkSplitter;
+import org.apache.flink.cdc.connectors.base.source.meta.split.SnapshotSplit;
+import org.apache.flink.cdc.connectors.base.source.meta.split.SourceRecords;
+import org.apache.flink.cdc.connectors.base.source.meta.split.SourceSplitBase;
+import org.apache.flink.cdc.connectors.base.source.reader.external.AbstractScanFetchTask;
+import org.apache.flink.cdc.connectors.base.source.reader.external.FetchTask;
+import org.apache.flink.cdc.connectors.base.source.reader.external.IncrementalSourceScanFetcher;
 import org.apache.flink.cdc.connectors.base.source.utils.hooks.SnapshotPhaseHook;
 import org.apache.flink.cdc.connectors.base.source.utils.hooks.SnapshotPhaseHooks;
 import org.apache.flink.cdc.connectors.tidb.TiDBTestBase;
 import org.apache.flink.cdc.connectors.tidb.source.TiDBDialect;
+import org.apache.flink.cdc.connectors.tidb.source.config.TiDBSourceConfig;
 import org.apache.flink.cdc.connectors.tidb.source.config.TiDBSourceConfigFactory;
 import org.apache.flink.cdc.connectors.tidb.source.connection.TiDBConnection;
+import org.apache.flink.cdc.connectors.tidb.testutils.RecordsFormatter;
+import org.apache.flink.table.api.DataTypes;
+import org.apache.flink.table.types.DataType;
+import org.apache.kafka.connect.source.SourceRecord;
+import scala.tools.nsc.transform.SpecializeTypes;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
+
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 /** Tests for {@link TiDBScanFetchTask}. */
 
@@ -26,10 +47,14 @@ import java.util.List;
 public class TiDBScanFetchTaskTest extends TiDBTestBase {
     private static final String databaseName = "customer";
     private static final String tableName = "customers";
+
+    private static final int USE_POST_LOWWATERMARK_HOOK = 1;
+    private static final int USE_PRE_HIGHWATERMARK_HOOK = 2;
+
     public void testChangingDataInSnapshotScan() throws Exception {
         initializeTidbTable("customer");
         String tableId = databaseName + "." + tableName;
-        String[] changingDataSql = new String[] {
+        String[] changingDataSql = new String[]{
                 "UPDATE " + tableId + " SET address = 'Hangzhou' where id = 103",
                 "DELETE FROM " + tableId + " where id = 102",
                 "INSERT INTO " + tableId + " VALUES(102, 'user_2','hangzhou','123567891234')",
@@ -38,7 +63,7 @@ public class TiDBScanFetchTaskTest extends TiDBTestBase {
                 "UPDATE " + tableId + " SET address = 'Hangzhou' where id = 111",
         };
         String[] expected =
-                new String[] {
+                new String[]{
                         "+I[101, user_1, Shanghai, 123567891234]",
                         "+I[102, user_2, hangzhou, 123567891234]",
                         "+I[103, user_3, Shanghai, 123567891234]",
@@ -67,11 +92,11 @@ public class TiDBScanFetchTaskTest extends TiDBTestBase {
         tiDBSourceConfigFactory.tableList(this.tableName);
         tiDBSourceConfigFactory.splitSize(10);
         tiDBSourceConfigFactory.skipSnapshotBackfill(skipSnapshotBackfill);
-        JdbcSourceConfig jdbcSourceConfig = tiDBSourceConfigFactory.create(0);
+        TiDBSourceConfig tiDBSourceConfig = tiDBSourceConfigFactory.create(0);
         TiDBDialect tiDBDialect = new TiDBDialect(tiDBSourceConfigFactory.create(0));
-        SnapshotPhaseHooks snapshotPhaseHooks = new SnapshotPhaseHooks();
+        SnapshotPhaseHooks hooks = new SnapshotPhaseHooks();
 
-        try(TiDBConnection tiDBConnection = tiDBDialect.openJdbcConnection()) {
+        try (TiDBConnection tiDBConnection = tiDBDialect.openJdbcConnection()) {
             SnapshotPhaseHook snapshotPhaseHook =
                     (tidbSourceConfig, split) -> {
                         tiDBConnection.execute(changingDataSql);
@@ -82,7 +107,78 @@ public class TiDBScanFetchTaskTest extends TiDBTestBase {
                             throw new RuntimeException(e);
                         }
                     };
+            if (hookType == USE_POST_LOWWATERMARK_HOOK) {
+                hooks.setPostLowWatermarkAction(snapshotPhaseHook);
+            } else if (hookType == USE_PRE_HIGHWATERMARK_HOOK) {
+                hooks.setPreHighWatermarkAction(snapshotPhaseHook);
+            }
+            final DataType dataType =
+                    DataTypes.ROW(
+                            DataTypes.FIELD("id", DataTypes.BIGINT()),
+                            DataTypes.FIELD("name", DataTypes.STRING()),
+                            DataTypes.FIELD("address", DataTypes.STRING()),
+                            DataTypes.FIELD("phone_number", DataTypes.STRING()));
+            List<SnapshotSplit> snapshotSplits = getSnapshotSplits(tiDBSourceConfig, tiDBDialect);
+
+            TiDBSourceFetchTaskContext tidbsourceFetchTaskContext =
+                    new TiDBSourceFetchTaskContext(tiDBSourceConfig, tiDBDialect, tiDBConnection);
+
+            return readTableSnapshotSplits(snapshotSplits, tidbsourceFetchTaskContext,1,dataType,hooks);
         }
-        return null;
+    }
+
+    private List<String> readTableSnapshotSplits(
+            List<SnapshotSplit> snapshotSplits,
+            TiDBSourceFetchTaskContext taskContext,
+            int scanSplitsNum,
+            DataType dataType,
+            SnapshotPhaseHooks snapshotPhaseHooks)
+            throws Exception {
+        IncrementalSourceScanFetcher sourceScanFetcher =
+                new IncrementalSourceScanFetcher(taskContext, 0);
+
+        ArrayList<SourceRecord> result = new ArrayList<>();
+        for (int i = 0; i < scanSplitsNum; i++) {
+            SnapshotSplit sqlSplit = snapshotSplits.get(i);
+            if (sourceScanFetcher.isFinished()) {
+                FetchTask<SourceSplitBase> fetchTask
+                        = taskContext.getDataSourceDialect().createFetchTask(sqlSplit);
+                ((AbstractScanFetchTask) fetchTask).setSnapshotPhaseHooks(snapshotPhaseHooks);
+                sourceScanFetcher.submitTask(fetchTask);
+            }
+            Iterator<SourceRecords> res;
+            while ((res = sourceScanFetcher.pollSplitRecords()) != null) {
+                while (res.hasNext()) {
+                    SourceRecords sourceRecords = res.next();
+                    result.addAll(sourceRecords.getSourceRecordList());
+                }
+            }
+        }
+        sourceScanFetcher.close();
+
+        assertNotNull(sourceScanFetcher.getExecutorService());
+        assertTrue(sourceScanFetcher.getExecutorService().isTerminated());
+
+        return formatResult(result, dataType);
+
+    }
+
+    private List<String> formatResult(List<SourceRecord> records, DataType dataType) {
+        final RecordsFormatter formatter = new RecordsFormatter(dataType);
+        return formatter.format(records);
+    }
+
+    /** 于从给定的 TiDB 配置和 JDBC 数据源方言生成SnapshotSplit列表 */
+    private List<SnapshotSplit> getSnapshotSplits(
+            TiDBSourceConfig sourceConfig, JdbcDataSourceDialect sourceDialect) {
+        List<TableId> discoverTables = sourceDialect.discoverDataCollections(sourceConfig);
+        final ChunkSplitter chunkSplitter = sourceDialect.createChunkSplitter(sourceConfig);
+
+        List<SnapshotSplit> snapshotSplitList = new ArrayList<>();
+        for (TableId table : discoverTables) {
+            Collection<SnapshotSplit> snapshotSplits = chunkSplitter.generateSplits(table);
+            snapshotSplitList.addAll(snapshotSplits);
+        }
+        return snapshotSplitList;
     }
 }
