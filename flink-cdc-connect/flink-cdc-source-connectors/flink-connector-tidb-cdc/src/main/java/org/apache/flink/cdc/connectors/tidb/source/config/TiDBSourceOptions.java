@@ -1,10 +1,16 @@
 package org.apache.flink.cdc.connectors.tidb.source.config;
 
 import org.apache.flink.cdc.connectors.base.options.JdbcSourceOptions;
+import org.apache.flink.cdc.connectors.tidb.table.utils.UriHostMapping;
 import org.apache.flink.configuration.ConfigOption;
 import org.apache.flink.configuration.ConfigOptions;
+import org.apache.flink.configuration.Configuration;
+import org.tikv.common.ConfigUtils;
+import org.tikv.common.TiConfiguration;
 
 import java.time.Duration;
+import java.util.Map;
+import java.util.Optional;
 
 public class TiDBSourceOptions extends JdbcSourceOptions {
 
@@ -49,5 +55,47 @@ public class TiDBSourceOptions extends JdbcSourceOptions {
                     .defaultValue("com.mysql.cj.jdbc.Driver")
                     .withDescription(
                             "JDBC driver class name, use 'com.mysql.cj.jdbc.Driver' by default.");
+
+    public static final ConfigOption<Long> TIKV_GRPC_TIMEOUT =
+            ConfigOptions.key(ConfigUtils.TIKV_GRPC_TIMEOUT)
+                    .longType()
+                    .noDefaultValue()
+                    .withDescription("TiKV GRPC timeout in ms");
+
+    public static final ConfigOption<Long> TIKV_GRPC_SCAN_TIMEOUT =
+            ConfigOptions.key(ConfigUtils.TIKV_GRPC_SCAN_TIMEOUT)
+                    .longType()
+                    .noDefaultValue()
+                    .withDescription("TiKV GRPC scan timeout in ms");
+
+    public static final ConfigOption<Integer> TIKV_BATCH_GET_CONCURRENCY =
+            ConfigOptions.key(ConfigUtils.TIKV_BATCH_GET_CONCURRENCY)
+                    .intType()
+                    .noDefaultValue()
+                    .withDescription("TiKV GRPC batch get concurrency");
+
+    public static final ConfigOption<Integer> TIKV_BATCH_SCAN_CONCURRENCY =
+            ConfigOptions.key(ConfigUtils.TIKV_BATCH_SCAN_CONCURRENCY)
+                    .intType()
+                    .noDefaultValue()
+                    .withDescription("TiKV GRPC batch scan concurrency");
+
+    public static TiConfiguration getTiConfiguration(
+            final String pdAddrsStr, final String hostMapping, final Map<String, String> options) {
+        final Configuration configuration = Configuration.fromMap(options);
+
+        final TiConfiguration tiConf = TiConfiguration.createDefault(pdAddrsStr);
+        Optional.of(new UriHostMapping(hostMapping)).ifPresent(tiConf::setHostMapping);
+        configuration.getOptional(TIKV_GRPC_TIMEOUT).ifPresent(tiConf::setTimeout);
+        configuration.getOptional(TIKV_GRPC_SCAN_TIMEOUT).ifPresent(tiConf::setScanTimeout);
+        configuration
+                .getOptional(TIKV_BATCH_GET_CONCURRENCY)
+                .ifPresent(tiConf::setBatchGetConcurrency);
+
+        configuration
+                .getOptional(TIKV_BATCH_SCAN_CONCURRENCY)
+                .ifPresent(tiConf::setBatchScanConcurrency);
+        return tiConf;
+    }
 }
 
