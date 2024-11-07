@@ -14,7 +14,7 @@ import static org.apache.flink.cdc.connectors.base.utils.EnvironmentUtils.checkS
 public class TiDBSourceConfigFactory extends JdbcSourceConfigFactory {
   private static final long serialVersionUID = 1L;
   private String compatibleMode;
-  private String driverClassName;
+  private String driverClassName = "com.mysql.cj.jdbc.Driver";
   private String pdAddresses;
 
   private String hostMapping;
@@ -86,7 +86,7 @@ public class TiDBSourceConfigFactory extends JdbcSourceConfigFactory {
         distributionFactorLower,
         includeSchemaChanges,
         closeIdleReaders,
-        dbzProperties,
+        props,
         dbzConfiguration,
         driverClassName,
         hostname,

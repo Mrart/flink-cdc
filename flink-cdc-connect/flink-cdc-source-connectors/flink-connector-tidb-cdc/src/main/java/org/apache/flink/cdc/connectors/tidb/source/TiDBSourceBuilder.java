@@ -6,7 +6,7 @@ import org.apache.flink.cdc.connectors.base.source.jdbc.JdbcIncrementalSource;
 import org.apache.flink.cdc.connectors.tidb.TiKVChangeEventDeserializationSchema;
 import org.apache.flink.cdc.connectors.tidb.TiKVSnapshotEventDeserializationSchema;
 import org.apache.flink.cdc.connectors.tidb.source.config.TiDBSourceConfigFactory;
-import org.apache.flink.cdc.connectors.tidb.source.offset.LogMessageOffsetFactory;
+import org.apache.flink.cdc.connectors.tidb.source.offset.CDCEventOffsetFactory;
 import org.apache.flink.cdc.debezium.DebeziumDeserializationSchema;
 
 import java.time.Duration;
@@ -16,7 +16,7 @@ import static org.apache.flink.cdc.common.utils.Preconditions.checkNotNull;
 
 public class TiDBSourceBuilder<T> {
   private final TiDBSourceConfigFactory configFactory = new TiDBSourceConfigFactory();
-  private LogMessageOffsetFactory offsetFactory;
+  private CDCEventOffsetFactory offsetFactory;
   private DebeziumDeserializationSchema<T> deserializer;
   private TiKVSnapshotEventDeserializationSchema<T> snapshotEventDeserializationSchema;
   private TiKVChangeEventDeserializationSchema<T> changeEventDeserializationSchema;
@@ -158,7 +158,7 @@ public class TiDBSourceBuilder<T> {
   }
 
   public TiDBIncrementalSource<T> build() {
-    this.offsetFactory = new LogMessageOffsetFactory();
+    this.offsetFactory = new CDCEventOffsetFactory();
     this.dialect = new TiDBDialect(configFactory.create(0));
     return new TiDBIncrementalSource<>(
         configFactory, checkNotNull(deserializer), offsetFactory, dialect);
@@ -168,7 +168,7 @@ public class TiDBSourceBuilder<T> {
     public TiDBIncrementalSource(
         JdbcSourceConfigFactory configFactory,
         DebeziumDeserializationSchema<T> deserializationSchema,
-        LogMessageOffsetFactory offsetFactory,
+        CDCEventOffsetFactory offsetFactory,
         TiDBDialect dataSourceDialect) {
       super(configFactory, deserializationSchema, offsetFactory, dataSourceDialect);
     }

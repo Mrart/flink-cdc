@@ -12,8 +12,10 @@ import org.apache.flink.cdc.connectors.base.source.assigner.splitter.ChunkSplitt
 import org.apache.flink.cdc.connectors.base.source.meta.offset.Offset;
 import org.apache.flink.cdc.connectors.base.source.meta.split.SourceSplitBase;
 import org.apache.flink.cdc.connectors.base.source.reader.external.FetchTask;
+import org.apache.flink.cdc.connectors.tidb.source.config.TiDBConnectorConfig;
 import org.apache.flink.cdc.connectors.tidb.source.config.TiDBSourceConfig;
 import org.apache.flink.cdc.connectors.tidb.source.connection.TiDBConnection;
+import org.apache.flink.cdc.connectors.tidb.source.connection.TiDBConnectionPoolFactory;
 import org.apache.flink.cdc.connectors.tidb.source.schema.TiDBSchema;
 import org.apache.flink.cdc.connectors.tidb.utils.TiDBConnectionUtils;
 import org.apache.flink.util.FlinkRuntimeException;
@@ -21,8 +23,11 @@ import org.apache.flink.util.FlinkRuntimeException;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class TiDBDialect implements JdbcDataSourceDialect {
+  private static final Logger LOG = LoggerFactory.getLogger(TiDBDialect.class);
 
   private static final String QUOTED_CHARACTER = "`";
   private static final long serialVersionUID = 1L;
@@ -82,15 +87,19 @@ public class TiDBDialect implements JdbcDataSourceDialect {
 
   @Override
   public JdbcConnection openJdbcConnection(JdbcSourceConfig sourceConfig) {
+    TiDBSourceConfig tiDBSourceConfig = (TiDBSourceConfig) sourceConfig;
+    TiDBConnectorConfig  dbzConfig = tiDBSourceConfig.getDbzConnectorConfig();
+
     JdbcConnection jdbc =
-        new JdbcConnection(
-            JdbcConfiguration.adapt(sourceConfig.getDbzConfiguration()),
+        new TiDBConnection(
+                dbzConfig.getJdbcConfig(),
             new JdbcConnectionFactory(sourceConfig, getPooledDataSourceFactory()),
             QUOTED_CHARACTER,
             QUOTED_CHARACTER);
     try {
       jdbc.connect();
     } catch (Exception e) {
+      LOG.error("Failed to open TiDB connection", e);
       throw new FlinkRuntimeException(e);
     }
     return jdbc;
@@ -101,7 +110,7 @@ public class TiDBDialect implements JdbcDataSourceDialect {
   }
   @Override
   public JdbcConnectionPoolFactory getPooledDataSourceFactory() {
-    return null;
+    return new TiDBConnectionPoolFactory();
   }
 
   @Override

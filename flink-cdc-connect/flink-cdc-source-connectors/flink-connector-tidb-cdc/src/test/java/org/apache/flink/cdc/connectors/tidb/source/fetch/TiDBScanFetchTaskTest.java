@@ -21,15 +21,14 @@ import org.apache.flink.cdc.connectors.tidb.testutils.RecordsFormatter;
 import org.apache.flink.table.api.DataTypes;
 import org.apache.flink.table.types.DataType;
 import org.apache.kafka.connect.source.SourceRecord;
+import org.junit.Test;
 import scala.tools.nsc.transform.SpecializeTypes;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
+import static org.junit.Assert.assertArrayEquals;
 
 /** Tests for {@link TiDBScanFetchTask}. */
 
@@ -51,6 +50,7 @@ public class TiDBScanFetchTaskTest extends TiDBTestBase {
     private static final int USE_POST_LOWWATERMARK_HOOK = 1;
     private static final int USE_PRE_HIGHWATERMARK_HOOK = 2;
 
+    @Test
     public void testChangingDataInSnapshotScan() throws Exception {
         initializeTidbTable("customer");
         String tableId = databaseName + "." + tableName;
@@ -74,6 +74,9 @@ public class TiDBScanFetchTaskTest extends TiDBTestBase {
                         "+I[121, user_8, Shanghai, 123567891234]",
                         "+I[123, user_9, Shanghai, 123567891234]",
                 };
+        List<String> actual = getDataInSnapshotScan(
+                changingDataSql, databaseName, tableName, USE_PRE_HIGHWATERMARK_HOOK, false);
+        assertEqualsInAnyOrder(Arrays.asList(expected), actual);
     }
 
     private List<String> getDataInSnapshotScan(
@@ -85,11 +88,11 @@ public class TiDBScanFetchTaskTest extends TiDBTestBase {
             throws Exception {
         TiDBSourceConfigFactory tiDBSourceConfigFactory = new TiDBSourceConfigFactory();
         tiDBSourceConfigFactory.hostname(TIDB.getHost());
-        tiDBSourceConfigFactory.port(TiDBTestBase.TIDB_PORT);
+        tiDBSourceConfigFactory.port(TIDB.getMappedPort(TIDB_PORT));
         tiDBSourceConfigFactory.username(TiDBTestBase.TIDB_USER);
         tiDBSourceConfigFactory.password(TiDBTestBase.TIDB_PASSWORD);
         tiDBSourceConfigFactory.databaseList(this.databaseName);
-        tiDBSourceConfigFactory.tableList(this.tableName);
+        tiDBSourceConfigFactory.tableList(this.databaseName+"."+this.tableName);
         tiDBSourceConfigFactory.splitSize(10);
         tiDBSourceConfigFactory.skipSnapshotBackfill(skipSnapshotBackfill);
         TiDBSourceConfig tiDBSourceConfig = tiDBSourceConfigFactory.create(0);
@@ -181,4 +184,18 @@ public class TiDBScanFetchTaskTest extends TiDBTestBase {
         }
         return snapshotSplitList;
     }
+
+    public static void assertEqualsInAnyOrder(List<String> expected, List<String> actual) {
+        assertTrue(expected != null && actual != null);
+        assertEqualsInOrder(
+                expected.stream().sorted().collect(Collectors.toList()),
+                actual.stream().sorted().collect(Collectors.toList()));
+    }
+
+    public static void assertEqualsInOrder(List<String> expected, List<String> actual) {
+        assertTrue(expected != null && actual != null);
+        assertEquals(expected.size(), actual.size());
+        assertArrayEquals(expected.toArray(new String[0]), actual.toArray(new String[0]));
+    }
+
 }
