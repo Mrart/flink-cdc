@@ -12,11 +12,14 @@ import org.apache.flink.cdc.connectors.base.source.assigner.splitter.ChunkSplitt
 import org.apache.flink.cdc.connectors.base.source.meta.offset.Offset;
 import org.apache.flink.cdc.connectors.base.source.meta.split.SourceSplitBase;
 import org.apache.flink.cdc.connectors.base.source.reader.external.FetchTask;
+import org.apache.flink.cdc.connectors.tidb.source.config.TiDBSourceConfig;
 import org.apache.flink.cdc.connectors.tidb.source.config.TiDBConnectorConfig;
 import org.apache.flink.cdc.connectors.tidb.source.config.TiDBSourceConfig;
 import org.apache.flink.cdc.connectors.tidb.source.connection.TiDBConnection;
 import org.apache.flink.cdc.connectors.tidb.source.connection.TiDBConnectionPoolFactory;
 import org.apache.flink.cdc.connectors.tidb.source.schema.TiDBSchema;
+import org.apache.flink.cdc.connectors.tidb.source.splitter.TiDBChunkSplitter;
+import org.apache.flink.cdc.connectors.tidb.utils.TableDiscoveryUtils;
 import org.apache.flink.cdc.connectors.tidb.utils.TiDBConnectionUtils;
 import org.apache.flink.util.FlinkRuntimeException;
 
@@ -61,7 +64,7 @@ public class TiDBDialect implements JdbcDataSourceDialect {
 
   @Override
   public ChunkSplitter createChunkSplitter(JdbcSourceConfig sourceConfig) {
-    return null;
+    return new TiDBChunkSplitter(sourceConfig,this);
   }
 
   @Override
@@ -76,7 +79,12 @@ public class TiDBDialect implements JdbcDataSourceDialect {
 
   @Override
   public List<TableId> discoverDataCollections(JdbcSourceConfig sourceConfig) {
-    return null;
+    try (JdbcConnection jdbc = openJdbcConnection(sourceConfig)){
+          return TableDiscoveryUtils.listTables(
+                  sourceConfig.getDatabaseList().get(0),jdbc,sourceConfig.getTableFilters());
+    }catch (SQLException e){
+          throw  new FlinkRuntimeException("Error to discover tables:" + e.getMessage(),e);
+    }
   }
 
   @Override
@@ -87,27 +95,20 @@ public class TiDBDialect implements JdbcDataSourceDialect {
 
   @Override
   public JdbcConnection openJdbcConnection(JdbcSourceConfig sourceConfig) {
-    TiDBSourceConfig tiDBSourceConfig = (TiDBSourceConfig) sourceConfig;
-    TiDBConnectorConfig  dbzConfig = tiDBSourceConfig.getDbzConnectorConfig();
-
     JdbcConnection jdbc =
-        new TiDBConnection(
-                dbzConfig.getJdbcConfig(),
+        new JdbcConnection(
+            JdbcConfiguration.adapt(sourceConfig.getDbzConfiguration()),
             new JdbcConnectionFactory(sourceConfig, getPooledDataSourceFactory()),
             QUOTED_CHARACTER,
             QUOTED_CHARACTER);
     try {
       jdbc.connect();
     } catch (Exception e) {
-      LOG.error("Failed to open TiDB connection", e);
       throw new FlinkRuntimeException(e);
     }
     return jdbc;
   }
 
-  public TiDBConnection openJdbcConnection() {
-    return (TiDBConnection) openJdbcConnection(sourceConfig);
-  }
   @Override
   public JdbcConnectionPoolFactory getPooledDataSourceFactory() {
     return new TiDBConnectionPoolFactory();
