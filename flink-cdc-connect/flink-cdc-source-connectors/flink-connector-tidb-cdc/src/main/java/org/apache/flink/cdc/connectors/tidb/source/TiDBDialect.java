@@ -95,18 +95,26 @@ public class TiDBDialect implements JdbcDataSourceDialect {
 
   @Override
   public JdbcConnection openJdbcConnection(JdbcSourceConfig sourceConfig) {
+    TiDBSourceConfig tiDBSourceConfig = (TiDBSourceConfig) sourceConfig;
+    TiDBConnectorConfig  dbzConfig = tiDBSourceConfig.getDbzConnectorConfig();
+
     JdbcConnection jdbc =
-        new JdbcConnection(
-            JdbcConfiguration.adapt(sourceConfig.getDbzConfiguration()),
-            new JdbcConnectionFactory(sourceConfig, getPooledDataSourceFactory()),
-            QUOTED_CHARACTER,
-            QUOTED_CHARACTER);
+            new TiDBConnection(
+                    dbzConfig.getJdbcConfig(),
+                    new JdbcConnectionFactory(sourceConfig, getPooledDataSourceFactory()),
+                    QUOTED_CHARACTER,
+                    QUOTED_CHARACTER);
     try {
       jdbc.connect();
     } catch (Exception e) {
+      LOG.error("Failed to open TiDB connection", e);
       throw new FlinkRuntimeException(e);
     }
     return jdbc;
+  }
+
+  public TiDBConnection openJdbcConnection() {
+    return (TiDBConnection) openJdbcConnection(sourceConfig);
   }
 
   @Override
