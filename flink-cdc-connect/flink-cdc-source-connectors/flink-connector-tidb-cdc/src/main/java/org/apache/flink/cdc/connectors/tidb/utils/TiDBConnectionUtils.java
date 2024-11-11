@@ -7,7 +7,6 @@ import io.debezium.jdbc.JdbcValueConverters;
 import io.debezium.jdbc.TemporalPrecisionMode;
 import io.debezium.relational.TableId;
 import io.debezium.schema.TopicSelector;
-import io.debezium.util.SchemaNameAdjuster;
 import org.apache.flink.cdc.connectors.tidb.source.config.TiDBConnectorConfig;
 import org.apache.flink.cdc.connectors.tidb.source.converter.TiDBValueConverters;
 import org.apache.flink.cdc.connectors.tidb.source.schema.TiDBDatabaseSchema;

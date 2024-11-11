@@ -1,9 +1,7 @@
 package io.debezium.connector.tidb;
 
-import io.debezium.connector.mysql.MySqlConnectorConfig;
 import io.debezium.pipeline.spi.Partition;
 import io.debezium.util.Collect;
-import org.apache.flink.cdc.connectors.tidb.source.config.TiDBConnectorConfig;
 
 import java.util.Collections;
 import java.util.Map;

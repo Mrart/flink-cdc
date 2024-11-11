@@ -1,5 +1,6 @@
 package org.apache.flink.cdc.connectors.tidb.source.schema;
 
+import io.debezium.connector.mysql.MySqlOffsetContext;
 import io.debezium.connector.tidb.TiDBPartition;
 import io.debezium.connector.tidb.TidbTopicSelector;
 import io.debezium.jdbc.JdbcConnection;
@@ -9,7 +10,6 @@ import io.debezium.relational.history.TableChanges;
 import io.debezium.relational.history.TableChanges.TableChange;
 import io.debezium.schema.SchemaChangeEvent;
 import io.debezium.schema.TopicSelector;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.flink.cdc.connectors.tidb.source.config.TiDBConnectorConfig;
 import org.apache.flink.cdc.connectors.tidb.source.config.TiDBSourceConfig;
 import org.apache.flink.cdc.connectors.tidb.source.offset.CDCEventOffsetContext;
@@ -76,8 +76,7 @@ public class TiDBSchema {
                     rs -> {
                         if (rs.next()) {
                             final String ddl = rs.getString(2);
-                            final CDCEventOffsetContext offsetContext =
-                                    CDCEventOffsetContext.initial(connectorConfig);
+                            MySqlOffsetContext offsetContext = MySqlOffsetContext.initial(connectorConfig);
                             final TiDBPartition partition =
                                     new TiDBPartition(connectorConfig.getLogicalName());
 

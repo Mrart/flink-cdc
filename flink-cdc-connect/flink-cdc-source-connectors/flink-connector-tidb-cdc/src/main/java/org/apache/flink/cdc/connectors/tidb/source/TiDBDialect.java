@@ -1,6 +1,5 @@
 package org.apache.flink.cdc.connectors.tidb.source;
 
-import io.debezium.jdbc.JdbcConfiguration;
 import io.debezium.jdbc.JdbcConnection;
 import io.debezium.relational.TableId;
 import io.debezium.relational.history.TableChanges;
@@ -12,7 +11,6 @@ import org.apache.flink.cdc.connectors.base.source.assigner.splitter.ChunkSplitt
 import org.apache.flink.cdc.connectors.base.source.meta.offset.Offset;
 import org.apache.flink.cdc.connectors.base.source.meta.split.SourceSplitBase;
 import org.apache.flink.cdc.connectors.base.source.reader.external.FetchTask;
-import org.apache.flink.cdc.connectors.tidb.source.config.TiDBSourceConfig;
 import org.apache.flink.cdc.connectors.tidb.source.config.TiDBConnectorConfig;
 import org.apache.flink.cdc.connectors.tidb.source.config.TiDBSourceConfig;
 import org.apache.flink.cdc.connectors.tidb.source.connection.TiDBConnection;
@@ -96,7 +94,7 @@ public class TiDBDialect implements JdbcDataSourceDialect {
   @Override
   public JdbcConnection openJdbcConnection(JdbcSourceConfig sourceConfig) {
     TiDBSourceConfig tiDBSourceConfig = (TiDBSourceConfig) sourceConfig;
-    TiDBConnectorConfig  dbzConfig = tiDBSourceConfig.getDbzConnectorConfig();
+    TiDBConnectorConfig dbzConfig = tiDBSourceConfig.getDbzConnectorConfig();
 
     JdbcConnection jdbc =
             new TiDBConnection(
@@ -125,9 +123,9 @@ public class TiDBDialect implements JdbcDataSourceDialect {
   @Override
   public TableChanges.TableChange queryTableSchema(JdbcConnection jdbc, TableId tableId) {
     if(tiDBSchema == null) {
-      tiDBSchema = new TiDBSchema((TiDBConnection) jdbc, sourceConfig);
+      tiDBSchema = new TiDBSchema(sourceConfig,isDataCollectionIdCaseSensitive(sourceConfig));
     }
-    return tiDBSchema.getTableSchema(tableId);
+    return tiDBSchema.getTableSchema(jdbc,tableId);
   }
 
   @Override

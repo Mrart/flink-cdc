@@ -1,11 +1,7 @@
 package org.apache.flink.cdc.connectors.tidb.source.schema;
 
-import com.fasterxml.jackson.databind.util.BeanUtil;
 import io.debezium.connector.mysql.MySqlDatabaseSchema;
 import io.debezium.connector.mysql.MySqlOffsetContext;
-import io.debezium.connector.mysql.MySqlPartition;
-import io.debezium.connector.mysql.MySqlValueConverters;
-import io.debezium.connector.mysql.antlr.MySqlAntlrDdlParser;
 import io.debezium.connector.tidb.TiDBAntlrDdlParser;
 import io.debezium.connector.tidb.TiDBPartition;
 import io.debezium.relational.*;
@@ -14,12 +10,9 @@ import io.debezium.relational.ddl.DdlParser;
 import io.debezium.relational.ddl.DdlParserListener;
 import io.debezium.schema.SchemaChangeEvent;
 import io.debezium.schema.TopicSelector;
-import io.debezium.text.MultipleParsingExceptions;
-import io.debezium.text.ParsingException;
 import io.debezium.util.Collect;
 import org.apache.flink.cdc.connectors.tidb.source.config.TiDBConnectorConfig;
 import org.apache.flink.cdc.connectors.tidb.source.converter.TiDBValueConverters;
-import org.apache.flink.cdc.connectors.tidb.source.offset.CDCEventOffsetContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -126,7 +119,7 @@ public class TiDBDatabaseSchema extends RelationalDatabaseSchema {
     return null;
   }
 
-  private void emitChangeEvent(TiDBPartition partition, CDCEventOffsetContext offset, List<SchemaChangeEvent> schemaChangeEvents,
+  private void emitChangeEvent(TiDBPartition partition, MySqlOffsetContext offset, List<SchemaChangeEvent> schemaChangeEvents,
                                final String sanitizedDbName, DdlParserListener.Event event, TableId tableId, SchemaChangeEvent.SchemaChangeEventType type,
                                boolean snapshot) {
     SchemaChangeEvent schemaChangeEvent;
@@ -156,13 +149,13 @@ public class TiDBDatabaseSchema extends RelationalDatabaseSchema {
   }
 
   public List<SchemaChangeEvent> parseSnapshotDdl(TiDBPartition partition, String ddlStatements, String databaseName,
-                                                  CDCEventOffsetContext offset, Instant sourceTime) {
+                                                  MySqlOffsetContext offset, Instant sourceTime) {
     LOGGER.debug("Processing snapshot DDL '{}' for database '{}'", ddlStatements, databaseName);
     return parseDdl(partition, ddlStatements, databaseName, offset, sourceTime, true);
   }
 
   private List<SchemaChangeEvent> parseDdl(TiDBPartition partition, String ddlStatements, String databaseName,
-                                           CDCEventOffsetContext offset, Instant sourceTime, boolean snapshot) {
+                                           MySqlOffsetContext offset, Instant sourceTime, boolean snapshot) {
     final List<SchemaChangeEvent> schemaChangeEvents = new ArrayList<>(3);
 
     if (ignoredQueryStatements.contains(ddlStatements)) {

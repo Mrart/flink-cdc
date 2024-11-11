@@ -3,17 +3,14 @@ package org.apache.flink.cdc.connectors.tidb.source.config;
 import io.debezium.config.Configuration;
 import io.debezium.config.Field;
 import io.debezium.connector.SourceInfoStructMaker;
-import io.debezium.relational.ColumnFilterMode;
-import io.debezium.relational.RelationalDatabaseConnectorConfig;
-import io.debezium.relational.TableId;
-import io.debezium.relational.Tables;
+import io.debezium.connector.mysql.MySqlConnectorConfig;
 import org.apache.kafka.common.config.ConfigDef;
 
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-public class TiDBConnectorConfig extends RelationalDatabaseConnectorConfig {
+public class TiDBConnectorConfig extends MySqlConnectorConfig {
     protected static final String LOGICAL_NAME = "tidb_cdc_connector";
     protected static final int DEFAULT_SNAPSHOT_FETCH_SIZE = Integer.MIN_VALUE;
     // todo
@@ -30,35 +27,29 @@ public class TiDBConnectorConfig extends RelationalDatabaseConnectorConfig {
             .withImportance(ConfigDef.Importance.LOW)
             .withDescription("Switched connector to use alternative methods to deliver signals to Debezium instead of writing to signaling table");
 
-
-    public String databaseName() {
-        return this.getConfig().getString(DATABASE_NAME);
-    }
-
-//    public boolean isReadOnlyConnection() {
-//        return readOnlyConnection;
-//    }
-
     public TiDBConnectorConfig(TiDBSourceConfig sourceConfig) {
-        // todo
         super(
-                Configuration.from(sourceConfig.getDbzProperties()),
-                LOGICAL_NAME,
-                Tables.TableFilter.fromPredicate(
-                        tableId ->
-                                "mysql".equalsIgnoreCase(sourceConfig.getCompatibleMode())
-                                        ? !BUILT_IN_DB_NAMES.contains(tableId.catalog())
-                                        : !BUILT_IN_DB_NAMES.contains(tableId.schema())),
-                TableId::identifier,
-                DEFAULT_SNAPSHOT_FETCH_SIZE,
-                "mysql".equalsIgnoreCase(sourceConfig.getCompatibleMode())
-                        ? ColumnFilterMode.CATALOG
-                        : ColumnFilterMode.SCHEMA);
+                Configuration.from(sourceConfig.getDbzProperties())
+        );
         this.sourceConfig = sourceConfig;
     }
-    public String databaseName() {
-        return this.getConfig().getString(DATABASE_NAME);
-    }
+
+//    public TiDBConnectorConfigTest(TiDBSourceConfig sourceConfig) {
+//        super(
+//                Configuration.from(sourceConfig.getDbzProperties()),
+//                LOGICAL_NAME,
+//                Tables.TableFilter.fromPredicate(
+//                        tableId ->
+//                                "mysql".equalsIgnoreCase(sourceConfig.getCompatibleMode())
+//                                        ? !BUILT_IN_DB_NAMES.contains(tableId.catalog())
+//                                        : !BUILT_IN_DB_NAMES.contains(tableId.schema())),
+//                TableId::identifier,
+//                DEFAULT_SNAPSHOT_FETCH_SIZE,
+//                "mysql".equalsIgnoreCase(sourceConfig.getCompatibleMode())
+//                        ? ColumnFilterMode.CATALOG
+//                        : ColumnFilterMode.SCHEMA);
+//        this.sourceConfig = sourceConfig;
+//    }
 
     @Override
     public String getContextName() {
@@ -75,3 +66,4 @@ public class TiDBConnectorConfig extends RelationalDatabaseConnectorConfig {
         return null;
     }
 }
+

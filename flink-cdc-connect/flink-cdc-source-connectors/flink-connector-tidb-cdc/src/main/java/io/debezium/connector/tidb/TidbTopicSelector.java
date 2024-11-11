@@ -1,7 +1,6 @@
 package io.debezium.connector.tidb;
 
 import io.debezium.annotation.ThreadSafe;
-import io.debezium.connector.mysql.MySqlConnectorConfig;
 import io.debezium.relational.TableId;
 import io.debezium.schema.TopicSelector;
 import org.apache.flink.cdc.connectors.tidb.source.config.TiDBConnectorConfig;
