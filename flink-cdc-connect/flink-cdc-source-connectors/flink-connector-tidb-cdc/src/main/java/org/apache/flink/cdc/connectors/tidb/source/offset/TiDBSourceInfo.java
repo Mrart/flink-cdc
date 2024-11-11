@@ -2,6 +2,7 @@ package org.apache.flink.cdc.connectors.tidb.source.offset;
 
 import io.debezium.connector.common.BaseSourceInfo;
 import io.debezium.relational.TableId;
+import org.apache.flink.cdc.connectors.tidb.source.config.TiDBConnectorConfig;
 
 import java.time.Instant;
 import java.util.Collections;
