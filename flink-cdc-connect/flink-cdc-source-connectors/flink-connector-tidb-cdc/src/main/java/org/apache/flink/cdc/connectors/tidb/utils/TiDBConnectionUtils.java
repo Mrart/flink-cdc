@@ -1,7 +1,16 @@
 package org.apache.flink.cdc.connectors.tidb.utils;
 
-import io.debezium.connector.mysql.MySqlSystemVariables;
+import io.debezium.connector.mysql.*;
+import io.debezium.connector.tidb.TidbTopicSelector;
 import io.debezium.jdbc.JdbcConnection;
+import io.debezium.jdbc.JdbcValueConverters;
+import io.debezium.jdbc.TemporalPrecisionMode;
+import io.debezium.relational.TableId;
+import io.debezium.schema.TopicSelector;
+import io.debezium.util.SchemaNameAdjuster;
+import org.apache.flink.cdc.connectors.tidb.source.config.TiDBConnectorConfig;
+import org.apache.flink.cdc.connectors.tidb.source.converter.TiDBValueConverters;
+import org.apache.flink.cdc.connectors.tidb.source.schema.TiDBDatabaseSchema;
 import org.apache.flink.util.FlinkRuntimeException;
 
 import java.sql.SQLException;
@@ -41,5 +50,40 @@ public class TiDBConnectionUtils {
     }
 
     return variables;
+  }
+
+
+  //MysqlValueConverters
+  private static TiDBValueConverters getValueConverters(TiDBConnectorConfig dbzTiDBConfig) {
+    TemporalPrecisionMode timePrecisionMode = dbzTiDBConfig.getTemporalPrecisionMode();
+    JdbcValueConverters.DecimalMode decimalMode = dbzTiDBConfig.getDecimalMode();
+    String bigIntUnsignedHandlingModeStr =
+            dbzTiDBConfig
+                    .getConfig()
+                    .getString(MySqlConnectorConfig.BIGINT_UNSIGNED_HANDLING_MODE);
+    MySqlConnectorConfig.BigIntUnsignedHandlingMode bigIntUnsignedHandlingMode =
+            MySqlConnectorConfig.BigIntUnsignedHandlingMode.parse(
+                    bigIntUnsignedHandlingModeStr);
+    JdbcValueConverters.BigIntUnsignedMode bigIntUnsignedMode =
+            bigIntUnsignedHandlingMode.asBigIntUnsignedMode();
+
+    // dbzTiDBConfig.getConfig().getBoolean(TiDBConnectorConfig.ENABLE_TIME_ADJUSTER)
+    boolean timeAdjusterEnabled = false;
+    return new TiDBValueConverters(
+            decimalMode,
+            timePrecisionMode,
+            bigIntUnsignedMode,
+            dbzTiDBConfig.binaryHandlingMode(),
+            timeAdjusterEnabled ? TiDBValueConverters::adjustTemporal : x -> x,
+           TiDBValueConverters::defaultParsingErrorHandler);
+  }
+
+  public static TiDBDatabaseSchema createTiDBDatabaseSchema(
+          TiDBConnectorConfig dbzTiDBConfig, boolean isTableIdCaseSensitive) {
+    TopicSelector<TableId> topicSelector = TidbTopicSelector.defaultSelector(dbzTiDBConfig);
+    return new TiDBDatabaseSchema(
+            dbzTiDBConfig,
+            topicSelector,
+            isTableIdCaseSensitive);
   }
 }
