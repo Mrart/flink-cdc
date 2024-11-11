@@ -1,11 +1,13 @@
 package org.apache.flink.cdc.connectors.tidb.source.config;
 
 import io.debezium.config.Configuration;
+import io.debezium.config.Field;
 import io.debezium.connector.SourceInfoStructMaker;
 import io.debezium.relational.ColumnFilterMode;
 import io.debezium.relational.RelationalDatabaseConnectorConfig;
 import io.debezium.relational.TableId;
 import io.debezium.relational.Tables;
+import org.apache.kafka.common.config.ConfigDef;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -19,6 +21,23 @@ public class TiDBConnectorConfig extends RelationalDatabaseConnectorConfig {
             Collections.unmodifiableList(
                     Arrays.asList("information_schema", "mysql", "tidb", "LBACSYS", "ORAAUDITOR"));
     private final TiDBSourceConfig sourceConfig;
+
+    public static final Field READ_ONLY_CONNECTION = Field.create("read.only")
+            .withDisplayName("Read only connection")
+            .withType(ConfigDef.Type.BOOLEAN)
+            .withDefault(false)
+            .withWidth(ConfigDef.Width.SHORT)
+            .withImportance(ConfigDef.Importance.LOW)
+            .withDescription("Switched connector to use alternative methods to deliver signals to Debezium instead of writing to signaling table");
+
+
+    public String databaseName() {
+        return this.getConfig().getString(DATABASE_NAME);
+    }
+
+//    public boolean isReadOnlyConnection() {
+//        return readOnlyConnection;
+//    }
 
     public TiDBConnectorConfig(TiDBSourceConfig sourceConfig) {
         // todo

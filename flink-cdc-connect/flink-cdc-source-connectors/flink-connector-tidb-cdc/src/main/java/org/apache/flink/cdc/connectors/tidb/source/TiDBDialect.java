@@ -124,7 +124,10 @@ public class TiDBDialect implements JdbcDataSourceDialect {
 
   @Override
   public TableChanges.TableChange queryTableSchema(JdbcConnection jdbc, TableId tableId) {
-    return null;
+    if(tiDBSchema == null) {
+      tiDBSchema = new TiDBSchema((TiDBConnection) jdbc, sourceConfig);
+    }
+    return tiDBSchema.getTableSchema(tableId);
   }
 
   @Override

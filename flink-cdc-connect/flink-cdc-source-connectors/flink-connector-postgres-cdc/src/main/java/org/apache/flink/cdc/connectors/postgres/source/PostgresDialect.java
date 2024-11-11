@@ -79,6 +79,7 @@ public class PostgresDialect implements JdbcDataSourceDialect {
         PostgresSourceConfig postgresSourceConfig = (PostgresSourceConfig) sourceConfig;
         PostgresConnectorConfig dbzConfig = postgresSourceConfig.getDbzConnectorConfig();
 
+
         PostgresConnection.PostgresValueConverterBuilder valueConverterBuilder =
                 newPostgresValueConverterBuilder(dbzConfig);
         PostgresConnection jdbc =
