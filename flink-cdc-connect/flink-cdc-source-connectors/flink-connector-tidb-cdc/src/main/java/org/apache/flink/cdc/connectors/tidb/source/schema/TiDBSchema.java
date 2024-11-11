@@ -106,5 +106,6 @@ public class TiDBSchema {
             throw new FlinkRuntimeException(
                     String.format("Can't obtain schema for table %s by running %s", tableId, sql));
         }
+        return tableChangeMap.get(tableId);
     }
 }
