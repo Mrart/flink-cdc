@@ -11,8 +11,15 @@ import org.apache.flink.cdc.connectors.tidb.TiDBTestBase;
 import org.apache.flink.cdc.connectors.tidb.source.TiDBDialect;
 import org.apache.flink.cdc.connectors.tidb.source.config.TiDBSourceConfig;
 import org.apache.flink.cdc.connectors.tidb.source.config.TiDBSourceConfigFactory;
+import org.apache.flink.cdc.connectors.tidb.table.TiDBConnectorRegionITCase;
+import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
+import org.apache.flink.table.api.EnvironmentSettings;
+import org.apache.flink.table.api.bridge.java.StreamTableEnvironment;
+import org.junit.Before;
 import org.junit.jupiter.api.Test;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.apache.flink.table.planner.factories.TestValuesTableFactory;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -21,6 +28,20 @@ import java.util.stream.Collectors;
 
 
 public class ChunkSplitterTest extends TiDBTestBase {
+
+    private static final Logger LOG = LoggerFactory.getLogger(TiDBConnectorRegionITCase.class);
+    private final StreamExecutionEnvironment env =
+            StreamExecutionEnvironment.getExecutionEnvironment().setParallelism(1);
+    private final StreamTableEnvironment tEnv =
+            StreamTableEnvironment.create(
+                    env, EnvironmentSettings.newInstance().inStreamingMode().build());
+
+
+    @Before
+    public void before() {
+        TestValuesTableFactory.clearAllData();
+        env.setParallelism(1);
+    }
 
     @Test
     public void testChunkSplitter() throws Exception {

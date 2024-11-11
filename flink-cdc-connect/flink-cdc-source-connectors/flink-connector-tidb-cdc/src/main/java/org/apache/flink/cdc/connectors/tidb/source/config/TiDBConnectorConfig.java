@@ -56,6 +56,9 @@ public class TiDBConnectorConfig extends RelationalDatabaseConnectorConfig {
                         : ColumnFilterMode.SCHEMA);
         this.sourceConfig = sourceConfig;
     }
+    public String databaseName() {
+        return this.getConfig().getString(DATABASE_NAME);
+    }
 
     @Override
     public String getContextName() {

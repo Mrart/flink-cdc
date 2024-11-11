@@ -6,6 +6,7 @@ import io.debezium.relational.Column;
 import io.debezium.relational.Key;
 import io.debezium.relational.TableId;
 import io.debezium.schema.TopicSelector;
+import io.debezium.util.SchemaNameAdjuster;
 import org.apache.flink.cdc.connectors.tidb.source.config.TiDBConnectorConfig;
 import org.apache.flink.cdc.connectors.tidb.source.converter.TiDBValueConverters;
 import org.apache.flink.cdc.connectors.tidb.source.schema.TiDBDatabaseSchema;
@@ -173,12 +174,14 @@ public class TiDBUtils {
     return "`" + dbOrTableName + "`";
   }
 
+  public static String quote(TableId tableId) {
+    return tableId.toQuotedString('`');
+  }
+
   public static TiDBDatabaseSchema createTiDBDatabaseSchema(
           TiDBConnectorConfig dbzTiDBConfig, boolean isTableIdCaseSensitive) {
     TopicSelector<TableId> topicSelector = TidbTopicSelector.defaultSelector(dbzTiDBConfig);
-//        SchemaNameAdjuster schemaNameAdjuster = SchemaNameAdjuster.create();
     Key.KeyMapper customKeysMapper = new CustomeKeyMapper();
-//        TiDBValueConverters valueConverters = getValueConverters(dbzTiDBConfig);
     return new TiDBDatabaseSchema(
             dbzTiDBConfig,
             topicSelector,
@@ -186,9 +189,6 @@ public class TiDBUtils {
             customKeysMapper);
   }
 
-  private static TiDBValueConverters getValueConverters(TiDBConnectorConfig dbzTiDBConfig) {
-    return new TiDBValueConverters(dbzTiDBConfig);
-  }
 
   public static PreparedStatement readTableSplitDataStatement(
           JdbcConnection jdbc,
