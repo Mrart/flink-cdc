@@ -9,14 +9,16 @@ import org.tikv.kvproto.Cdcpb.Event.Row;
 public class RegionWorker {
 
   public RegionFeedEvent assembleRowEvent(long regionId, Row row) {
-    RegionFeedEvent.RawKVEntry rawKVEntry = new RegionFeedEvent.RawKVEntry();
-    rawKVEntry.setOpType(OpType.valueOf(row.getOpType().getNumber()));
-    rawKVEntry.setRegionId(regionId);
-    rawKVEntry.setKey(row.getKey());
-    rawKVEntry.setValue(row.getValue());
-    rawKVEntry.setStartTs(row.getStartTs());
-    rawKVEntry.setCrts(row.getCommitTs());
-    rawKVEntry.setOldValue(row.getOldValue());
+    RawKVEntry rawKVEntry =
+        new RawKVEntry.Builder()
+            .setOpType(OpType.valueOf(row.getOpType().getNumber()))
+            .setRegionId(regionId)
+            .setKey(row.getKey())
+            .setValue(row.getValue())
+            .setStartTs(row.getStartTs())
+            .setCrts(row.getCommitTs())
+            .setOldValue(row.getOldValue())
+            .build();
     RegionFeedEvent reEvent = new RegionFeedEvent();
     reEvent.setRegionId(regionId);
     reEvent.setRawKVEntry(rawKVEntry);

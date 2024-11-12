@@ -38,7 +38,6 @@ import org.tikv.kvproto.Kvrpcpb;
 import org.tikv.shade.io.grpc.ManagedChannel;
 import org.tikv.shade.io.grpc.stub.StreamObserver;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -53,10 +52,10 @@ import java.util.stream.Collectors;
  */
 public class RegionCDCClient implements AutoCloseable, StreamObserver<ChangeDataEvent> {
   private static final Logger LOGGER = LoggerFactory.getLogger(RegionCDCClient.class);
-  private static final AtomicLong REQ_ID_COUNTER = new AtomicLong(0);
   private static final Set<LogType> ALLOWED_LOGTYPE =
       ImmutableSet.of(LogType.PREWRITE, LogType.COMMIT, LogType.COMMITTED, LogType.ROLLBACK);
-
+  private AtomicLong currentRequestId = new AtomicLong(0);
+  private static final String TIKV_VERSION = "6.5.3";
   private TiRegion region;
   private final KeyRange keyRange;
   private final KeyRange regionKeyRange;
@@ -112,10 +111,11 @@ public class RegionCDCClient implements AutoCloseable, StreamObserver<ChangeData
     resolvedTs = startTs;
     running.set(true);
     LOGGER.info("start streaming region: {}, running: {}", region.getId(), running.get());
+    currentRequestId.set(RequestIDAllocator.allocateRequestID());
     final ChangeDataRequest request =
         ChangeDataRequest.newBuilder()
-            .setRequestId(REQ_ID_COUNTER.incrementAndGet())
-            .setHeader(Header.newBuilder().setTicdcVersion("6.5.0").build())
+            .setRequestId(currentRequestId.get())
+            .setHeader(Header.newBuilder().setTicdcVersion(TIKV_VERSION).build())
             .setRegionId(region.getId())
             .setCheckpointTs(startTs)
             .setStartKey(keyRange.getStart())
@@ -124,15 +124,6 @@ public class RegionCDCClient implements AutoCloseable, StreamObserver<ChangeData
             .setExtraOp(Kvrpcpb.ExtraOp.ReadOldValue)
             .build();
     final StreamObserver<ChangeDataRequest> requestObserver = asyncStub.eventFeed(this);
-    HashMap<String, Object> params = new HashMap<>();
-    params.put("requestId", request.getRequestId());
-    params.put("header", request.getHeader());
-    params.put("regionId", request.getRegionId());
-    params.put("checkpointTs", request.getCheckpointTs());
-    params.put("startKey", request.getStartKey().toString());
-    params.put("endKey", request.getEndKey().toString());
-    params.put("regionEpoch", request.getRegionEpoch());
-    params.put("extraOp", request.getExtraOp());
     requestObserver.onNext(request);
   }
 
@@ -248,6 +239,10 @@ public class RegionCDCClient implements AutoCloseable, StreamObserver<ChangeData
               "RegionCDC on error event handle:" + errorEvents.get(0).getError().toString()),
           this.resolvedTs);
     }
+  }
+
+  public long getCurrentRequestId() {
+    return currentRequestId.get();
   }
 
   private void submitEvent(final CDCEvent event) {
