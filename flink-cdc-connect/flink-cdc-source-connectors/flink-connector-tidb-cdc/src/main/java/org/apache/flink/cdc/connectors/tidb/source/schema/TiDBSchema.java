@@ -79,7 +79,6 @@ public class TiDBSchema {
                             MySqlOffsetContext offsetContext = MySqlOffsetContext.initial(connectorConfig);
                             final TiDBPartition partition =
                                     new TiDBPartition(connectorConfig.getLogicalName());
-
                             List<SchemaChangeEvent> schemaChangeEvents =
                                     databaseSchema.parseSnapshotDdl(
                                             partition,

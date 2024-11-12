@@ -1,9 +1,14 @@
 package org.apache.flink.cdc.connectors.tidb.source.config;
 
+import io.debezium.config.CommonConnectorConfig;
 import io.debezium.config.Configuration;
 import io.debezium.config.Field;
 import io.debezium.connector.SourceInfoStructMaker;
+import io.debezium.connector.mysql.MySqlConnector;
 import io.debezium.connector.mysql.MySqlConnectorConfig;
+import io.debezium.relational.ColumnFilterMode;
+import io.debezium.relational.RelationalDatabaseConnectorConfig;
+import io.debezium.relational.Tables;
 import org.apache.kafka.common.config.ConfigDef;
 
 import java.util.Arrays;
@@ -17,7 +22,6 @@ public class TiDBConnectorConfig extends MySqlConnectorConfig {
     protected static final List<String> BUILT_IN_DB_NAMES =
             Collections.unmodifiableList(
                     Arrays.asList("information_schema", "mysql", "tidb", "LBACSYS", "ORAAUDITOR"));
-    private final TiDBSourceConfig sourceConfig;
 
     public static final Field READ_ONLY_CONNECTION = Field.create("read.only")
             .withDisplayName("Read only connection")
@@ -27,11 +31,10 @@ public class TiDBConnectorConfig extends MySqlConnectorConfig {
             .withImportance(ConfigDef.Importance.LOW)
             .withDescription("Switched connector to use alternative methods to deliver signals to Debezium instead of writing to signaling table");
 
-    public TiDBConnectorConfig(TiDBSourceConfig sourceConfig) {
+    public TiDBConnectorConfig(Configuration config) {
         super(
-                Configuration.from(sourceConfig.getDbzProperties())
+                config
         );
-        this.sourceConfig = sourceConfig;
     }
 
 //    public TiDBConnectorConfigTest(TiDBSourceConfig sourceConfig) {
@@ -65,5 +68,9 @@ public class TiDBConnectorConfig extends MySqlConnectorConfig {
     protected SourceInfoStructMaker<?> getSourceInfoStructMaker(Version version) {
         return null;
     }
+
+    public static final Field SERVER_NAME = RelationalDatabaseConnectorConfig.SERVER_NAME
+            .withValidation(CommonConnectorConfig::validateServerNameIsDifferentFromHistoryTopicName);
+
 }
 
