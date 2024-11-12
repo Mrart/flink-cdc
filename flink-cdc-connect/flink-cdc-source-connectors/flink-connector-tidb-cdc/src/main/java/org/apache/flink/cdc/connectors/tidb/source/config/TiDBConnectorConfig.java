@@ -8,6 +8,7 @@ import io.debezium.connector.mysql.MySqlConnector;
 import io.debezium.connector.mysql.MySqlConnectorConfig;
 import io.debezium.relational.ColumnFilterMode;
 import io.debezium.relational.RelationalDatabaseConnectorConfig;
+import io.debezium.relational.RelationalTableFilters;
 import io.debezium.relational.Tables;
 import org.apache.flink.cdc.connectors.tidb.source.offset.TiDBSourceInfoStructMaker;
 import org.apache.kafka.common.config.ConfigDef;
@@ -47,6 +48,11 @@ public class TiDBConnectorConfig extends MySqlConnectorConfig {
     public String getConnectorName() {
         return "TiDB";
     }
+
+    public String databaseName() {
+        return getConfig().getString(DATABASE_NAME);
+    }
+
 
     @Override
     protected SourceInfoStructMaker<?> getSourceInfoStructMaker(Version version) {

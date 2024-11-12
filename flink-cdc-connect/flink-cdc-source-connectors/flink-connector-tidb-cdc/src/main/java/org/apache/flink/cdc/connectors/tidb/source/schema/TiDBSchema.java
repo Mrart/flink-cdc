@@ -5,7 +5,9 @@ import io.debezium.connector.tidb.TiDBPartition;
 import io.debezium.connector.tidb.TidbTopicSelector;
 import io.debezium.jdbc.JdbcConnection;
 import io.debezium.relational.Key;
+import io.debezium.relational.Table;
 import io.debezium.relational.TableId;
+import io.debezium.relational.Tables;
 import io.debezium.relational.history.TableChanges;
 import io.debezium.relational.history.TableChanges.TableChange;
 import io.debezium.schema.SchemaChangeEvent;
@@ -30,9 +32,9 @@ public class TiDBSchema {
     private final TiDBDatabaseSchema databaseSchema;
     private final Map<TableId, TableChange> schemasByTableId;
 
-//    public TiDBSchema(Map<TableId, TableChanges.TableChange> schemasByTableId) {
-//        this.schemasByTableId = schemasByTableId;
-//    }
+    //    public TiDBSchema(Map<TableId, TableChanges.TableChange> schemasByTableId) {
+    //        this.schemasByTableId = schemasByTableId;
+    //    }
 
 
     public TiDBSchema(TiDBSourceConfig sourceConfig, boolean isTableIdCaseSensitive) {
@@ -66,44 +68,85 @@ public class TiDBSchema {
                 customKeysMapper);
     }
 
-
     private TableChange readTableSchema(JdbcConnection jdbc, TableId tableId){
-        final Map<TableId, TableChanges.TableChange> tableChangeMap = new HashMap<>();
-        final String sql = "SHOW CREATE TABLE " + TiDBUtils.quote(tableId);
-        try {
-            jdbc.query(
-                    sql,
-                    rs -> {
-                        if (rs.next()) {
-                            final String ddl = rs.getString(2);
-                            MySqlOffsetContext offsetContext = MySqlOffsetContext.initial(connectorConfig);
-                            final TiDBPartition partition =
-                                    new TiDBPartition(connectorConfig.getLogicalName());
-                            List<SchemaChangeEvent> schemaChangeEvents =
-                                    databaseSchema.parseSnapshotDdl(
-                                            partition,
-                                            ddl,
-                                            tableId.catalog(),
-                                            offsetContext,
-                                            Instant.now());
-                            for (SchemaChangeEvent schemaChangeEvent : schemaChangeEvents) {
-                                for (TableChanges.TableChange tableChange :
-                                        schemaChangeEvent.getTableChanges()) {
-                                    tableChangeMap.put(tableId, tableChange);
-                                }
-                            }
+//        final Map<TableId, TableChanges.TableChange> tableChangeMap = new HashMap<>();
+        MySqlOffsetContext offsetContext = MySqlOffsetContext.initial(connectorConfig);
+        final TiDBPartition partition =
+                new TiDBPartition(connectorConfig.getLogicalName());
+//        final String sql = "SHOW CREATE TABLE " + TiDBUtils.quote(tableId);
 
-                        }
-                    });
+        offsetContext.event(tableId, Instant.now());
+        Tables tables = new Tables();
+
+        try {
+            jdbc.readSchema(
+                    tables,
+                    connectorConfig.databaseName(),
+                    tableId.schema(),
+                    connectorConfig.getTableFilters().dataCollectionFilter(),
+                    null,
+                    false);
         } catch (SQLException e) {
-            throw new FlinkRuntimeException(
-                    String.format("Failed to read schema for table %s by running %s", tableId, sql),
-                    e);
+            throw new FlinkRuntimeException("Failed to read schema", e);
         }
-        if (!tableChangeMap.containsKey(tableId)) {
-            throw new FlinkRuntimeException(
-                    String.format("Can't obtain schema for table %s by running %s", tableId, sql));
+        Table table = Objects.requireNonNull(tables.forTable(tableId));
+
+        // TODO: check whether we always set isFromSnapshot = true
+        SchemaChangeEvent schemaChangeEvent =
+                SchemaChangeEvent.ofCreate(
+                        partition,
+                        offsetContext,
+                        connectorConfig.databaseName(),
+                        tableId.schema(),
+                        null,
+                        table,
+                        true);
+
+        for (TableChanges.TableChange tableChange : schemaChangeEvent.getTableChanges()) {
+            this.schemasByTableId.put(tableId, tableChange);
         }
-        return tableChangeMap.get(tableId);
+
+        return this.schemasByTableId.get(tableId);
     }
+
+
+//    private TableChange readTableSchema(JdbcConnection jdbc, TableId tableId){
+//        final Map<TableId, TableChanges.TableChange> tableChangeMap = new HashMap<>();
+//        final String sql = "SHOW CREATE TABLE " + TiDBUtils.quote(tableId);
+//        try {
+//            jdbc.query(
+//                    sql,
+//                    rs -> {
+//                        if (rs.next()) {
+//                            final String ddl = rs.getString(2);
+//                            MySqlOffsetContext offsetContext = MySqlOffsetContext.initial(connectorConfig);
+//                            final TiDBPartition partition =
+//                                    new TiDBPartition(connectorConfig.getLogicalName());
+//                            List<SchemaChangeEvent> schemaChangeEvents =
+//                                    databaseSchema.parseSnapshotDdl(
+//                                            partition,
+//                                            ddl,
+//                                            tableId.catalog(),
+//                                            offsetContext,
+//                                            Instant.now());
+//                            for (SchemaChangeEvent schemaChangeEvent : schemaChangeEvents) {
+//                                for (TableChanges.TableChange tableChange :
+//                                        schemaChangeEvent.getTableChanges()) {
+//                                    tableChangeMap.put(tableId, tableChange);
+//                                }
+//                            }
+//
+//                        }
+//                    });
+//        } catch (SQLException e) {
+//            throw new FlinkRuntimeException(
+//                    String.format("Failed to read schema for table %s by running %s", tableId, sql),
+//                    e);
+//        }
+//        if (!tableChangeMap.containsKey(tableId)) {
+//            throw new FlinkRuntimeException(
+//                    String.format("Can't obtain schema for table %s by running %s", tableId, sql));
+//        }
+//        return tableChangeMap.get(tableId);
+//    }
 }
