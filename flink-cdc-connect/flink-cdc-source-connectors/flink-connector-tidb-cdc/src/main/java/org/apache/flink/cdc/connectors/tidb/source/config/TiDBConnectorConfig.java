@@ -9,6 +9,7 @@ import io.debezium.connector.mysql.MySqlConnectorConfig;
 import io.debezium.relational.ColumnFilterMode;
 import io.debezium.relational.RelationalDatabaseConnectorConfig;
 import io.debezium.relational.Tables;
+import org.apache.flink.cdc.connectors.tidb.source.offset.TiDBSourceInfoStructMaker;
 import org.apache.kafka.common.config.ConfigDef;
 
 import java.util.Arrays;
@@ -37,23 +38,6 @@ public class TiDBConnectorConfig extends MySqlConnectorConfig {
         );
     }
 
-//    public TiDBConnectorConfigTest(TiDBSourceConfig sourceConfig) {
-//        super(
-//                Configuration.from(sourceConfig.getDbzProperties()),
-//                LOGICAL_NAME,
-//                Tables.TableFilter.fromPredicate(
-//                        tableId ->
-//                                "mysql".equalsIgnoreCase(sourceConfig.getCompatibleMode())
-//                                        ? !BUILT_IN_DB_NAMES.contains(tableId.catalog())
-//                                        : !BUILT_IN_DB_NAMES.contains(tableId.schema())),
-//                TableId::identifier,
-//                DEFAULT_SNAPSHOT_FETCH_SIZE,
-//                "mysql".equalsIgnoreCase(sourceConfig.getCompatibleMode())
-//                        ? ColumnFilterMode.CATALOG
-//                        : ColumnFilterMode.SCHEMA);
-//        this.sourceConfig = sourceConfig;
-//    }
-
     @Override
     public String getContextName() {
         return "TiDB";
@@ -66,7 +50,7 @@ public class TiDBConnectorConfig extends MySqlConnectorConfig {
 
     @Override
     protected SourceInfoStructMaker<?> getSourceInfoStructMaker(Version version) {
-        return null;
+        return new TiDBSourceInfoStructMaker();
     }
 
     public static final Field SERVER_NAME = RelationalDatabaseConnectorConfig.SERVER_NAME
