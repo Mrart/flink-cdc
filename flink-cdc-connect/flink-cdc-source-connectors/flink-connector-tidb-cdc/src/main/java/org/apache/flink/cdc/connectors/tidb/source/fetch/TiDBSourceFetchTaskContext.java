@@ -65,8 +65,22 @@ public class TiDBSourceFetchTaskContext extends JdbcSourceFetchTaskContext {
             connectorConfig,
             (tableId, prefix, delimiter) -> String.join(delimiter, prefix, tableId.identifier()));
    this.tiDBDatabaseSchema=TiDBUtils.createTiDBDatabaseSchema(connectorConfig, tableIdCaseInsensitive);
-   this.tiDBPartition=new TiDBPartition(connectorConfig.getLogicalName());
-   this.tidbTaskContext=new TidbTaskContext(connectorConfig,tiDBDatabaseSchema);
+   this.tiDBPartition= new TiDBPartition(connectorConfig.getLogicalName());
+   this.tidbTaskContext= new TidbTaskContext(connectorConfig,tiDBDatabaseSchema);
+
+    this.queue =
+            new ChangeEventQueue.Builder<DataChangeEvent>()
+                    .pollInterval(connectorConfig.getPollInterval())
+                    .maxBatchSize(connectorConfig.getMaxBatchSize())
+                    .maxQueueSize(connectorConfig.getMaxQueueSize())
+                    .maxQueueSizeInBytes(connectorConfig.getMaxQueueSizeInBytes())
+//                    .loggingContextSupplier(
+//                            () ->
+//                                    offsetContext.configureLoggingContext(
+//                                            "postgres-cdc-connector-task"))
+                    // do not buffer any element, we use signal event
+                    // .buffering()
+                    .build();
   }
 
   public TiDBConnection getConnection() {
@@ -74,7 +88,7 @@ public class TiDBSourceFetchTaskContext extends JdbcSourceFetchTaskContext {
   }
   @Override
   public ChangeEventQueue<DataChangeEvent> getQueue() {
-    return null;
+    return queue;
   }
 
   @Override

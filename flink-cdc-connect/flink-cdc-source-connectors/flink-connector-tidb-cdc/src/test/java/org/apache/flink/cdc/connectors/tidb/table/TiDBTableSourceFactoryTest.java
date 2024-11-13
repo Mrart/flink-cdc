@@ -17,6 +17,7 @@
 
 package org.apache.flink.cdc.connectors.tidb.table;
 
+import org.apache.flink.cdc.connectors.base.options.StartupOptions;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.table.api.DataTypes;
 import org.apache.flink.table.api.Schema;
@@ -27,15 +28,14 @@ import org.apache.flink.table.catalog.ResolvedCatalogTable;
 import org.apache.flink.table.catalog.ResolvedSchema;
 import org.apache.flink.table.catalog.UniqueConstraint;
 import org.apache.flink.table.connector.source.DynamicTableSource;
+import org.apache.flink.cdc.connectors.base.options.SourceOptions;
 import org.apache.flink.table.factories.FactoryUtil;
-
+import static org.apache.flink.cdc.connectors.tidb.source.config.TiDBSourceOptions.*;
 import org.junit.Test;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+import java.time.Duration;
+import java.time.ZoneId;
+import java.util.*;
 
 import static org.junit.Assert.assertEquals;
 
@@ -70,40 +70,66 @@ public class TiDBTableSourceFactoryTest {
     private static final String MY_HOSTNAME = "tidb0:4000";
     private static final String MY_DATABASE = "inventory";
     private static final String MY_TABLE = "products";
+    private static final String MY_USERNAME = "root";
+    private static final String MY_PASSWORD = "";
     private static final String PD_ADDRESS = "pd0:2379";
     private static final String HOST_MAPPING = "host1:1;host2:2;host3:3";
     private static final Map<String, String> OPTIONS = new HashMap<>();
-
+    private static final Properties PROPERTIES = new Properties();
     @Test
     public void testCommonProperties() {
         Map<String, String> properties = getAllOptions();
 
         // validation for source
         DynamicTableSource actualSource = createTableSource(properties);
-//        TiDBTableSource expectedSource =
-//                new TiDBTableSource(
-//                        SCHEMA,
-//                        MY_DATABASE,
-//                        MY_TABLE,
-//                        PD_ADDRESS,
-//                        HOST_MAPPING,
-//                        StartupOptions.latest(),
-//                        OPTIONS);
-//        assertEquals(expectedSource, actualSource);
+        System.out.println(actualSource.asSummaryString());
+        TiDBTableSource expectedSource =
+                new TiDBTableSource(
+                        SCHEMA,
+                        4000,
+                        MY_HOSTNAME,
+                        MY_DATABASE,
+                        MY_TABLE,
+                        null,
+                        MY_USERNAME,
+                        MY_PASSWORD,
+                        ZoneId.of("UTC").toString(),
+                        PROPERTIES,
+                        HEARTBEAT_INTERVAL.defaultValue(),
+                       PD_ADDRESS,
+                        HOST_MAPPING,
+                        CONNECT_TIMEOUT.defaultValue(),
+                        OPTIONS,
+                        SCAN_INCREMENTAL_SNAPSHOT_CHUNK_SIZE.defaultValue(),
+                        CHUNK_META_GROUP_SIZE.defaultValue(),
+                        SCAN_SNAPSHOT_FETCH_SIZE.defaultValue(),
+                        CONNECT_MAX_RETRIES.defaultValue(),
+                        CONNECTION_POOL_SIZE.defaultValue(),
+                        SPLIT_KEY_EVEN_DISTRIBUTION_FACTOR_UPPER_BOUND.defaultValue(),
+                        SPLIT_KEY_EVEN_DISTRIBUTION_FACTOR_LOWER_BOUND.defaultValue(),
+                        null,
+                        JDBC_DRIVER.defaultValue(),
+                        StartupOptions.initial());
+        assertEquals(expectedSource, actualSource);
     }
+
+
 
     @Test
     public void testOptionalProperties() {
         Map<String, String> properties = getAllOptions();
-        properties.put("host-mapping", "host1:1;host2:2;host3:3");
-        properties.put("tikv.grpc.timeout_in_ms", "20000");
-        properties.put("tikv.grpc.scan_timeout_in_ms", "20000");
-        properties.put("tikv.batch_get_concurrency", "4");
-        properties.put("tikv.batch_put_concurrency", "4");
-        properties.put("tikv.batch_scan_concurrency", "4");
-        properties.put("tikv.batch_delete_concurrency", "4");
+        properties.put("port","4111");
+        properties.put("scan.startup.mode","latest-offset");
+        properties.put("heartbeat.interval", "15213ms");
+        properties.put("server-time-zone", "Asia/Shanghai");
 
-        // validation for source
+
+        Properties dbzProperties = new Properties();
+        dbzProperties.put("snapshot.mode", "never");
+        dbzProperties.put("offset.flush.interval.ms", "3000");
+        dbzProperties.put("tombstones.on.delete", "true");
+        dbzProperties.put("test", "test");
+
         DynamicTableSource actualSource = createTableSource(properties);
         Map<String, String> options = new HashMap<>();
         options.put("tikv.grpc.timeout_in_ms", "20000");
@@ -112,16 +138,34 @@ public class TiDBTableSourceFactoryTest {
         options.put("tikv.batch_put_concurrency", "4");
         options.put("tikv.batch_scan_concurrency", "4");
         options.put("tikv.batch_delete_concurrency", "4");
-//        TiDBTableSource expectedSource =
-//                new TiDBTableSource(
-//                        SCHEMA,
-//                        MY_DATABASE,
-//                        MY_TABLE,
-//                        PD_ADDRESS,
-//                        HOST_MAPPING,
-//                        StartupOptions.latest(),
-//                        options);
-//        assertEquals(expectedSource, actualSource);
+        TiDBTableSource expectedSource =
+                new TiDBTableSource(
+                        SCHEMA,
+                        4111,
+                        MY_HOSTNAME,
+                        MY_DATABASE,
+                        MY_TABLE,
+                        null,
+                        MY_USERNAME,
+                        MY_PASSWORD,
+                        ZoneId.of("UTC").toString(),
+                        dbzProperties,
+                        Duration.ofMillis(15213),
+                        PD_ADDRESS,
+                        HOST_MAPPING,
+                        CONNECT_TIMEOUT.defaultValue(),
+                        OPTIONS,
+                        SCAN_INCREMENTAL_SNAPSHOT_CHUNK_SIZE.defaultValue(),
+                        CHUNK_META_GROUP_SIZE.defaultValue(),
+                        SCAN_SNAPSHOT_FETCH_SIZE.defaultValue(),
+                        CONNECT_MAX_RETRIES.defaultValue(),
+                        CONNECTION_POOL_SIZE.defaultValue(),
+                        SPLIT_KEY_EVEN_DISTRIBUTION_FACTOR_UPPER_BOUND.defaultValue(),
+                        SPLIT_KEY_EVEN_DISTRIBUTION_FACTOR_LOWER_BOUND.defaultValue(),
+                        null,
+                        JDBC_DRIVER.defaultValue(),
+                        StartupOptions.initial());
+        assertEquals(expectedSource, actualSource);
     }
 
     private Map<String, String> getAllOptions() {
@@ -131,7 +175,10 @@ public class TiDBTableSourceFactoryTest {
         options.put("database-name", MY_DATABASE);
         options.put("table-name", MY_TABLE);
         options.put("pd-addresses", PD_ADDRESS);
-        options.put("scan.startup.mode", "latest-offset");
+        options.put("username",MY_USERNAME);
+        options.put("password",MY_PASSWORD);
+        options.put("host-mapping",HOST_MAPPING);
+        options.put("scan.startup.mode", "initial");
         return options;
     }
 

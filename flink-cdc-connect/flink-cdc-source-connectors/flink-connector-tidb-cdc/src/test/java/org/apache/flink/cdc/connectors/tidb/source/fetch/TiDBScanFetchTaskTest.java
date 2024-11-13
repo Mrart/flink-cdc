@@ -14,9 +14,11 @@ import org.apache.flink.cdc.connectors.base.source.utils.hooks.SnapshotPhaseHook
 import org.apache.flink.cdc.connectors.base.source.utils.hooks.SnapshotPhaseHooks;
 import org.apache.flink.cdc.connectors.tidb.TiDBTestBase;
 import org.apache.flink.cdc.connectors.tidb.source.TiDBDialect;
+import org.apache.flink.cdc.connectors.tidb.source.config.TiDBConnectorConfig;
 import org.apache.flink.cdc.connectors.tidb.source.config.TiDBSourceConfig;
 import org.apache.flink.cdc.connectors.tidb.source.config.TiDBSourceConfigFactory;
 import org.apache.flink.cdc.connectors.tidb.source.connection.TiDBConnection;
+import org.apache.flink.cdc.connectors.tidb.source.connection.TiDBConnectionPoolFactory;
 import org.apache.flink.cdc.connectors.tidb.testutils.RecordsFormatter;
 import org.apache.flink.table.api.DataTypes;
 import org.apache.flink.table.types.DataType;
@@ -196,6 +198,29 @@ public class TiDBScanFetchTaskTest extends TiDBTestBase {
         assertTrue(expected != null && actual != null);
         assertEquals(expected.size(), actual.size());
         assertArrayEquals(expected.toArray(new String[0]), actual.toArray(new String[0]));
+    }
+
+    protected TiDBSourceConfigFactory getMockTiDBSourceConfigFactory(
+            String hostName,
+            int port,
+             String userName,
+            String password,
+            String databaseName,
+            String schemaName,
+            String tableName,
+            int splitSize,
+            boolean skipSnapshotBackfill) {
+
+        TiDBSourceConfigFactory tiDBSourceConfigFactory = new TiDBSourceConfigFactory();
+        tiDBSourceConfigFactory.hostname(hostName);
+        tiDBSourceConfigFactory.port(port);
+        tiDBSourceConfigFactory.username(userName);
+        tiDBSourceConfigFactory.password(password);
+        tiDBSourceConfigFactory.databaseList(databaseName);
+        tiDBSourceConfigFactory.tableList(schemaName + "." + tableName);
+        tiDBSourceConfigFactory.splitSize(splitSize);
+        tiDBSourceConfigFactory.skipSnapshotBackfill(skipSnapshotBackfill);
+        return tiDBSourceConfigFactory;
     }
 
 }
