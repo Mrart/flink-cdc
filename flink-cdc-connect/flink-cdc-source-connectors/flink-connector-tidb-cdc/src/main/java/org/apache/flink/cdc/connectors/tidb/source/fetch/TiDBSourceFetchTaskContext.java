@@ -77,10 +77,10 @@ public class TiDBSourceFetchTaskContext extends JdbcSourceFetchTaskContext {
                     .maxBatchSize(connectorConfig.getMaxBatchSize())
                     .maxQueueSize(connectorConfig.getMaxQueueSize())
                     .maxQueueSizeInBytes(connectorConfig.getMaxQueueSizeInBytes())
-//                    .loggingContextSupplier(
-//                            () ->
-//                                    offsetContext.configureLoggingContext(
-//                                            "postgres-cdc-connector-task"))
+                    .loggingContextSupplier(
+                            () ->
+                                    tidbTaskContext.configureLoggingContext(
+                                            "tidb-cdc-connector-task"))
                     // do not buffer any element, we use signal event
                     // .buffering()
                     .build();
@@ -96,9 +96,6 @@ public class TiDBSourceFetchTaskContext extends JdbcSourceFetchTaskContext {
                     metadataProvider,
                     schemaNameAdjuster,
                     new TiDBSchemaChangeEventHandler());
-
-
-
   }
 
   public TiDBConnection getConnection() {
@@ -139,7 +136,7 @@ public class TiDBSourceFetchTaskContext extends JdbcSourceFetchTaskContext {
 
   @Override
   public JdbcSourceEventDispatcher getDispatcher() {
-    return null;
+    return dispatcher;
   }
 
   @Override
