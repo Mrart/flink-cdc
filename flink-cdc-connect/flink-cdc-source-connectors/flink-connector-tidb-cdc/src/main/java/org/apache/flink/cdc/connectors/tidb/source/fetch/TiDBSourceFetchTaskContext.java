@@ -3,6 +3,7 @@ package org.apache.flink.cdc.connectors.tidb.source.fetch;
 import io.debezium.connector.base.ChangeEventQueue;
 import io.debezium.connector.tidb.TiDBPartition;
 import io.debezium.connector.tidb.TidbTaskContext;
+import io.debezium.connector.tidb.connection.TiDBEventMetadataProvider;
 import io.debezium.pipeline.DataChangeEvent;
 import io.debezium.pipeline.ErrorHandler;
 import io.debezium.pipeline.metrics.SnapshotChangeEventSourceMetrics;
@@ -53,6 +54,7 @@ public class TiDBSourceFetchTaskContext extends JdbcSourceFetchTaskContext {
           TiDBConnection connection) {
     super(sourceConfig, dataSourceDialect);
     this.connection = connection;
+    this.metadataProvider = new TiDBEventMetadataProvider();
     this.tiDBDatabaseSchema = tiDBDatabaseSchema;
   }
 
