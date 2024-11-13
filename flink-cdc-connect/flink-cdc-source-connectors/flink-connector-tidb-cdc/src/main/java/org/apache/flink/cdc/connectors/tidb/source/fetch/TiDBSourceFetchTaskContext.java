@@ -19,6 +19,7 @@ import org.apache.flink.cdc.connectors.base.source.meta.split.SourceSplitBase;
 import org.apache.flink.cdc.connectors.base.source.reader.external.JdbcSourceFetchTaskContext;
 import org.apache.flink.cdc.connectors.tidb.source.config.TiDBConnectorConfig;
 import org.apache.flink.cdc.connectors.tidb.source.connection.TiDBConnection;
+import org.apache.flink.cdc.connectors.tidb.source.handler.TiDBSchemaChangeEventHandler;
 import org.apache.flink.cdc.connectors.tidb.source.offset.CDCEventOffsetContext;
 import org.apache.flink.cdc.connectors.tidb.source.schema.TiDBDatabaseSchema;
 import org.apache.flink.cdc.connectors.tidb.utils.TiDBUtils;
@@ -81,6 +82,21 @@ public class TiDBSourceFetchTaskContext extends JdbcSourceFetchTaskContext {
                     // do not buffer any element, we use signal event
                     // .buffering()
                     .build();
+
+    this.dispatcher =
+            new JdbcSourceEventDispatcher<>(
+                    connectorConfig,
+                    topicSelector,
+                    tiDBDatabaseSchema,
+                    queue,
+                    connectorConfig.getTableFilters().dataCollectionFilter(),
+                    DataChangeEvent::new,
+                    metadataProvider,
+                    schemaNameAdjuster,
+                    new TiDBSchemaChangeEventHandler());
+
+
+
   }
 
   public TiDBConnection getConnection() {
