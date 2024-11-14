@@ -126,7 +126,7 @@ public class IncrementalSourceScanFetcher implements Fetcher<SourceRecords, Sour
             Map<Struct, SourceRecord> outputBuffer = new HashMap<>();
             while (!reachChangeLogEnd) {
                 checkReadException();
-                List<DataChangeEvent> batch = queue.poll();
+                List<DataChangeEvent> batch = queue.poll(); // 当前切片的所有记录 切片范围是对的，切片参数也有，但是queue是空的
                 for (DataChangeEvent event : batch) {
                     SourceRecord record = event.getRecord();
                     if (lowWatermark == null) {

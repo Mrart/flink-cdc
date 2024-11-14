@@ -21,6 +21,7 @@ import org.apache.flink.cdc.connectors.tidb.source.schema.TiDBSchema;
 import org.apache.flink.cdc.connectors.tidb.source.splitter.TiDBChunkSplitter;
 import org.apache.flink.cdc.connectors.tidb.utils.TableDiscoveryUtils;
 import org.apache.flink.cdc.connectors.tidb.utils.TiDBConnectionUtils;
+import org.apache.flink.cdc.connectors.tidb.utils.TiDBUtils;
 import org.apache.flink.util.FlinkRuntimeException;
 
 import java.sql.SQLException;
@@ -50,8 +51,11 @@ public class TiDBDialect implements JdbcDataSourceDialect {
 
   @Override
   public Offset displayCurrentOffset(JdbcSourceConfig sourceConfig) {
-    return null;
-  }
+    try (JdbcConnection jdbcConnection = openJdbcConnection(sourceConfig)) {
+      return TiDBUtils.currentBinlogOffset(jdbcConnection);
+    } catch (Exception e) {
+      throw new FlinkRuntimeException("Read the binlog offset error", e);
+    }  }
 
   @Override
   public boolean isDataCollectionIdCaseSensitive(JdbcSourceConfig sourceConfig) {
