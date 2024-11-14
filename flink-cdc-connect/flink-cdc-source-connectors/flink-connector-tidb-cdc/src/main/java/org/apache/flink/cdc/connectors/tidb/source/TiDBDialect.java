@@ -51,11 +51,13 @@ public class TiDBDialect implements JdbcDataSourceDialect {
 
   @Override
   public Offset displayCurrentOffset(JdbcSourceConfig sourceConfig) {
-    try (JdbcConnection jdbcConnection = openJdbcConnection(sourceConfig)) {
-      return TiDBUtils.currentBinlogOffset(jdbcConnection);
-    } catch (Exception e) {
-      throw new FlinkRuntimeException("Read the binlog offset error", e);
-    }  }
+//    try (JdbcConnection jdbcConnection = openJdbcConnection(sourceConfig)) {
+//      return TiDBUtils.currentBinlogOffset(jdbcConnection);
+//    } catch (Exception e) {
+//      throw new FlinkRuntimeException("Read the binlog offset error", e);
+//    }
+    return null;
+  }
 
   @Override
   public boolean isDataCollectionIdCaseSensitive(JdbcSourceConfig sourceConfig) {

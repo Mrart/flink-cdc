@@ -84,13 +84,6 @@ limitations under the License.
         <!-- test dependencies on Debezium -->
 
         <dependency>
-            <groupId>org.apache.flink</groupId>
-            <artifactId>flink-connector-test-util</artifactId>
-            <version>${project.version}</version>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
             <groupId>io.debezium</groupId>
             <artifactId>debezium-core</artifactId>
             <version>${debezium.version}</version>
@@ -194,6 +187,12 @@ limitations under the License.
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
             <version>${commons-lang3.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.flink</groupId>
+            <artifactId>flink-connector-test-util</artifactId>
+            <version>3.3-SNAPSHOT</version>
+            <scope>test</scope>
         </dependency>
 
     </dependencies>
