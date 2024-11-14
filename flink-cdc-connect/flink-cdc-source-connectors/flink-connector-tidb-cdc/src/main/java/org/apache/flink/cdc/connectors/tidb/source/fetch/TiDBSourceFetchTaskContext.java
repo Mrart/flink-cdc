@@ -1,6 +1,7 @@
 package org.apache.flink.cdc.connectors.tidb.source.fetch;
 
 import io.debezium.connector.base.ChangeEventQueue;
+import io.debezium.connector.mysql.MySqlOffsetContext;
 import io.debezium.connector.tidb.TiDBPartition;
 import io.debezium.connector.tidb.TidbTaskContext;
 import io.debezium.connector.tidb.connection.TiDBEventMetadataProvider;
@@ -8,6 +9,7 @@ import io.debezium.pipeline.DataChangeEvent;
 import io.debezium.pipeline.ErrorHandler;
 import io.debezium.pipeline.metrics.SnapshotChangeEventSourceMetrics;
 import io.debezium.pipeline.source.spi.EventMetadataProvider;
+import io.debezium.pipeline.spi.OffsetContext;
 import io.debezium.relational.Table;
 import io.debezium.relational.TableId;
 import io.debezium.relational.Tables;
@@ -21,6 +23,7 @@ import org.apache.flink.cdc.connectors.base.source.reader.external.JdbcSourceFet
 import org.apache.flink.cdc.connectors.tidb.source.config.TiDBConnectorConfig;
 import org.apache.flink.cdc.connectors.tidb.source.connection.TiDBConnection;
 import org.apache.flink.cdc.connectors.tidb.source.handler.TiDBSchemaChangeEventHandler;
+import org.apache.flink.cdc.connectors.tidb.source.offset.BinlogOffset;
 import org.apache.flink.cdc.connectors.tidb.source.offset.CDCEventOffsetContext;
 import org.apache.flink.cdc.connectors.tidb.source.schema.TiDBDatabaseSchema;
 import org.apache.flink.cdc.connectors.tidb.utils.TiDBUtils;
@@ -38,7 +41,6 @@ public class TiDBSourceFetchTaskContext extends JdbcSourceFetchTaskContext {
   private final TiDBConnection connection;
   private TiDBDatabaseSchema tiDBDatabaseSchema;
   private CDCEventOffsetContext offsetContext;
-
   private SnapshotChangeEventSourceMetrics<TiDBPartition> snapshotChangeEventSourceMetrics;
   private TopicSelector<TableId> topicSelector;
   private JdbcSourceEventDispatcher<TiDBPartition> dispatcher;
@@ -71,6 +73,10 @@ public class TiDBSourceFetchTaskContext extends JdbcSourceFetchTaskContext {
    this.tiDBDatabaseSchema=TiDBUtils.createTiDBDatabaseSchema(connectorConfig, tableIdCaseInsensitive);
    this.tiDBPartition= new TiDBPartition(connectorConfig.getLogicalName());
    this.tidbTaskContext= new TidbTaskContext(connectorConfig,tiDBDatabaseSchema);
+   this.offsetContext =
+            loadStartingOffsetState(
+                    new MySqlOffsetContext.Loader(connectorConfig), sourceSplitBase);
+
 
     this.queue =
             new ChangeEventQueue.Builder<DataChangeEvent>()
@@ -159,6 +165,25 @@ public class TiDBSourceFetchTaskContext extends JdbcSourceFetchTaskContext {
   }
   public SnapshotChangeEventSourceMetrics<TiDBPartition> getSnapshotChangeEventSourceMetrics() {
     return snapshotChangeEventSourceMetrics;
+  }
+
+  private MySqlOffsetContext loadStartingOffsetState(
+          OffsetContext.Loader<MySqlOffsetContext> loader, SourceSplitBase mySqlSplit) {
+    Offset offset =
+            mySqlSplit.isSnapshotSplit()
+                    ? BinlogOffset.INITIAL_OFFSET
+                    : mySqlSplit.asStreamSplit().getStartingOffset();
+
+    MySqlOffsetContext mySqlOffsetContext = loader.load(offset.getOffset());
+
+//    if (!isBinlogAvailable(mySqlOffsetContext)) {
+//      throw new IllegalStateException(
+//              "The connector is trying to read binlog starting at "
+//                      + mySqlOffsetContext.getSourceInfo()
+//                      + ", but this is no longer "
+//                      + "available on the server. Reconfigure the connector to use a snapshot when needed.");
+//    }
+    return mySqlOffsetContext;
   }
 
 }

@@ -6,17 +6,22 @@ import io.debezium.relational.Column;
 import io.debezium.relational.Key;
 import io.debezium.relational.TableId;
 import io.debezium.schema.TopicSelector;
-//import org.apache.flink.cdc.connectors.mysql.source.offset.BinlogOffset;
+import io.debezium.time.Conversions;
 import org.apache.flink.cdc.connectors.tidb.source.config.TiDBConnectorConfig;
+import org.apache.flink.cdc.connectors.tidb.source.offset.BinlogOffset;
 import org.apache.flink.cdc.connectors.tidb.source.schema.TiDBDatabaseSchema;
 import org.apache.flink.table.api.DataTypes;
 import org.apache.flink.table.types.DataType;
 import org.apache.flink.table.types.logical.RowType;
+import org.apache.flink.util.FlinkRuntimeException;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.time.Instant;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -372,34 +377,32 @@ public class TiDBUtils {
     }
     return sql.toString();
   }
-
-//  public static BinlogOffset currentBinlogOffset(JdbcConnection jdbc) {
-//    final String showMasterStmt = "SHOW MASTER STATUS";
-//    try {
-//      return jdbc.queryAndMap(
-//              showMasterStmt,
-//              rs -> {
-//                if (rs.next()) {
-//                  final String binlogFilename = rs.getString(1);
-//                  final long binlogPosition = rs.getLong(2);
-//                  final String gtidSet =
-//                          rs.getMetaData().getColumnCount() > 4 ? rs.getString(5) : null;
-//                  return new BinlogOffset(
-//                          binlogFilename, binlogPosition, 0L, 0, 0, gtidSet, null);
-//                } else {
-//                  throw new FlinkRuntimeException(
-//                          "Cannot read the binlog filename and position via '"
-//                                  + showMasterStmt
-//                                  + "'. Make sure your server is correctly configured");
-//                }
-//              });
-//    } catch (SQLException e) {
-//      throw new FlinkRuntimeException(
-//              "Cannot read the binlog filename and position via '"
-//                      + showMasterStmt
-//                      + "'. Make sure your server is correctly configured",
-//              e);
-//    }
-//  }
-
+  public static BinlogOffset currentBinlogOffset(JdbcConnection jdbc) {
+    final String showMasterStmt = "SHOW MASTER STATUS";
+    try {
+      return jdbc.queryAndMap(
+              showMasterStmt,
+              rs -> {
+                if (rs.next()) {
+                  final String binlogFilename = rs.getString(1);
+                  final long binlogPosition = rs.getLong(2);
+                  final String gtidSet =
+                          rs.getMetaData().getColumnCount() > 4 ? rs.getString(5) : null;
+                  return new BinlogOffset(
+                          binlogFilename, binlogPosition, 0L, 0, 0, gtidSet, null);
+                } else {
+                  throw new FlinkRuntimeException(
+                          "Cannot read the binlog filename and position via '"
+                                  + showMasterStmt
+                                  + "'. Make sure your server is correctly configured");
+                }
+              });
+    } catch (SQLException e) {
+      throw new FlinkRuntimeException(
+              "Cannot read the binlog filename and position via '"
+                      + showMasterStmt
+                      + "'. Make sure your server is correctly configured",
+              e);
+    }
+  }
 }
