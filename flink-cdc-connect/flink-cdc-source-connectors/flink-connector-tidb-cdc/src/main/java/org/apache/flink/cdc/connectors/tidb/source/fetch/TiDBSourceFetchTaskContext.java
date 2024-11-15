@@ -33,6 +33,8 @@ import org.apache.kafka.connect.source.SourceRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.sql.SQLException;
+
 public class TiDBSourceFetchTaskContext extends JdbcSourceFetchTaskContext {
 
   private static final Logger LOG = LoggerFactory.getLogger(TiDBSourceFetchTaskContext.class);
@@ -71,8 +73,15 @@ public class TiDBSourceFetchTaskContext extends JdbcSourceFetchTaskContext {
         TopicSelector.defaultSelector(
             connectorConfig,
             (tableId, prefix, delimiter) -> String.join(delimiter, prefix, tableId.identifier()));
-   this.tiDBDatabaseSchema=TiDBUtils.createTiDBDatabaseSchema(connectorConfig, tableIdCaseInsensitive);
-   this.tiDBPartition= new TiDBPartition(connectorConfig.getLogicalName());
+
+    //change to newSchema
+//   this.tiDBDatabaseSchema=TiDBUtils.createTiDBDatabaseSchema(connectorConfig, tableIdCaseInsensitive);
+   try {
+     this.tiDBDatabaseSchema = TiDBUtils.newSchema(connection,connectorConfig,topicSelector,false);
+   }catch (SQLException e){
+    e.printStackTrace();
+   }
+    this.tiDBPartition= new TiDBPartition(connectorConfig.getLogicalName());
    this.tidbTaskContext= new TidbTaskContext(connectorConfig,tiDBDatabaseSchema);
    this.offsetContext =
             loadStartingOffsetState(

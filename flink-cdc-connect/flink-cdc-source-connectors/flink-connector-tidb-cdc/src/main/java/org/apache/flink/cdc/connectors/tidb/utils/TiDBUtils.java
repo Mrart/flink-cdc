@@ -8,12 +8,15 @@ import io.debezium.relational.TableId;
 import io.debezium.schema.TopicSelector;
 import io.debezium.time.Conversions;
 import org.apache.flink.cdc.connectors.tidb.source.config.TiDBConnectorConfig;
+import org.apache.flink.cdc.connectors.tidb.source.connection.TiDBConnection;
+import org.apache.flink.cdc.connectors.tidb.source.converter.TiDBValueConverters;
 import org.apache.flink.cdc.connectors.tidb.source.offset.BinlogOffset;
 import org.apache.flink.cdc.connectors.tidb.source.schema.TiDBDatabaseSchema;
 import org.apache.flink.table.api.DataTypes;
 import org.apache.flink.table.types.DataType;
 import org.apache.flink.table.types.logical.RowType;
 import org.apache.flink.util.FlinkRuntimeException;
+import org.tikv.shade.com.google.protobuf.TypeRegistry;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -182,16 +185,7 @@ public class TiDBUtils {
     return tableId.toQuotedString('`');
   }
 
-  public static TiDBDatabaseSchema createTiDBDatabaseSchema(
-          TiDBConnectorConfig dbzTiDBConfig, boolean isTableIdCaseSensitive) {
-    TopicSelector<TableId> topicSelector = TidbTopicSelector.defaultSelector(dbzTiDBConfig);
-    Key.KeyMapper customKeysMapper = new CustomeKeyMapper();
-    return new TiDBDatabaseSchema(
-            dbzTiDBConfig,
-            topicSelector,
-            isTableIdCaseSensitive,
-            customKeysMapper);
-  }
+
 
 
   public static PreparedStatement readTableSplitDataStatement(
@@ -404,5 +398,34 @@ public class TiDBUtils {
                       + "'. Make sure your server is correctly configured",
               e);
     }
+  }
+
+  public static TiDBDatabaseSchema newSchema(
+          TiDBConnection connection,
+          TiDBConnectorConfig config,
+          TopicSelector<TableId> topicSelector,
+          boolean isTableIdCaseSensitive)
+          throws SQLException {
+    Key.KeyMapper customKeysMapper = new CustomeKeyMapper();
+    TiDBDatabaseSchema schema =
+            new TiDBDatabaseSchema(
+                    config,
+                    topicSelector,
+                    isTableIdCaseSensitive,
+                    customKeysMapper
+                    );
+    schema.refresh(connection,false);
+    return schema;
+  }
+
+  public static TiDBDatabaseSchema createTiDBDatabaseSchema(
+          TiDBConnectorConfig dbzTiDBConfig, boolean isTableIdCaseSensitive) {
+    TopicSelector<TableId> topicSelector = TidbTopicSelector.defaultSelector(dbzTiDBConfig);
+    Key.KeyMapper customKeysMapper = new CustomeKeyMapper();
+    return new TiDBDatabaseSchema(
+            dbzTiDBConfig,
+            topicSelector,
+            isTableIdCaseSensitive,
+            customKeysMapper);
   }
 }
