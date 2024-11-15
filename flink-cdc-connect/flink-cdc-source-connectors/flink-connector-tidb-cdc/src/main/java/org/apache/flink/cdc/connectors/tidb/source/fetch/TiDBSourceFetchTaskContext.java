@@ -21,6 +21,7 @@ import org.apache.flink.cdc.connectors.base.source.meta.offset.Offset;
 import org.apache.flink.cdc.connectors.base.source.meta.split.SourceSplitBase;
 import org.apache.flink.cdc.connectors.base.source.reader.external.JdbcSourceFetchTaskContext;
 import org.apache.flink.cdc.connectors.tidb.source.config.TiDBConnectorConfig;
+import org.apache.flink.cdc.connectors.tidb.source.config.TiDBSourceConfig;
 import org.apache.flink.cdc.connectors.tidb.source.connection.TiDBConnection;
 import org.apache.flink.cdc.connectors.tidb.source.handler.TiDBSchemaChangeEventHandler;
 import org.apache.flink.cdc.connectors.tidb.source.offset.BinlogOffset;
@@ -40,7 +41,7 @@ public class TiDBSourceFetchTaskContext extends JdbcSourceFetchTaskContext {
 
   private final TiDBConnection connection;
   private TiDBDatabaseSchema tiDBDatabaseSchema;
-  private CDCEventOffsetContext offsetContext;
+  private MySqlOffsetContext offsetContext;
   private SnapshotChangeEventSourceMetrics<TiDBPartition> snapshotChangeEventSourceMetrics;
   private TopicSelector<TableId> topicSelector;
   private JdbcSourceEventDispatcher<TiDBPartition> dispatcher;
@@ -76,8 +77,6 @@ public class TiDBSourceFetchTaskContext extends JdbcSourceFetchTaskContext {
    this.offsetContext =
             loadStartingOffsetState(
                     new MySqlOffsetContext.Loader(connectorConfig), sourceSplitBase);
-
-
     this.queue =
             new ChangeEventQueue.Builder<DataChangeEvent>()
                     .pollInterval(connectorConfig.getPollInterval())
@@ -131,7 +130,7 @@ public class TiDBSourceFetchTaskContext extends JdbcSourceFetchTaskContext {
 
   @Override
   public TiDBDatabaseSchema getDatabaseSchema() {
-    return null;
+    return tiDBDatabaseSchema;
   }
 
   @Override
@@ -146,7 +145,7 @@ public class TiDBSourceFetchTaskContext extends JdbcSourceFetchTaskContext {
 
   @Override
   public JdbcSourceEventDispatcher getDispatcher() {
-    return null;
+    return dispatcher;
   }
 
   @Override
@@ -185,5 +184,9 @@ public class TiDBSourceFetchTaskContext extends JdbcSourceFetchTaskContext {
 //    }
     return mySqlOffsetContext;
   }
+
+//  public TiDBSourceConfig getSourceConfig() {
+//    return (TiDBSourceConfig) sourceConfig;
+//  }
 
 }

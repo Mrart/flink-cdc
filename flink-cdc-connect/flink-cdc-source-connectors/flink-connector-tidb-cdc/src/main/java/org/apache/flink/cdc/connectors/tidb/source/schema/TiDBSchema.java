@@ -53,10 +53,6 @@ public class TiDBSchema {
         return schema;
     }
 
-
-
-
-
     public static TiDBDatabaseSchema createTiDBDatabaseSchema(
             TiDBConnectorConfig dbzTiDBConfig, boolean isTableIdCaseSensitive) {
         TopicSelector<TableId> topicSelector = TidbTopicSelector.defaultSelector(dbzTiDBConfig);
@@ -108,45 +104,4 @@ public class TiDBSchema {
 
         return this.schemasByTableId.get(tableId);
     }
-
-
-//    private TableChange readTableSchema(JdbcConnection jdbc, TableId tableId){
-//        final Map<TableId, TableChanges.TableChange> tableChangeMap = new HashMap<>();
-//        final String sql = "SHOW CREATE TABLE " + TiDBUtils.quote(tableId);
-//        try {
-//            jdbc.query(
-//                    sql,
-//                    rs -> {
-//                        if (rs.next()) {
-//                            final String ddl = rs.getString(2);
-//                            MySqlOffsetContext offsetContext = MySqlOffsetContext.initial(connectorConfig);
-//                            final TiDBPartition partition =
-//                                    new TiDBPartition(connectorConfig.getLogicalName());
-//                            List<SchemaChangeEvent> schemaChangeEvents =
-//                                    databaseSchema.parseSnapshotDdl(
-//                                            partition,
-//                                            ddl,
-//                                            tableId.catalog(),
-//                                            offsetContext,
-//                                            Instant.now());
-//                            for (SchemaChangeEvent schemaChangeEvent : schemaChangeEvents) {
-//                                for (TableChanges.TableChange tableChange :
-//                                        schemaChangeEvent.getTableChanges()) {
-//                                    tableChangeMap.put(tableId, tableChange);
-//                                }
-//                            }
-//
-//                        }
-//                    });
-//        } catch (SQLException e) {
-//            throw new FlinkRuntimeException(
-//                    String.format("Failed to read schema for table %s by running %s", tableId, sql),
-//                    e);
-//        }
-//        if (!tableChangeMap.containsKey(tableId)) {
-//            throw new FlinkRuntimeException(
-//                    String.format("Can't obtain schema for table %s by running %s", tableId, sql));
-//        }
-//        return tableChangeMap.get(tableId);
-//    }
 }

@@ -147,7 +147,7 @@ public class TiDBScanFetchTaskTest extends TiDBTestBase {
             SnapshotSplit sqlSplit = snapshotSplits.get(i);
             if (sourceScanFetcher.isFinished()) {
                 FetchTask<SourceSplitBase> fetchTask
-                        = taskContext.getDataSourceDialect().createFetchTask(sqlSplit);
+                        = taskContext.getDataSourceDialect().createFetchTask(sqlSplit); // return TiDBScanFetchTask
                 ((AbstractScanFetchTask) fetchTask).setSnapshotPhaseHooks(snapshotPhaseHooks);
                 sourceScanFetcher.submitTask(fetchTask);
             }
