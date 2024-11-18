@@ -118,8 +118,6 @@ public class TiDBSourceFetchTaskContext extends JdbcSourceFetchTaskContext {
             new DefaultChangeEventSourceMetricsFactory<>();
     this.snapshotChangeEventSourceMetrics =
             metricsFactory.getSnapshotMetrics(tidbTaskContext, queue, metadataProvider);
-
-
   }
 
   public TiDBConnection getConnection() {
