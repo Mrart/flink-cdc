@@ -4,7 +4,6 @@ import io.debezium.connector.mysql.MySqlOffsetContext;
 import io.debezium.connector.tidb.TiDBPartition;
 import io.debezium.connector.tidb.TidbTopicSelector;
 import io.debezium.jdbc.JdbcConnection;
-import io.debezium.relational.Key;
 import io.debezium.relational.Table;
 import io.debezium.relational.TableId;
 import io.debezium.relational.Tables;
@@ -14,9 +13,6 @@ import io.debezium.schema.SchemaChangeEvent;
 import io.debezium.schema.TopicSelector;
 import org.apache.flink.cdc.connectors.tidb.source.config.TiDBConnectorConfig;
 import org.apache.flink.cdc.connectors.tidb.source.config.TiDBSourceConfig;
-import org.apache.flink.cdc.connectors.tidb.source.offset.CDCEventOffsetContext;
-import org.apache.flink.cdc.connectors.tidb.utils.CustomeKeyMapper;
-import org.apache.flink.cdc.connectors.tidb.utils.TiDBUtils;
 import org.apache.flink.util.FlinkRuntimeException;
 
 import java.sql.SQLException;
@@ -56,12 +52,12 @@ public class TiDBSchema {
     public static TiDBDatabaseSchema createTiDBDatabaseSchema(
             TiDBConnectorConfig dbzTiDBConfig, boolean isTableIdCaseSensitive) {
         TopicSelector<TableId> topicSelector = TidbTopicSelector.defaultSelector(dbzTiDBConfig);
-        Key.KeyMapper customKeysMapper = new CustomeKeyMapper();
+//        Key.KeyMapper customKeysMapper = new CustomeKeyMapper();
         return new TiDBDatabaseSchema(
                 dbzTiDBConfig,
                 topicSelector,
                 isTableIdCaseSensitive,
-                customKeysMapper);
+                dbzTiDBConfig.getKeyMapper());
     }
 
     private TableChange readTableSchema(JdbcConnection jdbc, TableId tableId){

@@ -406,13 +406,13 @@ public class TiDBUtils {
           TopicSelector<TableId> topicSelector,
           boolean isTableIdCaseSensitive)
           throws SQLException {
-    Key.KeyMapper customKeysMapper = new CustomeKeyMapper();
+//    Key.KeyMapper customKeysMapper = new CustomeKeyMapper();
     TiDBDatabaseSchema schema =
             new TiDBDatabaseSchema(
                     config,
                     topicSelector,
                     isTableIdCaseSensitive,
-                    customKeysMapper
+                    config.getKeyMapper()
                     );
     schema.refresh(connection,false);
     return schema;
@@ -421,11 +421,11 @@ public class TiDBUtils {
   public static TiDBDatabaseSchema createTiDBDatabaseSchema(
           TiDBConnectorConfig dbzTiDBConfig, boolean isTableIdCaseSensitive) {
     TopicSelector<TableId> topicSelector = TidbTopicSelector.defaultSelector(dbzTiDBConfig);
-    Key.KeyMapper customKeysMapper = new CustomeKeyMapper();
+//    Key.KeyMapper customKeysMapper = new CustomeKeyMapper();
     return new TiDBDatabaseSchema(
             dbzTiDBConfig,
             topicSelector,
             isTableIdCaseSensitive,
-            customKeysMapper);
+            dbzTiDBConfig.getKeyMapper());
   }
 }
