@@ -40,10 +40,21 @@ public class TiDBSourceInfo extends BaseSourceInfo {
     return (tableIds != null) ? tableIds.iterator().next().catalog() : null;
   }
 
+  public String tableSchema() {
+    return (tableIds == null || tableIds.isEmpty())
+        ? null
+        : tableIds.stream()
+            .filter(Objects::nonNull)
+            .map(TableId::schema)
+            .filter(Objects::nonNull)
+            .distinct()
+            .collect(Collectors.joining(","));
+  }
+
   public String table() {
     return (tableIds == null || tableIds.isEmpty())
-            ? null
-            : tableIds.stream()
+        ? null
+        : tableIds.stream()
             .filter(Objects::nonNull)
             .map(TableId::table)
             .collect(Collectors.joining(","));

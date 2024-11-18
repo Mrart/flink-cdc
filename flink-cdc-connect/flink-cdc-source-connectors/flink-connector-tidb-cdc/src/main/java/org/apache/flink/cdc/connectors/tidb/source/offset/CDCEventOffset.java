@@ -3,17 +3,34 @@ package org.apache.flink.cdc.connectors.tidb.source.offset;
 import org.apache.flink.cdc.connectors.base.source.meta.offset.Offset;
 
 import javax.annotation.Nonnull;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
 public class CDCEventOffset extends Offset {
   public static final String TIMESTAMP_KEY = "timestamp";
+  public static final String EVENTS_TO_SKIP_KEY = "events";
+
+  public static final CDCEventOffset INITIAL_OFFSET =
+      new CDCEventOffset(Collections.singletonMap(TIMESTAMP_KEY, "0"));
+  public static final CDCEventOffset NO_STOPPING_OFFSET = new CDCEventOffset(Long.MAX_VALUE);
 
   public CDCEventOffset(Map<String, ?> offset) {
     Map<String, String> offsetMap = new HashMap<>();
     for (Map.Entry<String, ?> entry : offset.entrySet()) {
       offsetMap.put(entry.getKey(), entry.getValue() == null ? null : entry.getValue().toString());
     }
+    this.offset = offsetMap;
+  }
+
+  public CDCEventOffset(long timestamp) {
+    this(Long.toString(timestamp), 0);
+  }
+
+  public CDCEventOffset(@Nonnull String timestamp, long eventsToSkip) {
+    Map<String, String> offsetMap = new HashMap<>();
+    offsetMap.put(TIMESTAMP_KEY, timestamp);
+    offsetMap.put(EVENTS_TO_SKIP_KEY, String.valueOf(eventsToSkip));
     this.offset = offsetMap;
   }
 
@@ -30,16 +47,7 @@ public class CDCEventOffset extends Offset {
     if (flag != 0) {
       return flag;
     }
-    //    flag = compareLong(getCommitVersion(), that.getCommitVersion());
-    if (flag != 0) {
-      return flag;
-    }
-    //    flag = Long.compare(getTransactionsToSkip(), that.getTransactionsToSkip());
-    if (flag != 0) {
-      return flag;
-    }
-    return 1;
-    //    return Long.compare(getEventsToSkip(), that.getEventsToSkip());
+    return Long.compare(getEventsToSkip(), that.getEventsToSkip());
   }
 
   private int compareLong(String a, String b) {
@@ -53,5 +61,9 @@ public class CDCEventOffset extends Offset {
       return 1;
     }
     return Long.compare(Long.parseLong(a), Long.parseLong(b));
+  }
+
+  public long getEventsToSkip() {
+    return longOffsetValue(offset, EVENTS_TO_SKIP_KEY);
   }
 }
