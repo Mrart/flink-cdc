@@ -7,7 +7,9 @@ import io.debezium.connector.tidb.TidbTaskContext;
 import io.debezium.connector.tidb.connection.TiDBEventMetadataProvider;
 import io.debezium.pipeline.DataChangeEvent;
 import io.debezium.pipeline.ErrorHandler;
+import io.debezium.pipeline.metrics.DefaultChangeEventSourceMetricsFactory;
 import io.debezium.pipeline.metrics.SnapshotChangeEventSourceMetrics;
+import io.debezium.pipeline.metrics.spi.ChangeEventSourceMetricsFactory;
 import io.debezium.pipeline.source.spi.EventMetadataProvider;
 import io.debezium.pipeline.spi.OffsetContext;
 import io.debezium.relational.Table;
@@ -112,6 +114,10 @@ public class TiDBSourceFetchTaskContext extends JdbcSourceFetchTaskContext {
                     schemaNameAdjuster,
                     new TiDBSchemaChangeEventHandler());
 
+    ChangeEventSourceMetricsFactory<TiDBPartition> metricsFactory =
+            new DefaultChangeEventSourceMetricsFactory<>();
+    this.snapshotChangeEventSourceMetrics =
+            metricsFactory.getSnapshotMetrics(tidbTaskContext, queue, metadataProvider);
 
 
   }
