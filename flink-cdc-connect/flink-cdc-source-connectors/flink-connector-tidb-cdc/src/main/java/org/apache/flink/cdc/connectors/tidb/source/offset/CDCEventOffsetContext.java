@@ -1,8 +1,11 @@
 package org.apache.flink.cdc.connectors.tidb.source.offset;
 
+import io.debezium.pipeline.source.snapshot.incremental.SignalBasedIncrementalSnapshotContext;
 import io.debezium.pipeline.spi.OffsetContext;
 import io.debezium.pipeline.txmetadata.TransactionContext;
 import io.debezium.schema.DataCollectionId;
+import io.debezium.time.Conversions;
+import org.apache.flink.cdc.connectors.tidb.source.config.TiDBConnectorConfig;
 import org.apache.kafka.connect.data.Schema;
 import org.apache.kafka.connect.data.Struct;
 
@@ -58,5 +61,6 @@ public class CDCEventOffsetContext implements OffsetContext {
 //  public static CDCEventOffsetContext initial(TiDBConnectorConfig config){
 //    new CDCEventOffsetContext(config,)
 //  }
+
 
 }

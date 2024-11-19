@@ -28,6 +28,8 @@ import org.apache.flink.cdc.connectors.tidb.source.connection.TiDBConnection;
 import org.apache.flink.cdc.connectors.tidb.source.handler.TiDBSchemaChangeEventHandler;
 import org.apache.flink.cdc.connectors.tidb.source.offset.BinlogOffset;
 import org.apache.flink.cdc.connectors.tidb.source.offset.CDCEventOffsetContext;
+import org.apache.flink.cdc.connectors.tidb.source.offset.CDCEventOffsetFactory;
+import org.apache.flink.cdc.connectors.tidb.source.offset.CDCEventOffsetUtils;
 import org.apache.flink.cdc.connectors.tidb.source.schema.TiDBDatabaseSchema;
 import org.apache.flink.cdc.connectors.tidb.utils.TiDBUtils;
 import org.apache.flink.table.types.logical.RowType;
@@ -85,9 +87,10 @@ public class TiDBSourceFetchTaskContext extends JdbcSourceFetchTaskContext {
    }
     this.tiDBPartition= new TiDBPartition(connectorConfig.getLogicalName());
    this.tidbTaskContext= new TidbTaskContext(connectorConfig,tiDBDatabaseSchema);
-   this.offsetContext =
-            loadStartingOffsetState(
-                    new MySqlOffsetContext.Loader(connectorConfig), sourceSplitBase);
+//   this.offsetContext =
+//           loadStartingOffsetState(
+//                   new CDCEventOffsetContext.Loader(connectorConfig), sourceSplitBase
+//           )
     this.queue =
             new ChangeEventQueue.Builder<DataChangeEvent>()
                     .pollInterval(connectorConfig.getPollInterval())
@@ -179,14 +182,13 @@ public class TiDBSourceFetchTaskContext extends JdbcSourceFetchTaskContext {
     return snapshotChangeEventSourceMetrics;
   }
 
-  private MySqlOffsetContext loadStartingOffsetState(
-          OffsetContext.Loader<MySqlOffsetContext> loader, SourceSplitBase mySqlSplit) {
+  private CDCEventOffsetContext loadStartingOffsetState(
+          CDCEventOffsetContext.Loader loader, SourceSplitBase sourceSplitBase) {
     Offset offset =
-            mySqlSplit.isSnapshotSplit()
-                    ? BinlogOffset.INITIAL_OFFSET
-                    : mySqlSplit.asStreamSplit().getStartingOffset();
-
-    MySqlOffsetContext mySqlOffsetContext = loader.load(offset.getOffset());
+            sourceSplitBase.isSnapshotSplit()
+                    ? new CDCEventOffsetFactory()
+                    .createInitialOffset() // get an offset for starting snapshot
+                    : sourceSplitBase.asStreamSplit().getStartingOffset();
 
 //    if (!isBinlogAvailable(mySqlOffsetContext)) {
 //      throw new IllegalStateException(
@@ -195,7 +197,7 @@ public class TiDBSourceFetchTaskContext extends JdbcSourceFetchTaskContext {
 //                      + ", but this is no longer "
 //                      + "available on the server. Reconfigure the connector to use a snapshot when needed.");
 //    }
-    return mySqlOffsetContext;
+    return CDCEventOffsetUtils.getCDCEventOffsetContext(loader,offset);
   }
 
 //  public TiDBSourceConfig getSourceConfig() {
