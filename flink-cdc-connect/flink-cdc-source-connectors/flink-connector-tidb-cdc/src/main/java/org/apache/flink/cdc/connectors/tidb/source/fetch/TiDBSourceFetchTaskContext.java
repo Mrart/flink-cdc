@@ -23,10 +23,9 @@ import org.apache.flink.cdc.connectors.base.source.meta.offset.Offset;
 import org.apache.flink.cdc.connectors.base.source.meta.split.SourceSplitBase;
 import org.apache.flink.cdc.connectors.base.source.reader.external.JdbcSourceFetchTaskContext;
 import org.apache.flink.cdc.connectors.tidb.source.config.TiDBConnectorConfig;
-import org.apache.flink.cdc.connectors.tidb.source.config.TiDBSourceConfig;
 import org.apache.flink.cdc.connectors.tidb.source.connection.TiDBConnection;
 import org.apache.flink.cdc.connectors.tidb.source.handler.TiDBSchemaChangeEventHandler;
-import org.apache.flink.cdc.connectors.tidb.source.offset.BinlogOffset;
+import org.apache.flink.cdc.connectors.tidb.source.offset.CDCEventOffset;
 import org.apache.flink.cdc.connectors.tidb.source.offset.CDCEventOffsetContext;
 import org.apache.flink.cdc.connectors.tidb.source.offset.CDCEventOffsetFactory;
 import org.apache.flink.cdc.connectors.tidb.source.offset.CDCEventOffsetUtils;
@@ -138,7 +137,7 @@ public class TiDBSourceFetchTaskContext extends JdbcSourceFetchTaskContext {
 
   @Override
   public Offset getStreamOffset(SourceRecord record) {
-    return null;
+    return new CDCEventOffset(record.sourceOffset());
   }
 
   @Override

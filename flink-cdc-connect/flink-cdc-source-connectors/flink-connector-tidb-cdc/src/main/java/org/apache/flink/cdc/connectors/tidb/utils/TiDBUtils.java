@@ -11,6 +11,7 @@ import org.apache.flink.cdc.connectors.tidb.source.config.TiDBConnectorConfig;
 import org.apache.flink.cdc.connectors.tidb.source.connection.TiDBConnection;
 import org.apache.flink.cdc.connectors.tidb.source.converter.TiDBValueConverters;
 import org.apache.flink.cdc.connectors.tidb.source.offset.BinlogOffset;
+import org.apache.flink.cdc.connectors.tidb.source.offset.CDCEventOffset;
 import org.apache.flink.cdc.connectors.tidb.source.schema.TiDBDatabaseSchema;
 import org.apache.flink.table.api.DataTypes;
 import org.apache.flink.table.types.DataType;
@@ -371,7 +372,7 @@ public class TiDBUtils {
     }
     return sql.toString();
   }
-  public static BinlogOffset currentBinlogOffset(JdbcConnection jdbc) {
+  public static CDCEventOffset currentBinlogOffset(JdbcConnection jdbc) {
     final String showMasterStmt = "SHOW MASTER STATUS";
     try {
       return jdbc.queryAndMap(
@@ -382,8 +383,8 @@ public class TiDBUtils {
                   final long binlogPosition = rs.getLong(2);
                   final String gtidSet =
                           rs.getMetaData().getColumnCount() > 4 ? rs.getString(5) : null;
-                  return new BinlogOffset(
-                          binlogFilename, binlogPosition, 0L, 0, 0, gtidSet, null);
+                  return new CDCEventOffset(
+                          binlogFilename, binlogPosition, 0L, 0, 0, gtidSet);
                 } else {
                   throw new FlinkRuntimeException(
                           "Cannot read the binlog filename and position via '"
