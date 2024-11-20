@@ -3,28 +3,22 @@ package org.apache.flink.cdc.connectors.tidb.utils;
 import io.debezium.connector.tidb.TidbTopicSelector;
 import io.debezium.jdbc.JdbcConnection;
 import io.debezium.relational.Column;
-import io.debezium.relational.Key;
 import io.debezium.relational.TableId;
 import io.debezium.schema.TopicSelector;
-import io.debezium.time.Conversions;
 import org.apache.flink.cdc.connectors.tidb.source.config.TiDBConnectorConfig;
 import org.apache.flink.cdc.connectors.tidb.source.connection.TiDBConnection;
-import org.apache.flink.cdc.connectors.tidb.source.converter.TiDBValueConverters;
 import org.apache.flink.cdc.connectors.tidb.source.offset.CDCEventOffset;
 import org.apache.flink.cdc.connectors.tidb.source.schema.TiDBDatabaseSchema;
 import org.apache.flink.table.api.DataTypes;
 import org.apache.flink.table.types.DataType;
 import org.apache.flink.table.types.logical.RowType;
 import org.apache.flink.util.FlinkRuntimeException;
-import org.tikv.shade.com.google.protobuf.TypeRegistry;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.time.Instant;
-import java.util.HashMap;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -185,18 +179,15 @@ public class TiDBUtils {
     return tableId.toQuotedString('`');
   }
 
-
-
-
   public static PreparedStatement readTableSplitDataStatement(
-          JdbcConnection jdbc,
-          String sql,
-          boolean isFirstSplit,
-          boolean isLastSplit,
-          Object[] splitStart,
-          Object[] splitEnd,
-          int primaryKeyNum,
-          int fetchSize) {
+      JdbcConnection jdbc,
+      String sql,
+      boolean isFirstSplit,
+      boolean isLastSplit,
+      Object[] splitStart,
+      Object[] splitEnd,
+      int primaryKeyNum,
+      int fetchSize) {
     try {
       final PreparedStatement statement = initStatement(jdbc, sql, fetchSize);
       if (isFirstSplit && isLastSplit) {
@@ -225,7 +216,7 @@ public class TiDBUtils {
   }
 
   private static PreparedStatement initStatement(JdbcConnection jdbc, String sql, int fetchSize)
-          throws SQLException {
+      throws SQLException {
     final Connection connection = jdbc.connection();
     connection.setAutoCommit(false);
     final PreparedStatement statement = connection.prepareStatement(sql);
@@ -234,16 +225,17 @@ public class TiDBUtils {
   }
 
   public static String buildSplitScanQuery(
-          TableId tableId, RowType pkRowType, boolean isFirstSplit, boolean isLastSplit) {
+      TableId tableId, RowType pkRowType, boolean isFirstSplit, boolean isLastSplit) {
     return buildSplitQuery(tableId, pkRowType, isFirstSplit, isLastSplit, -1, true);
   }
+
   private static String buildSplitQuery(
-          TableId tableId,
-          RowType pkRowType,
-          boolean isFirstSplit,
-          boolean isLastSplit,
-          int limitSize,
-          boolean isScanningData) {
+      TableId tableId,
+      RowType pkRowType,
+      boolean isFirstSplit,
+      boolean isLastSplit,
+      int limitSize,
+      boolean isScanningData) {
     final String condition;
 
     if (isFirstSplit && isLastSplit) {
@@ -276,24 +268,23 @@ public class TiDBUtils {
 
     if (isScanningData) {
       return buildSelectWithRowLimits(
-              tableId, limitSize, "*", Optional.ofNullable(condition), Optional.empty());
+          tableId, limitSize, "*", Optional.ofNullable(condition), Optional.empty());
     } else {
-      final String orderBy =
-              pkRowType.getFieldNames().stream().collect(Collectors.joining(", "));
+      final String orderBy = pkRowType.getFieldNames().stream().collect(Collectors.joining(", "));
       return buildSelectWithBoundaryRowLimits(
-              tableId,
-              limitSize,
-              getPrimaryKeyColumnsProjection(pkRowType),
-              getMaxPrimaryKeyColumnsProjection(pkRowType),
-              Optional.ofNullable(condition),
-              orderBy);
+          tableId,
+          limitSize,
+          getPrimaryKeyColumnsProjection(pkRowType),
+          getMaxPrimaryKeyColumnsProjection(pkRowType),
+          Optional.ofNullable(condition),
+          orderBy);
     }
   }
 
   private static void addPrimaryKeyColumnsToCondition(
-          RowType pkRowType, StringBuilder sql, String predicate) {
+      RowType pkRowType, StringBuilder sql, String predicate) {
     for (Iterator<String> fieldNamesIt = pkRowType.getFieldNames().iterator();
-         fieldNamesIt.hasNext(); ) {
+        fieldNamesIt.hasNext(); ) {
       sql.append(fieldNamesIt.next()).append(predicate);
       if (fieldNamesIt.hasNext()) {
         sql.append(" AND ");
@@ -302,12 +293,12 @@ public class TiDBUtils {
   }
 
   private static String buildSelectWithBoundaryRowLimits(
-          TableId tableId,
-          int limit,
-          String projection,
-          String maxColumnProjection,
-          Optional<String> condition,
-          String orderBy) {
+      TableId tableId,
+      int limit,
+      String projection,
+      String maxColumnProjection,
+      Optional<String> condition,
+      String orderBy) {
     final StringBuilder sql = new StringBuilder("SELECT ");
     sql.append(maxColumnProjection);
     sql.append(" FROM (");
@@ -328,11 +319,11 @@ public class TiDBUtils {
   }
 
   private static String buildSelectWithRowLimits(
-          TableId tableId,
-          int limit,
-          String projection,
-          Optional<String> condition,
-          Optional<String> orderBy) {
+      TableId tableId,
+      int limit,
+      String projection,
+      Optional<String> condition,
+      Optional<String> orderBy) {
     final StringBuilder sql = new StringBuilder("SELECT ");
     sql.append(projection).append(" FROM ");
     sql.append(quotedTableIdString(tableId));
@@ -351,7 +342,7 @@ public class TiDBUtils {
   private static String getPrimaryKeyColumnsProjection(RowType pkRowType) {
     StringBuilder sql = new StringBuilder();
     for (Iterator<String> fieldNamesIt = pkRowType.getFieldNames().iterator();
-         fieldNamesIt.hasNext(); ) {
+        fieldNamesIt.hasNext(); ) {
       sql.append(fieldNamesIt.next());
       if (fieldNamesIt.hasNext()) {
         sql.append(" , ");
@@ -363,7 +354,7 @@ public class TiDBUtils {
   private static String getMaxPrimaryKeyColumnsProjection(RowType pkRowType) {
     StringBuilder sql = new StringBuilder();
     for (Iterator<String> fieldNamesIt = pkRowType.getFieldNames().iterator();
-         fieldNamesIt.hasNext(); ) {
+        fieldNamesIt.hasNext(); ) {
       sql.append("MAX(" + fieldNamesIt.next() + ")");
       if (fieldNamesIt.hasNext()) {
         sql.append(" , ");
@@ -371,61 +362,50 @@ public class TiDBUtils {
     }
     return sql.toString();
   }
+
   public static CDCEventOffset currentBinlogOffset(JdbcConnection jdbc) {
     final String showMasterStmt = "SHOW MASTER STATUS";
     try {
       return jdbc.queryAndMap(
-              showMasterStmt,
-              rs -> {
-                if (rs.next()) {
-                  final String binlogFilename = rs.getString(1);
-                  final long binlogPosition = rs.getLong(2);
-                  final String gtidSet =
-                          rs.getMetaData().getColumnCount() > 4 ? rs.getString(5) : null;
-                  return new CDCEventOffset(
-                          binlogFilename, binlogPosition, 0L, 0, 0, gtidSet);
-                } else {
-                  throw new FlinkRuntimeException(
-                          "Cannot read the binlog filename and position via '"
-                                  + showMasterStmt
-                                  + "'. Make sure your server is correctly configured");
-                }
-              });
+          showMasterStmt,
+          rs -> {
+            if (rs.next()) {
+              return new CDCEventOffset(0, Instant.now().toEpochMilli());
+            } else {
+              throw new FlinkRuntimeException(
+                  "Cannot read the binlog filename and position via '"
+                      + showMasterStmt
+                      + "'. Make sure your server is correctly configured");
+            }
+          });
     } catch (SQLException e) {
       throw new FlinkRuntimeException(
-              "Cannot read the binlog filename and position via '"
-                      + showMasterStmt
-                      + "'. Make sure your server is correctly configured",
-              e);
+          "Cannot read the binlog filename and position via '"
+              + showMasterStmt
+              + "'. Make sure your server is correctly configured",
+          e);
     }
   }
 
   public static TiDBDatabaseSchema newSchema(
-          TiDBConnection connection,
-          TiDBConnectorConfig config,
-          TopicSelector<TableId> topicSelector,
-          boolean isTableIdCaseSensitive)
-          throws SQLException {
-//    Key.KeyMapper customKeysMapper = new CustomeKeyMapper();
+      TiDBConnection connection,
+      TiDBConnectorConfig config,
+      TopicSelector<TableId> topicSelector,
+      boolean isTableIdCaseSensitive)
+      throws SQLException {
+    //    Key.KeyMapper customKeysMapper = new CustomeKeyMapper();
     TiDBDatabaseSchema schema =
-            new TiDBDatabaseSchema(
-                    config,
-                    topicSelector,
-                    isTableIdCaseSensitive,
-                    config.getKeyMapper()
-                    );
-    schema.refresh(connection,false);
+        new TiDBDatabaseSchema(
+            config, topicSelector, isTableIdCaseSensitive, config.getKeyMapper());
+    schema.refresh(connection, false);
     return schema;
   }
 
   public static TiDBDatabaseSchema createTiDBDatabaseSchema(
-          TiDBConnectorConfig dbzTiDBConfig, boolean isTableIdCaseSensitive) {
+      TiDBConnectorConfig dbzTiDBConfig, boolean isTableIdCaseSensitive) {
     TopicSelector<TableId> topicSelector = TidbTopicSelector.defaultSelector(dbzTiDBConfig);
-//    Key.KeyMapper customKeysMapper = new CustomeKeyMapper();
+    //    Key.KeyMapper customKeysMapper = new CustomeKeyMapper();
     return new TiDBDatabaseSchema(
-            dbzTiDBConfig,
-            topicSelector,
-            isTableIdCaseSensitive,
-            dbzTiDBConfig.getKeyMapper());
+        dbzTiDBConfig, topicSelector, isTableIdCaseSensitive, dbzTiDBConfig.getKeyMapper());
   }
 }

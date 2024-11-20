@@ -3,7 +3,6 @@ package org.apache.flink.cdc.connectors.tidb.source.offset;
 import org.apache.flink.cdc.connectors.base.source.meta.offset.Offset;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -35,13 +34,7 @@ public class CDCEventOffset extends Offset {
     this.offset = offsetMap;
   }
 
-  public CDCEventOffset(
-      String filename,
-      long position,
-      long restartSkipEvents,
-      long restartSkipRows,
-      long binlogEpochSecs,
-      @Nullable String restartGtidSet) {
+  public CDCEventOffset(long restartSkipEvents, long binlogEpochSecs) {
     Map<String, String> offsetMap = new HashMap<>();
     offsetMap.put(EVENTS_TO_SKIP_KEY, String.valueOf(restartSkipEvents));
     offsetMap.put(TIMESTAMP_KEY, String.valueOf(binlogEpochSecs));
