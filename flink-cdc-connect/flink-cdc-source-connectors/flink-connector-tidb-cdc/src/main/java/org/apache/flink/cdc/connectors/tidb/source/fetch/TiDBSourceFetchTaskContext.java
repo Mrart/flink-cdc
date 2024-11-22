@@ -46,7 +46,7 @@ public class TiDBSourceFetchTaskContext extends JdbcSourceFetchTaskContext {
 
   private final TiDBConnection connection;
   private TiDBDatabaseSchema tiDBDatabaseSchema;
-  private MySqlOffsetContext offsetContext;
+  private CDCEventOffset offsetContext;
   private SnapshotChangeEventSourceMetrics<TiDBPartition> snapshotChangeEventSourceMetrics;
   private TopicSelector<TableId> topicSelector;
   private JdbcSourceEventDispatcher<TiDBPartition> dispatcher;
@@ -165,7 +165,7 @@ public class TiDBSourceFetchTaskContext extends JdbcSourceFetchTaskContext {
 
   @Override
   public CDCEventOffsetContext getOffsetContext() {
-    return null;
+    return ;
   }
 
   @Override

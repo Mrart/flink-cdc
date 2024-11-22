@@ -15,7 +15,6 @@ public class CDCEventOffset extends Offset {
   public static final CDCEventOffset INITIAL_OFFSET =
       new CDCEventOffset(Collections.singletonMap(TIMESTAMP_KEY, "0"));
   public static final CDCEventOffset NO_STOPPING_OFFSET = new CDCEventOffset(Long.MAX_VALUE);
-
   public static final String BINLOG_FILENAME_OFFSET_KEY = "file";
   public static final String BINLOG_POSITION_OFFSET_KEY = "pos";
   public static final String ROWS_TO_SKIP_OFFSET_KEY = "row";
