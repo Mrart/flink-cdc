@@ -46,7 +46,7 @@ public class TiDBSourceFetchTaskContext extends JdbcSourceFetchTaskContext {
 
   private final TiDBConnection connection;
   private TiDBDatabaseSchema tiDBDatabaseSchema;
-  private MySqlOffsetContext offsetContext;
+  private CDCEventOffsetContext offsetContext;
   private SnapshotChangeEventSourceMetrics<TiDBPartition> snapshotChangeEventSourceMetrics;
   private TopicSelector<TableId> topicSelector;
   private JdbcSourceEventDispatcher<TiDBPartition> dispatcher;
@@ -84,12 +84,13 @@ public class TiDBSourceFetchTaskContext extends JdbcSourceFetchTaskContext {
    }catch (SQLException e){
     e.printStackTrace();
    }
-    this.tiDBPartition= new TiDBPartition(connectorConfig.getLogicalName());
+   this.tiDBPartition= new TiDBPartition(connectorConfig.getLogicalName());
    this.tidbTaskContext= new TidbTaskContext(connectorConfig,tiDBDatabaseSchema);
-//   this.offsetContext =
-//           loadStartingOffsetState(
-//                   new CDCEventOffsetContext.Loader(connectorConfig), sourceSplitBase
-//           )
+   //offsetContext中的Loader
+   this.offsetContext =
+           loadStartingOffsetState(
+                   new CDCEventOffsetContext.Loader(connectorConfig), sourceSplitBase
+           );
     this.queue =
             new ChangeEventQueue.Builder<DataChangeEvent>()
                     .pollInterval(connectorConfig.getPollInterval())
@@ -165,7 +166,7 @@ public class TiDBSourceFetchTaskContext extends JdbcSourceFetchTaskContext {
 
   @Override
   public CDCEventOffsetContext getOffsetContext() {
-    return null;
+    return offsetContext;
   }
 
   @Override

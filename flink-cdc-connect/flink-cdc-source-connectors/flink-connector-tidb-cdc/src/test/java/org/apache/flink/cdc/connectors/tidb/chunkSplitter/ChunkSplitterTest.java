@@ -3,6 +3,7 @@ package org.apache.flink.cdc.connectors.tidb.chunkSplitter;
 import io.debezium.jdbc.JdbcConnection;
 import io.debezium.relational.TableId;
 import org.apache.flink.cdc.connectors.base.dialect.JdbcDataSourceDialect;
+import org.apache.flink.cdc.connectors.base.source.assigner.splitter.ChunkRange;
 import org.apache.flink.cdc.connectors.base.source.assigner.splitter.ChunkSplitter;
 import org.apache.flink.cdc.connectors.base.source.meta.split.SnapshotSplit;
 import org.apache.flink.cdc.connectors.base.source.utils.hooks.SnapshotPhaseHook;
@@ -25,6 +26,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.apache.flink.cdc.connectors.tidb.source.splitter.TiDBChunkSplitter;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 
 public class ChunkSplitterTest extends TiDBTestBase {
@@ -37,10 +40,37 @@ public class ChunkSplitterTest extends TiDBTestBase {
                     env, EnvironmentSettings.newInstance().inStreamingMode().build());
 
 
-    @Before
-    public void before() {
-        TestValuesTableFactory.clearAllData();
-        env.setParallelism(1);
+    @Test
+    public void testSplitEvenlySizedChunksOverflow() {
+        TiDBChunkSplitter  splitter = new TiDBChunkSplitter(null, null);
+        List<ChunkRange> res =
+                splitter.splitEvenlySizedChunks(
+                        new TableId("catalog", "db", "tab"),
+                        Integer.MAX_VALUE - 19,
+                        Integer.MAX_VALUE,
+                        20,
+                        10,
+                        10);
+        assertEquals(2, res.size());
+        assertEquals(ChunkRange.of(null, 2147483638), res.get(0));
+        assertEquals(ChunkRange.of(2147483638, null), res.get(1));
+    }
+
+    @Test
+    public void testSplitEvenlySizedChunksNormal() {
+        TiDBChunkSplitter splitter = new TiDBChunkSplitter(null, null);
+        List<ChunkRange> res =
+                splitter.splitEvenlySizedChunks(
+                        new TableId("catalog", "db", "tab"),
+                        Integer.MAX_VALUE - 20,
+                        Integer.MAX_VALUE,
+                        20,
+                        10,
+                        10);
+        assertEquals(3, res.size());
+        assertEquals(ChunkRange.of(null, 2147483637), res.get(0));
+        assertEquals(ChunkRange.of(2147483637, 2147483647), res.get(1));
+        assertEquals(ChunkRange.of(2147483647, null), res.get(2));
     }
 
     @Test
@@ -53,7 +83,7 @@ public class ChunkSplitterTest extends TiDBTestBase {
         initializeTidbTable("customer");
 
         TiDBSourceConfigFactory sourceConfigFactory = getConfigFactory(databaseName, new String[] {tableName} , 10);
-        TiDBSourceConfig sourceConfig = (TiDBSourceConfig) sourceConfigFactory.create(0);
+        TiDBSourceConfig sourceConfig = sourceConfigFactory.create(0);
         TiDBDialect tiDBDialect = new TiDBDialect(sourceConfig);
         String tableId = databaseName + "." + tableName;
         String [] deleteDataSql =

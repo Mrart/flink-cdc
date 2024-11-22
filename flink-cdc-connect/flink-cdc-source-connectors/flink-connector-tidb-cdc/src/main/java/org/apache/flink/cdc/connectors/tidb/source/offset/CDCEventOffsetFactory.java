@@ -29,7 +29,7 @@ public class CDCEventOffsetFactory extends OffsetFactory {
 
   @Override
   public Offset createInitialOffset() {
-    return null;
+    return CDCEventOffset.INITIAL_OFFSET;
   }
 
   @Override
