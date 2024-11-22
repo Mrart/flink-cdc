@@ -1,6 +1,7 @@
 package org.apache.flink.cdc.connectors.tidb.source.offset;
 
 import io.debezium.connector.SourceInfoStructMaker;
+import io.debezium.connector.mysql.SourceInfo;
 import org.apache.kafka.connect.data.Schema;
 import org.apache.kafka.connect.data.SchemaBuilder;
 import org.apache.kafka.connect.data.Struct;
