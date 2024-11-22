@@ -86,10 +86,10 @@ public class TiDBSourceFetchTaskContext extends JdbcSourceFetchTaskContext {
    }
     this.tiDBPartition= new TiDBPartition(connectorConfig.getLogicalName());
    this.tidbTaskContext= new TidbTaskContext(connectorConfig,tiDBDatabaseSchema);
-//   this.offsetContext =
-//           loadStartingOffsetState(
-//                   new CDCEventOffsetContext.Loader(connectorConfig), sourceSplitBase
-//           )
+   this.offsetContext =
+           loadStartingOffsetState(
+                   new CDCEventOffsetContext.Loader(connectorConfig), sourceSplitBase
+           );
     this.queue =
             new ChangeEventQueue.Builder<DataChangeEvent>()
                     .pollInterval(connectorConfig.getPollInterval())

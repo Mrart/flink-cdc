@@ -20,9 +20,6 @@ import java.util.Map;
 
 public class CDCEventOffsetContext implements OffsetContext {
   private static final String SNAPSHOT_COMPLETED_KEY = "snapshot_completed";
-
-
-
   private final Schema sourceInfoSchema;
   private final TiDBSourceInfo sourceInfo;
   private final TransactionContext transactionContext;
