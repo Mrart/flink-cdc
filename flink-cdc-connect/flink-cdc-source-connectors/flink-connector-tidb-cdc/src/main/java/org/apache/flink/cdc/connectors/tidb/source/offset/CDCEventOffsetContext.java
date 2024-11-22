@@ -1,6 +1,7 @@
 package org.apache.flink.cdc.connectors.tidb.source.offset;
 
 import io.debezium.connector.SnapshotRecord;
+import io.debezium.connector.mysql.MySqlConnectorConfig;
 import io.debezium.connector.mysql.MySqlOffsetContext;
 import io.debezium.connector.mysql.MySqlReadOnlyIncrementalSnapshotContext;
 import io.debezium.connector.mysql.SourceInfo;
@@ -20,11 +21,18 @@ import java.util.Map;
 
 public class CDCEventOffsetContext implements OffsetContext {
   private static final String SNAPSHOT_COMPLETED_KEY = "snapshot_completed";
+
+  public static final String TIMESTAMP_KEY = "timestamp";
+  public static final String EVENTS_TO_SKIP_KEY = "events";
+
   private final Schema sourceInfoSchema;
   private final TiDBSourceInfo sourceInfo;
   private final TransactionContext transactionContext;
   private final IncrementalSnapshotContext<TableId> incrementalSnapshotContext;
   private boolean snapshotCompleted;
+
+  private long currentTimestamp;
+
 
 
   public CDCEventOffsetContext(boolean snapshot, boolean snapshotCompleted, TransactionContext transactionContext,
@@ -60,7 +68,7 @@ public class CDCEventOffsetContext implements OffsetContext {
 
   @Override
   public Struct getSourceInfo() {
-    return null;
+    return sourceInfo.struct();
   }
 
   @Override
@@ -91,14 +99,24 @@ public class CDCEventOffsetContext implements OffsetContext {
     return null;
   }
 
-//  public CDCEventOffsetContext(TiDBConnectorConfig connectorConfig, boolean snapshot, boolean snapshotCompleted, SourceInfo sourceInfo){
-//    this(snapshot, snapshotCompleted, new TransactionContext(),
-//            connectorConfig.isReadOnlyConnection() ? new MySqlReadOnlyIncrementalSnapshotContext<>() : new SignalBasedIncrementalSnapshotContext<>(),
-//            sourceInfo);
-//  }
+  public CDCEventOffsetContext(TiDBConnectorConfig connectorConfig, boolean snapshot, boolean snapshotCompleted, TiDBSourceInfo tiDBSourceInfo){
+    this(snapshot, snapshotCompleted, new TransactionContext(),
+            connectorConfig.isReadOnlyConnection() ? new MySqlReadOnlyIncrementalSnapshotContext<>() : new SignalBasedIncrementalSnapshotContext<>(),
+            tiDBSourceInfo);
+  }
 //  public static CDCEventOffsetContext initial(TiDBConnectorConfig config){
 //    new CDCEventOffsetContext(config,)
 //  }
+
+  public static CDCEventOffsetContext initial(TiDBConnectorConfig config) {
+    final CDCEventOffsetContext offset = new CDCEventOffsetContext(config, false, false, new TiDBSourceInfo(config));
+    offset.setBinlogStartPoint(); // start from the beginning of the binlog
+    return offset;
+  }
+
+  public void setBinlogStartPoint() {
+    this.currentTimestamp = System.currentTimeMillis();
+  }
 
   public static class Loader implements OffsetContext.Loader<CDCEventOffsetContext> {
 
@@ -116,9 +134,8 @@ public class CDCEventOffsetContext implements OffsetContext {
     @SuppressWarnings("unchecked")
     @Override
     public CDCEventOffsetContext load(Map<String, ?> offset) {
-      boolean snapshot = Boolean.TRUE.equals(offset.get(SourceInfo.SNAPSHOT_KEY)) || "true".equals(offset.get(SourceInfo.SNAPSHOT_KEY));
+      boolean snapshot = Boolean.TRUE.equals(offset.get(TiDBSourceInfo.SNAPSHOT_KEY)) || "true".equals(offset.get(TiDBSourceInfo.SNAPSHOT_KEY));
       boolean snapshotCompleted = Boolean.TRUE.equals(offset.get(SNAPSHOT_COMPLETED_KEY)) || "true".equals(offset.get(SNAPSHOT_COMPLETED_KEY));
-      final String binlogFilename = (String) offset.get(SourceInfo.BINLOG_FILENAME_OFFSET_KEY);
       IncrementalSnapshotContext<TableId> incrementalSnapshotContext;
       if (connectorConfig.isReadOnlyConnection()) {
         incrementalSnapshotContext = MySqlReadOnlyIncrementalSnapshotContext.load(offset);

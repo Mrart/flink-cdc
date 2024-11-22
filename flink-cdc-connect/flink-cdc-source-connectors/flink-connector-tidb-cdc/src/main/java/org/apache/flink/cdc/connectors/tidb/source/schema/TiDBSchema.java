@@ -13,6 +13,7 @@ import io.debezium.schema.SchemaChangeEvent;
 import io.debezium.schema.TopicSelector;
 import org.apache.flink.cdc.connectors.tidb.source.config.TiDBConnectorConfig;
 import org.apache.flink.cdc.connectors.tidb.source.config.TiDBSourceConfig;
+import org.apache.flink.cdc.connectors.tidb.source.offset.CDCEventOffsetContext;
 import org.apache.flink.util.FlinkRuntimeException;
 
 import java.sql.SQLException;
@@ -62,7 +63,7 @@ public class TiDBSchema {
 
     private TableChange readTableSchema(JdbcConnection jdbc, TableId tableId){
 //        final Map<TableId, TableChanges.TableChange> tableChangeMap = new HashMap<>();
-        MySqlOffsetContext offsetContext = MySqlOffsetContext.initial(connectorConfig);
+        CDCEventOffsetContext offsetContext = CDCEventOffsetContext.initial(connectorConfig);
         final TiDBPartition partition =
                 new TiDBPartition(connectorConfig.getLogicalName());
 //        final String sql = "SHOW CREATE TABLE " + TiDBUtils.quote(tableId);
