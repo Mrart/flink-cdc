@@ -59,7 +59,7 @@ public class TiDBTableSource implements ScanTableSource, SupportsReadingMetadata
     private final double distributionFactorLower;
     private final String chunkKeyColumn;
 
-    private final Properties dbzProperties;
+    private final Properties jdbcProperties;
     private final Map<String, String> options;
 
 
@@ -80,7 +80,7 @@ public class TiDBTableSource implements ScanTableSource, SupportsReadingMetadata
             String username,
             String password,
             String serverTimeZone,
-            Properties dbzProperties,
+            Properties jdbcProperties,
             Duration heartbeatInterval,
             String pdAddresses,
             String hostMapping,
@@ -106,7 +106,7 @@ public class TiDBTableSource implements ScanTableSource, SupportsReadingMetadata
         this.username = username;
         this.password = password;
         this.serverTimeZone = serverTimeZone;
-        this.dbzProperties = dbzProperties;
+        this.jdbcProperties = jdbcProperties;
         this.hostName = hostName;
         this.options = options;
 
@@ -208,7 +208,7 @@ public class TiDBTableSource implements ScanTableSource, SupportsReadingMetadata
                 .chunkKeyColumn(chunkKeyColumn)
                 .driverClassName(jdbcDriver)
                 .connectMaxRetries(connectMaxRetries)
-                .debeziumProperties(dbzProperties)
+                .jdbcProperties(jdbcProperties)
                 .startupOptions(startupOptions)
                 .snapshotEventDeserializer(snapshotEventDeserializationSchema)
                 .changeEventDeserializer(changeEventDeserializationSchema)
@@ -231,7 +231,7 @@ public class TiDBTableSource implements ScanTableSource, SupportsReadingMetadata
                         username,
                         password,
                         serverTimeZone,
-                        dbzProperties,
+                        jdbcProperties,
                         heartbeatInterval,
                         pdAddresses,
                         hostMapping,
@@ -273,7 +273,7 @@ public class TiDBTableSource implements ScanTableSource, SupportsReadingMetadata
                 && Objects.equals(username,that.username)
                 && Objects.equals(password,that.password)
                 && Objects.equals(serverTimeZone,that.serverTimeZone)
-                && Objects.equals(dbzProperties,that.dbzProperties)
+                && Objects.equals(jdbcProperties,that.jdbcProperties)
                 && Objects.equals(heartbeatInterval,that.heartbeatInterval)
                 && Objects.equals(pdAddresses,that.pdAddresses)
                 && Objects.equals(hostMapping,that.hostMapping)
@@ -297,7 +297,7 @@ public class TiDBTableSource implements ScanTableSource, SupportsReadingMetadata
                 username,
                 password,
                 serverTimeZone,
-                dbzProperties,
+                jdbcProperties,
                 heartbeatInterval,
                 pdAddresses,
                 hostMapping,

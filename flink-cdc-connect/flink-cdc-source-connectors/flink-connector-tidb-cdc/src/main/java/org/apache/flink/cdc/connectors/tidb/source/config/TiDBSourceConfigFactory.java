@@ -20,6 +20,7 @@ public class TiDBSourceConfigFactory extends JdbcSourceConfigFactory {
   private String hostMapping;
 
   private Properties tikvProperties;
+  private Properties jdbcProperties;
 
   public JdbcSourceConfigFactory compatibleMode(String compatibleMode) {
     this.compatibleMode = compatibleMode;
@@ -43,6 +44,11 @@ public class TiDBSourceConfigFactory extends JdbcSourceConfigFactory {
 
   public JdbcSourceConfigFactory tikvProperties(Properties tikvProperties) {
     this.tikvProperties = tikvProperties;
+    return this;
+  }
+
+  public JdbcSourceConfigFactory jdbcProperties(Properties tikvProperties) {
+    this.jdbcProperties = jdbcProperties;
     return this;
   }
 

@@ -64,8 +64,8 @@ public class TiDBSourceBuilder<T> {
     return this;
   }
 
-  public TiDBSourceBuilder<T> debeziumProperties(Properties properties) {
-    this.configFactory.debeziumProperties(properties);
+  public TiDBSourceBuilder<T> jdbcProperties(Properties properties) {
+    this.configFactory.jdbcProperties(properties);
     return this;
   }
 
