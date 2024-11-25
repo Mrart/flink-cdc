@@ -63,6 +63,7 @@ public class TiDBSchema {
 
     private TableChange readTableSchema(JdbcConnection jdbc, TableId tableId){
 //        final Map<TableId, TableChanges.TableChange> tableChangeMap = new HashMap<>();
+//        MySqlOffsetContext offsetContext = MySqlOffsetContext.initial(connectorConfig);
         CDCEventOffsetContext offsetContext = CDCEventOffsetContext.initial(connectorConfig);
         final TiDBPartition partition =
                 new TiDBPartition(connectorConfig.getLogicalName());

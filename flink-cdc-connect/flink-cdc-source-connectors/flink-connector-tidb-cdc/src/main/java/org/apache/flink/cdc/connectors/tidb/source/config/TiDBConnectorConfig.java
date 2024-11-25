@@ -54,10 +54,10 @@ public class TiDBConnectorConfig extends MySqlConnectorConfig {
     }
 
 
-//    @Override
-//    protected SourceInfoStructMaker<?> getSourceInfoStructMaker(Version version) {
-//        return new TiDBSourceInfoStructMaker();
-//    }
+    @Override
+    protected SourceInfoStructMaker<?> getSourceInfoStructMaker(Version version) {
+        return new TiDBSourceInfoStructMaker();
+    }
 
     public static final Field SERVER_NAME = RelationalDatabaseConnectorConfig.SERVER_NAME
             .withValidation(CommonConnectorConfig::validateServerNameIsDifferentFromHistoryTopicName);

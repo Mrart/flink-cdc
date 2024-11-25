@@ -50,9 +50,6 @@ public class CDCEventOffsetContext implements OffsetContext {
     else {
       sourceInfo.setSnapshot(snapshot ? SnapshotRecord.TRUE : SnapshotRecord.FALSE);
     }
-
-
-
   }
 
 
@@ -63,7 +60,7 @@ public class CDCEventOffsetContext implements OffsetContext {
 
   @Override
   public Schema getSourceInfoSchema() {
-    return null;
+    return sourceInfoSchema.schema();
   }
 
   @Override
