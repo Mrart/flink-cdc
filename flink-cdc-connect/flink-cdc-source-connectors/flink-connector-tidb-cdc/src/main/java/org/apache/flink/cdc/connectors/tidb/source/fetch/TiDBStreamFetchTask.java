@@ -27,6 +27,8 @@ public class TiDBStreamFetchTask implements FetchTask<SourceSplitBase> {
     }
     taskRunning = true;
     TiDBStreamFetchTaskContext sourceFetchContext = (TiDBStreamFetchTaskContext) context;
+    StoppableChangeEventSourceContext changeEventSourceContext =
+        new StoppableChangeEventSourceContext();
   }
 
   @Override
