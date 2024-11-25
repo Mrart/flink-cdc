@@ -6,6 +6,7 @@ import org.apache.flink.cdc.connectors.tidb.source.config.TiDBConnectorConfig;
 
 import java.time.Instant;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -20,6 +21,7 @@ public class TiDBSourceInfo extends BaseSourceInfo {
   public TiDBSourceInfo(TiDBConnectorConfig config) {
     super(config);
     this.config = config;
+    this.tableIds = new HashSet<>();
   }
 
   @Override

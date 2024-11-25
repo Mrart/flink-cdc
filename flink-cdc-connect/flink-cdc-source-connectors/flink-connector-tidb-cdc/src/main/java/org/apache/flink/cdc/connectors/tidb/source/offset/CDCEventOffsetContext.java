@@ -17,6 +17,7 @@ import org.apache.kafka.connect.data.Schema;
 import org.apache.kafka.connect.data.Struct;
 
 import java.time.Instant;
+import java.util.HashMap;
 import java.util.Map;
 
 public class CDCEventOffsetContext implements OffsetContext {
@@ -30,8 +31,9 @@ public class CDCEventOffsetContext implements OffsetContext {
   private final TransactionContext transactionContext;
   private final IncrementalSnapshotContext<TableId> incrementalSnapshotContext;
   private boolean snapshotCompleted;
-
   private long currentTimestamp;
+  private long restartEventsToSkip = 0;
+
 
 
 
@@ -55,7 +57,14 @@ public class CDCEventOffsetContext implements OffsetContext {
 
   @Override
   public Map<String, ?> getOffset() {
-    return null;
+    HashMap<String, Object> map = new HashMap<>();
+    if (restartEventsToSkip != 0){
+      map.put(EVENTS_TO_SKIP_KEY, restartEventsToSkip);
+    }
+    if (sourceInfo.timestamp()!=null) {
+      map.put(TIMESTAMP_KEY,sourceInfo.timestamp().getEpochSecond());
+    }
+    return map;
   }
 
   @Override
@@ -87,7 +96,8 @@ public class CDCEventOffsetContext implements OffsetContext {
 
   @Override
   public void event(DataCollectionId collectionId, Instant timestamp) {
-
+      sourceInfo.setSourceTime(timestamp);
+      sourceInfo.tableEvent((TableId) collectionId);
 //    sourceInfo.update(instant, (TableId) tableId);
   }
 
