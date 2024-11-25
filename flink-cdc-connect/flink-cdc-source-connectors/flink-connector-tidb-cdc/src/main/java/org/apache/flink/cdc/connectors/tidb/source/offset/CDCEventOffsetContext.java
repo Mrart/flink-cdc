@@ -59,10 +59,10 @@ public class CDCEventOffsetContext implements OffsetContext {
   public Map<String, ?> getOffset() {
     HashMap<String, Object> map = new HashMap<>();
     if (restartEventsToSkip != 0){
-      map.put(EVENTS_TO_SKIP_KEY, restartEventsToSkip);
+      map.put(EVENTS_TO_SKIP_KEY, String.valueOf(restartEventsToSkip));
     }
     if (sourceInfo.timestamp()!=null) {
-      map.put(TIMESTAMP_KEY,sourceInfo.timestamp().getEpochSecond());
+      map.put(TIMESTAMP_KEY,String.valueOf(sourceInfo.timestamp().getEpochSecond()));
     }
     return map;
   }

@@ -47,7 +47,7 @@ public class CDCEventOffset extends Offset {
 
   @Override
   public int compareTo(@Nonnull Offset o) {
-    CDCEventOffset that = (CDCEventOffset) offset;
+    CDCEventOffset that = (CDCEventOffset) o;
 
     int flag;
     flag = compareLong(getTimestamp(), that.getTimestamp());
