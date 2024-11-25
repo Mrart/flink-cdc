@@ -16,6 +16,8 @@ public class TiDBSourceConfig extends JdbcSourceConfig {
 
     private final String hostMapping;
 
+    private final Properties jdbcProperties;
+
     public TiDBSourceConfig(
             String compatibleMode,
             StartupOptions startupOptions,
@@ -29,7 +31,7 @@ public class TiDBSourceConfig extends JdbcSourceConfig {
             double distributionFactorLower,
             boolean includeSchemaChanges,
             boolean closeIdleReaders,
-            Properties dbzProperties,
+            Properties jdbcProperties,
             Configuration dbzConfiguration,
             String driverClassName,
             String hostname,
@@ -55,7 +57,7 @@ public class TiDBSourceConfig extends JdbcSourceConfig {
                 distributionFactorLower,
                 includeSchemaChanges,
                 closeIdleReaders,
-                dbzProperties,
+                jdbcProperties,
                 dbzConfiguration,
                 driverClassName,
                 hostname,
@@ -73,6 +75,7 @@ public class TiDBSourceConfig extends JdbcSourceConfig {
         this.compatibleMode = compatibleMode;
         this.pdAddresses = pdAddresses;
         this.hostMapping = hostMapping;
+        this.jdbcProperties = jdbcProperties;
     }
 
     public String getCompatibleMode() {
@@ -89,6 +92,6 @@ public class TiDBSourceConfig extends JdbcSourceConfig {
 
     @Override
     public TiDBConnectorConfig getDbzConnectorConfig() {
-        return new TiDBConnectorConfig(getDbzConfiguration());
+        return new TiDBConnectorConfig(compatibleMode ,jdbcProperties);
     }
 }

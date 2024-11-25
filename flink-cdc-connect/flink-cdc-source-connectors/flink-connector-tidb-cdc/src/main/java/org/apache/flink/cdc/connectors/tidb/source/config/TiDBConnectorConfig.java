@@ -6,21 +6,19 @@ import io.debezium.config.Field;
 import io.debezium.connector.SourceInfoStructMaker;
 import io.debezium.connector.mysql.MySqlConnector;
 import io.debezium.connector.mysql.MySqlConnectorConfig;
-import io.debezium.relational.ColumnFilterMode;
-import io.debezium.relational.RelationalDatabaseConnectorConfig;
-import io.debezium.relational.RelationalTableFilters;
-import io.debezium.relational.Tables;
+import io.debezium.relational.*;
 import org.apache.flink.cdc.connectors.tidb.source.offset.TiDBSourceInfoStructMaker;
 import org.apache.kafka.common.config.ConfigDef;
 
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Properties;
 
-public class TiDBConnectorConfig extends MySqlConnectorConfig {
+public class TiDBConnectorConfig extends  RelationalDatabaseConnectorConfig {
     protected static final String LOGICAL_NAME = "tidb_cdc_connector";
     protected static final int DEFAULT_SNAPSHOT_FETCH_SIZE = Integer.MIN_VALUE;
-    // todo
+    private final boolean readOnlyConnection = true;
     protected static final List<String> BUILT_IN_DB_NAMES =
             Collections.unmodifiableList(
                     Arrays.asList("information_schema", "mysql", "tidb", "LBACSYS", "ORAAUDITOR"));
@@ -33,9 +31,19 @@ public class TiDBConnectorConfig extends MySqlConnectorConfig {
             .withImportance(ConfigDef.Importance.LOW)
             .withDescription("Switched connector to use alternative methods to deliver signals to Debezium instead of writing to signaling table");
 
-    public TiDBConnectorConfig(Configuration config) {
-        super(
-                config
+    public TiDBConnectorConfig( String compatibleMode, Properties properties) {
+        super(Configuration.from(properties),
+                LOGICAL_NAME,
+                Tables.TableFilter.fromPredicate(
+                        tableId ->
+                                "mysql".equalsIgnoreCase(compatibleMode)
+                                        ? !BUILT_IN_DB_NAMES.contains(tableId.catalog())
+                                        : !BUILT_IN_DB_NAMES.contains(tableId.schema())),
+                TableId::identifier,
+                DEFAULT_SNAPSHOT_FETCH_SIZE,
+                "mysql".equalsIgnoreCase(compatibleMode)
+                        ? ColumnFilterMode.CATALOG
+                        : ColumnFilterMode.SCHEMA
         );
     }
 
@@ -61,6 +69,10 @@ public class TiDBConnectorConfig extends MySqlConnectorConfig {
 
     public static final Field SERVER_NAME = RelationalDatabaseConnectorConfig.SERVER_NAME
             .withValidation(CommonConnectorConfig::validateServerNameIsDifferentFromHistoryTopicName);
+
+    public boolean isReadOnlyConnection() {
+        return readOnlyConnection;
+    }
 
 }
 
