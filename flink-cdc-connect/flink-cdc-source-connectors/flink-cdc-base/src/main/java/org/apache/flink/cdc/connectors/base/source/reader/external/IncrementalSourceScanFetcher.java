@@ -103,12 +103,6 @@ public class IncrementalSourceScanFetcher implements Fetcher<SourceRecords, Sour
                 });
     }
 
-    @Override
-    public boolean isFinished() {
-        return currentSnapshotSplit == null
-                || (!snapshotSplitReadTask.isRunning() && !hasNextElement.get() && reachEnd.get());
-    }
-
     @Nullable
     @Override
     public Iterator<SourceRecords> pollSplitRecords() throws InterruptedException {
@@ -173,6 +167,12 @@ public class IncrementalSourceScanFetcher implements Fetcher<SourceRecords, Sour
         // the data has been polled, no more data
         reachEnd.compareAndSet(false, true);
         return null;
+    }
+
+    @Override
+    public boolean isFinished() {
+        return currentSnapshotSplit == null
+                || (!snapshotSplitReadTask.isRunning() && !hasNextElement.get() && reachEnd.get());
     }
 
     private void checkReadException() {
