@@ -74,9 +74,10 @@ public class TiDBSourceConfigFactory extends JdbcSourceConfigFactory {
     props.put("time.precision.mode", "adaptive_time_microseconds");
     props.put("binary.handling.mode", "bytes");
 
-    if (dbzProperties != null) {
-      props.putAll(dbzProperties);
+    if (jdbcProperties != null) {
+      props.putAll(jdbcProperties);
     }
+
 
     Configuration dbzConfiguration = Configuration.from(props);
     return new TiDBSourceConfig(
