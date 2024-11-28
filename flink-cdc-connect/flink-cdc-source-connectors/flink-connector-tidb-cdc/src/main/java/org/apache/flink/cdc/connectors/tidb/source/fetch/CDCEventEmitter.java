@@ -6,23 +6,38 @@ import io.debezium.pipeline.spi.OffsetContext;
 import io.debezium.relational.RelationalChangeRecordEmitter;
 import io.debezium.util.Clock;
 
+import java.io.Serializable;
+
 public class CDCEventEmitter extends RelationalChangeRecordEmitter<TiDBPartition> {
-  public CDCEventEmitter(TiDBPartition partition, OffsetContext offsetContext, Clock clock) {
+  private final Envelope.Operation operation;
+  private final Object[] before;
+  private final Object[] after;
+
+  public CDCEventEmitter(
+      TiDBPartition partition,
+      OffsetContext offsetContext,
+      Clock clock,
+      Envelope.Operation operation,
+      Serializable[] before,
+      Serializable[] after) {
     super(partition, offsetContext, clock);
+    this.operation = operation;
+    this.before = before;
+    this.after = after;
   }
 
   @Override
   protected Object[] getOldColumnValues() {
-    return new Object[0];
+    return before;
   }
 
   @Override
   protected Object[] getNewColumnValues() {
-    return new Object[0];
+    return after;
   }
 
   @Override
   public Envelope.Operation getOperation() {
-    return null;
+    return operation;
   }
 }
