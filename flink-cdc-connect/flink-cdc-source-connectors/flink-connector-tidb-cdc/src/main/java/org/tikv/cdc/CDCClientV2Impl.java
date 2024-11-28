@@ -1,9 +1,6 @@
 package org.tikv.cdc;
 
-import io.debezium.connector.tidb.TiDBPartition;
-import io.debezium.pipeline.source.spi.ChangeEventSource;
 import org.apache.flink.cdc.connectors.base.source.meta.split.StreamSplit;
-import org.apache.flink.cdc.connectors.tidb.source.offset.CDCEventOffsetContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tikv.common.TiConfiguration;
@@ -15,10 +12,10 @@ import java.util.function.Consumer;
 
 public class CDCClientV2Impl implements CDCClientV2 {
   private static final Logger LOGGER = LoggerFactory.getLogger(CDCClientV2Impl.class);
+
   private final TiConfiguration tiConf;
   private final TiSession tiSession;
   private final StreamSplit split;
-
   private final BlockingQueue<RawKVEntry> eventsBuffer;
 
   private Consumer<RawKVEntry> eventConsumer;
@@ -51,10 +48,7 @@ public class CDCClientV2Impl implements CDCClientV2 {
   }
 
   @Override
-  public void execute(
-      ChangeEventSource.ChangeEventSourceContext changeEventSourceContext,
-      TiDBPartition tiDBPartition,
-      CDCEventOffsetContext offsetContext) {}
+  public void execute(final long startTs) {}
 
   @Override
   public long getResolvedTs() {
@@ -63,7 +57,7 @@ public class CDCClientV2Impl implements CDCClientV2 {
 
   @Override
   public RawKVEntry get() {
-    return null;
+    return eventsBuffer.poll();
   }
 
   @Override
