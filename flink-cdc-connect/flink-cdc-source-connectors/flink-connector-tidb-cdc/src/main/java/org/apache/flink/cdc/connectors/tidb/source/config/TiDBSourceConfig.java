@@ -92,6 +92,6 @@ public class TiDBSourceConfig extends JdbcSourceConfig {
 
     @Override
     public TiDBConnectorConfig getDbzConnectorConfig() {
-        return new TiDBConnectorConfig(compatibleMode ,jdbcProperties);
+        return new TiDBConnectorConfig(this);
     }
 }
