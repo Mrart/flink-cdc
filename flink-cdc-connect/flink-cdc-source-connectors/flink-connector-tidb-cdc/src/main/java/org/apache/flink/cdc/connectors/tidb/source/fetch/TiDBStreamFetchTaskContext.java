@@ -1,10 +1,9 @@
 package org.apache.flink.cdc.connectors.tidb.source.fetch;
 
 import io.debezium.connector.base.ChangeEventQueue;
+import io.debezium.connector.tidb.TiDBPartition;
 import io.debezium.pipeline.DataChangeEvent;
 import io.debezium.pipeline.ErrorHandler;
-import io.debezium.pipeline.spi.OffsetContext;
-import io.debezium.pipeline.spi.Partition;
 import io.debezium.relational.RelationalDatabaseSchema;
 import io.debezium.relational.Table;
 import io.debezium.relational.TableId;
@@ -19,6 +18,7 @@ import org.apache.flink.cdc.connectors.base.source.reader.external.JdbcSourceFet
 import org.apache.flink.cdc.connectors.tidb.source.config.TiDBConnectorConfig;
 import org.apache.flink.cdc.connectors.tidb.source.connection.TiDBConnection;
 import org.apache.flink.cdc.connectors.tidb.source.offset.CDCEventOffset;
+import org.apache.flink.cdc.connectors.tidb.source.offset.CDCEventOffsetContext;
 import org.apache.flink.cdc.connectors.tidb.source.schema.TiDBDatabaseSchema;
 import org.apache.flink.table.types.logical.RowType;
 import org.apache.kafka.connect.source.SourceRecord;
@@ -49,7 +49,7 @@ public class TiDBStreamFetchTaskContext extends JdbcSourceFetchTaskContext {
             (tableId, prefix, delimiter) -> String.join(delimiter, prefix, tableId.identifier()));
 
     this.databaseSchema =
-        new TiDBDatabaseSchema(connectorConfig, topicSelector,tableIdCaseInsensitive);
+        new TiDBDatabaseSchema(connectorConfig, topicSelector, tableIdCaseInsensitive);
   }
 
   @Override
@@ -95,13 +95,17 @@ public class TiDBStreamFetchTaskContext extends JdbcSourceFetchTaskContext {
     return null;
   }
 
+  public TiDBStreamFetchTaskContext getTaskContext() {
+    return this;
+  }
+
   @Override
-  public OffsetContext getOffsetContext() {
+  public CDCEventOffsetContext getOffsetContext() {
     return null;
   }
 
   @Override
-  public Partition getPartition() {
+  public TiDBPartition getPartition() {
     return null;
   }
 }

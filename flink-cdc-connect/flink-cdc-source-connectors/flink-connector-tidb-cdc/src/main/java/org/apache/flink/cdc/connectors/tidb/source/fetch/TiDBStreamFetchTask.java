@@ -27,8 +27,20 @@ public class TiDBStreamFetchTask implements FetchTask<SourceSplitBase> {
     }
     taskRunning = true;
     TiDBStreamFetchTaskContext sourceFetchContext = (TiDBStreamFetchTaskContext) context;
+
+    CDCEventSource CDCEventSource =
+        new CDCEventSource(
+            sourceFetchContext.getDbzConnectorConfig(),
+            sourceFetchContext.getDispatcher(),
+            sourceFetchContext.getErrorHandler(),
+            sourceFetchContext.getTaskContext(),
+            split);
     StoppableChangeEventSourceContext changeEventSourceContext =
         new StoppableChangeEventSourceContext();
+    CDCEventSource.execute(
+        changeEventSourceContext,
+        sourceFetchContext.getPartition(),
+        sourceFetchContext.getOffsetContext());
   }
 
   @Override
