@@ -1,0 +1,4 @@
+#NOTE: This is a Maven Resolver internal implementation file, its format can be changed without prior notice.
+#Fri Nov 29 13:39:13 CST 2024
+maven-shade-plugin-3.1.1.jar>nexus=
+maven-shade-plugin-3.1.1.pom>nexus=

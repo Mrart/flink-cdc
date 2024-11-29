@@ -1,0 +1,5 @@
+#NOTE: This is a Maven Resolver internal implementation file, its format can be changed without prior notice.
+#Fri Nov 29 13:51:27 CST 2024
+flink-table-planner_2.12-1.18.1-tests.jar>nexus=
+flink-table-planner_2.12-1.18.1.pom>nexus=
+flink-table-planner_2.12-1.18.1.jar>nexus=
