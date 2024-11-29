@@ -63,6 +63,7 @@ public class TiDBConnectorITCase extends TiDBTestBase {
     @Test
     public void testConsumingAllEvents() throws Exception {
         initializeTidbTable("inventory");
+
         String sourceDDL =
                 String.format(
                         "CREATE TABLE tidb_source ("
@@ -73,12 +74,19 @@ public class TiDBConnectorITCase extends TiDBTestBase {
                                 + " PRIMARY KEY (`id`) NOT ENFORCED"
                                 + ") WITH ("
                                 + " 'connector' = 'tidb-cdc',"
-                                + " 'tikv.grpc.timeout_in_ms' = '20000',"
                                 + " 'pd-addresses' = '%s',"
+                                + " 'hostname' = '%s',"
+                                + " 'port' = '%s',"
+                                + " 'password' = '%s',"
+                                + " 'username' = '%s',"
                                 + " 'database-name' = '%s',"
                                 + " 'table-name' = '%s'"
                                 + ")",
                         PD.getContainerIpAddress() + ":" + PD.getMappedPort(PD_PORT_ORIGIN),
+                        TIDB.getHost(),
+                        TIDB_PORT,
+                        TIDB_USER,
+                        TIDB_PASSWORD,
                         "inventory",
                         "products");
 
@@ -103,7 +111,7 @@ public class TiDBConnectorITCase extends TiDBTestBase {
         waitForSinkSize("sink", 9);
 
         try (Connection connection = getJdbcConnection("inventory");
-                Statement statement = connection.createStatement()) {
+             Statement statement = connection.createStatement()) {
 
             statement.execute(
                     "UPDATE products SET description='18oz carpenter hammer' WHERE id=106;");
@@ -208,7 +216,7 @@ public class TiDBConnectorITCase extends TiDBTestBase {
         waitForSinkSize("sink", 9);
 
         try (Connection connection = getJdbcConnection("inventory");
-                Statement statement = connection.createStatement()) {
+             Statement statement = connection.createStatement()) {
 
             statement.execute("ALTER TABLE products DROP COLUMN description");
 
@@ -287,7 +295,7 @@ public class TiDBConnectorITCase extends TiDBTestBase {
         waitForSinkSize("sink", 9);
 
         try (Connection connection = getJdbcConnection("inventory");
-                Statement statement = connection.createStatement()) {
+             Statement statement = connection.createStatement()) {
 
             statement.execute("ALTER TABLE products ADD COLUMN serialnum INTEGER");
 
@@ -377,7 +385,7 @@ public class TiDBConnectorITCase extends TiDBTestBase {
         waitForSinkSize("sink", 9);
 
         try (Connection connection = getJdbcConnection("inventory");
-                Statement statement = connection.createStatement()) {
+             Statement statement = connection.createStatement()) {
             statement.execute(
                     "UPDATE products SET description='18oz carpenter hammer' WHERE id=106;");
         }
@@ -405,7 +413,7 @@ public class TiDBConnectorITCase extends TiDBTestBase {
     @Test
     public void testAllDataTypes() throws Throwable {
         try (Connection connection = getJdbcConnection("");
-                Statement statement = connection.createStatement()) {
+             Statement statement = connection.createStatement()) {
             statement.execute(String.format("SET GLOBAL time_zone = '%s';", "UTC"));
         }
         tEnv.getConfig().setLocalTimeZone(ZoneId.of("UTC"));
@@ -522,7 +530,7 @@ public class TiDBConnectorITCase extends TiDBTestBase {
         waitForSinkSize("sink", 1);
 
         try (Connection connection = getJdbcConnection("column_type_test");
-                Statement statement = connection.createStatement()) {
+             Statement statement = connection.createStatement()) {
             statement.execute(
                     "UPDATE full_types SET timestamp_c = '2020-07-17 18:33:22' WHERE id=1;");
         }
@@ -551,7 +559,7 @@ public class TiDBConnectorITCase extends TiDBTestBase {
 
     public void testTiDBServerTimezone(String timezone) throws Exception {
         try (Connection connection = getJdbcConnection("");
-                Statement statement = connection.createStatement()) {
+             Statement statement = connection.createStatement()) {
             statement.execute(String.format("SET GLOBAL time_zone = '%s';", timezone));
         }
         tEnv.getConfig().setLocalTimeZone(ZoneId.of(timezone));
@@ -602,7 +610,7 @@ public class TiDBConnectorITCase extends TiDBTestBase {
         waitForSinkSize("sink", 1);
 
         try (Connection connection = getJdbcConnection("column_type_test");
-                Statement statement = connection.createStatement()) {
+             Statement statement = connection.createStatement()) {
             statement.execute(
                     "UPDATE full_types SET timestamp_c = '2020-07-17 18:33:22' WHERE id=1;");
         }
