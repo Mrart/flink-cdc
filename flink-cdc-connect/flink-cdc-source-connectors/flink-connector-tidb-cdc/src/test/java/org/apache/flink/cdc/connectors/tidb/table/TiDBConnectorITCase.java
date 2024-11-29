@@ -80,15 +80,17 @@ public class TiDBConnectorITCase extends TiDBTestBase {
                                 + " 'password' = '%s',"
                                 + " 'username' = '%s',"
                                 + " 'database-name' = '%s',"
-                                + " 'table-name' = '%s'"
+                                + " 'table-name' = '%s',"
+                                + " 'scan.startup.mode' = '%s'"
                                 + ")",
                         PD.getContainerIpAddress() + ":" + PD.getMappedPort(PD_PORT_ORIGIN),
                         TIDB.getHost(),
-                        TIDB_PORT,
-                        TIDB_USER,
+                        TIDB.getMappedPort(TIDB_PORT),
                         TIDB_PASSWORD,
+                        TIDB_USER,
                         "inventory",
-                        "products");
+                        "products",
+                        "snapshot");
 
         String sinkDDL =
                 "CREATE TABLE sink ("
