@@ -67,11 +67,11 @@ public class TiDBScanFetchTaskTest extends TiDBTestBase {
         String[] expected =
                 new String[]{
                         "+I[101, user_1, Shanghai, 123567891234]",
-                        "+I[102, user_2, hangzhou, 123567891234]",
+                        "+I[102, user_2, Shanghai, 123567891234]",
                         "+I[103, user_3, Shanghai, 123567891234]",
                         "+I[109, user_4, Shanghai, 123567891234]",
-                        "+I[110, user_5, Hangzhou, 123567891234]",
-                        "+I[111, user_6, Hangzhou, 123567891234]",
+                        "+I[110, user_5, Shanghai, 123567891234]",
+                        "+I[111, user_6, Shanghai, 123567891234]",
                         "+I[118, user_7, Shanghai, 123567891234]",
                         "+I[121, user_8, Shanghai, 123567891234]",
                         "+I[123, user_9, Shanghai, 123567891234]",

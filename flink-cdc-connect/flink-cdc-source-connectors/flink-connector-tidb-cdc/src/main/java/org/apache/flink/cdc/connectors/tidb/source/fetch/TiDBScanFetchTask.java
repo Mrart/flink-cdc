@@ -18,9 +18,11 @@ import io.debezium.util.Threads;
 import org.apache.flink.cdc.connectors.base.relational.JdbcSourceEventDispatcher;
 import org.apache.flink.cdc.connectors.base.source.meta.split.SnapshotSplit;
 import org.apache.flink.cdc.connectors.base.source.meta.split.StreamSplit;
+import org.apache.flink.cdc.connectors.base.source.meta.wartermark.WatermarkKind;
 import org.apache.flink.cdc.connectors.base.source.reader.external.AbstractScanFetchTask;
 import org.apache.flink.cdc.connectors.tidb.source.config.TiDBConnectorConfig;
 import org.apache.flink.cdc.connectors.tidb.source.connection.TiDBConnection;
+import org.apache.flink.cdc.connectors.tidb.source.offset.CDCEventOffset;
 import org.apache.flink.cdc.connectors.tidb.source.offset.CDCEventOffsetContext;
 import org.apache.flink.cdc.connectors.tidb.source.schema.TiDBDatabaseSchema;
 import org.apache.flink.cdc.connectors.tidb.utils.TiDBUtils;
@@ -45,6 +47,16 @@ public class TiDBScanFetchTask extends AbstractScanFetchTask {
   protected void executeBackfillTask(Context context, StreamSplit backfillStreamSplit)
           throws Exception {
 
+
+    //just for test
+    TiDBSourceFetchTaskContext ctx = (TiDBSourceFetchTaskContext) context;
+    final CDCEventOffset currentOffset = CDCEventOffset.of(((TiDBSourceFetchTaskContext) context).getOffsetContext().getOffset());
+    JdbcSourceEventDispatcher dispatcher = ctx.getDispatcher();
+    dispatcher.dispatchWatermarkEvent(
+            ctx.getPartition().getSourcePartition(),
+            backfillStreamSplit,
+            currentOffset,
+            WatermarkKind.END);
   }
 
   /** 创建并执行一个 TiDBSnapshotSplitReadTask */

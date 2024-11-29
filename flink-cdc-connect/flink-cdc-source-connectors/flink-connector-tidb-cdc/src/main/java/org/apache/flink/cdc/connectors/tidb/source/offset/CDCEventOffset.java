@@ -70,6 +70,15 @@ public class CDCEventOffset extends Offset {
     return Long.compare(Long.parseLong(a), Long.parseLong(b));
   }
 
+  public static CDCEventOffset of(Map<String,?> offsetMap){
+    Map<String,String> offsetStrMap = new HashMap<>();
+    for (Map.Entry<String,?> entry: offsetMap.entrySet()){
+      offsetStrMap.put(
+              entry.getKey(),entry.getValue() == null ? null : entry.getValue().toString());
+    }
+    return new CDCEventOffset(offsetStrMap);
+  }
+
   public long getEventsToSkip() {
     return longOffsetValue(offset, EVENTS_TO_SKIP_KEY);
   }
