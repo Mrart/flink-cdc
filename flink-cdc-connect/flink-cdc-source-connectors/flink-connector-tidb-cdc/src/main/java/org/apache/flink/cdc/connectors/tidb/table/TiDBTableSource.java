@@ -1,11 +1,14 @@
 package org.apache.flink.cdc.connectors.tidb.table;
 
+import io.debezium.connector.tidb.TiDBSystemVariables;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.cdc.connectors.base.source.jdbc.JdbcIncrementalSource;
 import org.apache.flink.cdc.connectors.tidb.source.TiDBSourceBuilder;
 import org.apache.flink.cdc.connectors.tidb.source.config.TiDBSourceOptions;
 import org.apache.flink.cdc.debezium.DebeziumDeserializationSchema;
 import org.apache.flink.cdc.debezium.JsonDebeziumDeserializationSchema;
+import org.apache.flink.cdc.debezium.table.DebeziumChangelogMode;
+import org.apache.flink.cdc.debezium.table.MetadataConverter;
 import org.apache.flink.cdc.debezium.table.RowDataDebeziumDeserializeSchema;
 import org.apache.flink.table.catalog.ResolvedSchema;
 import org.apache.flink.table.connector.ChangelogMode;
@@ -66,7 +69,6 @@ public class TiDBTableSource implements ScanTableSource, SupportsReadingMetadata
     private final Map<String, String> options;
 
 
-
     /** Data type that describes the final output of the source. */
     protected DataType producedDataType;
 
@@ -100,7 +102,7 @@ public class TiDBTableSource implements ScanTableSource, SupportsReadingMetadata
 
             String jdbcDriver,
             StartupOptions startupOptions
-            ) {
+    ) {
         this.physicalSchema = physicalSchema;
         this.database = checkNotNull(database);
         this.tableName = checkNotNull(tableName);
@@ -154,25 +156,25 @@ public class TiDBTableSource implements ScanTableSource, SupportsReadingMetadata
                 (RowType) physicalSchema.toPhysicalRowDataType().getLogicalType();
 
         TypeInformation<RowData> typeInfo = scanContext.createTypeInformation(producedDataType);
-        TiKVMetadataConverter[] metadataConverters = getMetadataConverters();
+        MetadataConverter[] metadataConverters = getMetadataConverters();
 
-        RowDataTiKVSnapshotEventDeserializationSchema snapshotEventDeserializationSchema =
-                new RowDataTiKVSnapshotEventDeserializationSchema(
-                        tiConf,
-                        database,
-                        tableName,
-                        typeInfo,
-                        metadataConverters,
-                        physicalDataType);
-
-        RowDataTiKVChangeEventDeserializationSchema changeEventDeserializationSchema =
-                new RowDataTiKVChangeEventDeserializationSchema(
-                        tiConf,
-                        database,
-                        tableName,
-                        typeInfo,
-                        metadataConverters,
-                        physicalDataType);
+//        RowDataTiKVSnapshotEventDeserializationSchema snapshotEventDeserializationSchema =
+//                new RowDataTiKVSnapshotEventDeserializationSchema(
+//                        tiConf,
+//                        database,
+//                        tableName,
+//                        typeInfo,
+//                        metadataConverters,
+//                        physicalDataType);
+//
+//        RowDataTiKVChangeEventDeserializationSchema changeEventDeserializationSchema =
+//                new RowDataTiKVChangeEventDeserializationSchema(
+//                        tiConf,
+//                        database,
+//                        tableName,
+//                        typeInfo,
+//                        metadataConverters,
+//                        physicalDataType);
 
 //        RowType physicalDataType =
 //                (RowType) physicalSchema.toPhysicalRowDataType().getLogicalType();
@@ -181,16 +183,27 @@ public class TiDBTableSource implements ScanTableSource, SupportsReadingMetadata
 //
 //
 //        //TidbDeserializationConverterFactory   metadataConverters
+//        DebeziumDeserializationSchema<RowData> deserializer =
+//                RowDataDebeziumDeserializeSchema.newBuilder()
+//                        .setPhysicalRowType(physicalDataType)
+//                        .setServerTimeZone(serverTimeZone == null
+//                                ? ZoneId.systemDefault()
+//                                : ZoneId.of(serverTimeZone))
+//                        .setUserDefinedConverterFactory(
+//                                TidbDeserializationConverterFactory.instance())
+//                        .build();
         DebeziumDeserializationSchema<RowData> deserializer =
                 RowDataDebeziumDeserializeSchema.newBuilder()
                         .setPhysicalRowType(physicalDataType)
-                        .setServerTimeZone(serverTimeZone == null
-                                ? ZoneId.systemDefault()
-                                : ZoneId.of(serverTimeZone))
+                        .setMetadataConverters(metadataConverters)
+                        .setResultTypeInfo(typeInfo)
+                        .setServerTimeZone(
+                                serverTimeZone == null
+                                        ? ZoneId.systemDefault()
+                                        : ZoneId.of(serverTimeZone))
                         .setUserDefinedConverterFactory(
                                 TidbDeserializationConverterFactory.instance())
                         .build();
-
         JdbcIncrementalSource<RowData> parallelSource = TiDBSourceBuilder.TiDBIncrementalSource.<RowData>builder()
                 .hostname(hostName)
                 .port(port)
@@ -212,8 +225,8 @@ public class TiDBTableSource implements ScanTableSource, SupportsReadingMetadata
                 .jdbcProperties(jdbcProperties)
                 .startupOptions(startupOptions)
                 .deserializer(deserializer)
-                .snapshotEventDeserializer(snapshotEventDeserializationSchema)
-                .changeEventDeserializer(changeEventDeserializationSchema)
+//                .snapshotEventDeserializer(snapshotEventDeserializationSchema)
+//                .changeEventDeserializer(changeEventDeserializationSchema)
                 .build();
         //todo  JdbcIncrementalSource<RowData> parallelSource =
         //                     TiDBSourceBuilder.TiDBIncrementalSource.builder()
@@ -338,21 +351,20 @@ public class TiDBTableSource implements ScanTableSource, SupportsReadingMetadata
     }
 
     //TiKVMetadataConverter to  MetadataConverter
-    private TiKVMetadataConverter[] getMetadataConverters() {
+    private MetadataConverter[] getMetadataConverters() {
         if (metadataKeys.isEmpty()) {
-            return new TiKVMetadataConverter[0];
+            return new MetadataConverter[0];
         }
 
         return metadataKeys.stream()
                 .map(
                         key ->
-                                Stream.of(
-                                                TiKVReadableMetadata.createTiKVReadableMetadata(
-                                                        database, tableName))
+                                Stream.of(TiKVReadableMetadata.createTiKVReadableMetadata(
+                                                database, tableName))
                                         .filter(m -> m.getKey().equals(key))
                                         .findFirst()
                                         .orElseThrow(IllegalStateException::new))
                 .map(TiKVReadableMetadata::getConverter)
-                .toArray(TiKVMetadataConverter[]::new);
+                .toArray(MetadataConverter[]::new);
     }
 }
