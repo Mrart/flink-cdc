@@ -4,6 +4,9 @@ import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.cdc.connectors.base.source.jdbc.JdbcIncrementalSource;
 import org.apache.flink.cdc.connectors.tidb.source.TiDBSourceBuilder;
 import org.apache.flink.cdc.connectors.tidb.source.config.TiDBSourceOptions;
+import org.apache.flink.cdc.debezium.DebeziumDeserializationSchema;
+import org.apache.flink.cdc.debezium.JsonDebeziumDeserializationSchema;
+import org.apache.flink.cdc.debezium.table.RowDataDebeziumDeserializeSchema;
 import org.apache.flink.table.catalog.ResolvedSchema;
 import org.apache.flink.table.connector.ChangelogMode;
 import org.apache.flink.table.connector.source.DynamicTableSource;
@@ -178,17 +181,15 @@ public class TiDBTableSource implements ScanTableSource, SupportsReadingMetadata
 //
 //
 //        //TidbDeserializationConverterFactory   metadataConverters
-//        DebeziumDeserializationSchema<RowData> deserializer =
-//                RowDataDebeziumDeserializeSchema.newBuilder()
-//                        .setPhysicalRowType(physicalDataType)
-//                        .setMetadataConverters(metadataConverters)
-//                        .setResultTypeInfo(resultTypeInfo)
-//                        .setServerTimeZone(serverTimeZone == null
-//                                ? ZoneId.systemDefault()
-//                                : ZoneId.of(serverTimeZone))
-//                        .setUserDefinedConverterFactory(
-//                                TidbDeserializationConverterFactory.instance())
-//                        .build();
+        DebeziumDeserializationSchema<RowData> deserializer =
+                RowDataDebeziumDeserializeSchema.newBuilder()
+                        .setPhysicalRowType(physicalDataType)
+                        .setServerTimeZone(serverTimeZone == null
+                                ? ZoneId.systemDefault()
+                                : ZoneId.of(serverTimeZone))
+                        .setUserDefinedConverterFactory(
+                                TidbDeserializationConverterFactory.instance())
+                        .build();
 
         JdbcIncrementalSource<RowData> parallelSource = TiDBSourceBuilder.TiDBIncrementalSource.<RowData>builder()
                 .hostname(hostName)
@@ -210,6 +211,7 @@ public class TiDBTableSource implements ScanTableSource, SupportsReadingMetadata
                 .connectMaxRetries(connectMaxRetries)
                 .jdbcProperties(jdbcProperties)
                 .startupOptions(startupOptions)
+                .deserializer(deserializer)
                 .snapshotEventDeserializer(snapshotEventDeserializationSchema)
                 .changeEventDeserializer(changeEventDeserializationSchema)
                 .build();
