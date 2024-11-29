@@ -1,0 +1,4 @@
+#NOTE: This is a Maven Resolver internal implementation file, its format can be changed without prior notice.
+#Fri Nov 29 13:51:27 CST 2024
+scala-library-2.12.7.jar>nexus=
+scala-library-2.12.7.pom>nexus=
