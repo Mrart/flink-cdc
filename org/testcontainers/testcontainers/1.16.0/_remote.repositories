@@ -1,0 +1,4 @@
+#NOTE: This is a Maven Resolver internal implementation file, its format can be changed without prior notice.
+#Fri Nov 29 17:26:07 CST 2024
+testcontainers-1.16.0.pom>nexus=
+testcontainers-1.16.0.jar>nexus=

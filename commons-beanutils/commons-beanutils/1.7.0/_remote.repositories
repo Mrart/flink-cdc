@@ -1,3 +1,4 @@
 #NOTE: This is a Maven Resolver internal implementation file, its format can be changed without prior notice.
-#Fri Nov 29 13:43:46 CST 2024
+#Fri Nov 29 17:24:25 CST 2024
 commons-beanutils-1.7.0.pom>nexus=
+commons-beanutils-1.7.0.jar>nexus=
