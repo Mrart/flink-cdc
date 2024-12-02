@@ -7,33 +7,33 @@ import java.util.Map;
 
 public class CDCEventOffsetFactory extends OffsetFactory {
 
-  @Override
-  public Offset newOffset(Map<String, String> offset) {
-    return null;
-  }
+    @Override
+    public Offset newOffset(Map<String, String> offset) {
+        return null;
+    }
 
-  @Override
-  public Offset newOffset(String filename, Long position) {
-    return null;
-  }
+    @Override
+    public Offset newOffset(String filename, Long position) {
+        return null;
+    }
 
-  @Override
-  public Offset newOffset(Long position) {
-    return null;
-  }
+    @Override
+    public Offset newOffset(Long position) {
+        return null;
+    }
 
-  @Override
-  public Offset createTimestampOffset(long timestampMillis) {
-    return null;
-  }
+    @Override
+    public Offset createTimestampOffset(long timestampMillis) {
+        return null;
+    }
 
-  @Override
-  public Offset createInitialOffset() {
-    return CDCEventOffset.INITIAL_OFFSET;
-  }
+    @Override
+    public Offset createInitialOffset() {
+        return CDCEventOffset.INITIAL_OFFSET;
+    }
 
-  @Override
-  public Offset createNoStoppingOffset() {
-    return null;
-  }
+    @Override
+    public Offset createNoStoppingOffset() {
+        return null;
+    }
 }

@@ -85,7 +85,7 @@ public class IncrementalSourceScanFetcher implements Fetcher<SourceRecords, Sour
     }
 
     @Override
-    public void /**/submitTask(FetchTask<SourceSplitBase> fetchTask) {
+    public void /**/ submitTask(FetchTask<SourceSplitBase> fetchTask) {
         this.snapshotSplitReadTask = fetchTask;
         this.currentSnapshotSplit = fetchTask.getSplit().asSnapshotSplit();
         taskContext.configure(currentSnapshotSplit);

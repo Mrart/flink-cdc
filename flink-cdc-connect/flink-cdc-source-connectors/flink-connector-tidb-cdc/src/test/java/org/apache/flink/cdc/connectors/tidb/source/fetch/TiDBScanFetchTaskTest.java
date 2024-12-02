@@ -1,7 +1,5 @@
 package org.apache.flink.cdc.connectors.tidb.source.fetch;
 
-import io.debezium.relational.TableId;
-import org.apache.flink.cdc.connectors.base.config.JdbcSourceConfig;
 import org.apache.flink.cdc.connectors.base.dialect.JdbcDataSourceDialect;
 import org.apache.flink.cdc.connectors.base.source.assigner.splitter.ChunkSplitter;
 import org.apache.flink.cdc.connectors.base.source.meta.split.SnapshotSplit;
@@ -14,17 +12,16 @@ import org.apache.flink.cdc.connectors.base.source.utils.hooks.SnapshotPhaseHook
 import org.apache.flink.cdc.connectors.base.source.utils.hooks.SnapshotPhaseHooks;
 import org.apache.flink.cdc.connectors.tidb.TiDBTestBase;
 import org.apache.flink.cdc.connectors.tidb.source.TiDBDialect;
-import org.apache.flink.cdc.connectors.tidb.source.config.TiDBConnectorConfig;
 import org.apache.flink.cdc.connectors.tidb.source.config.TiDBSourceConfig;
 import org.apache.flink.cdc.connectors.tidb.source.config.TiDBSourceConfigFactory;
 import org.apache.flink.cdc.connectors.tidb.source.connection.TiDBConnection;
-import org.apache.flink.cdc.connectors.tidb.source.connection.TiDBConnectionPoolFactory;
 import org.apache.flink.cdc.connectors.tidb.testutils.RecordsFormatter;
 import org.apache.flink.table.api.DataTypes;
 import org.apache.flink.table.types.DataType;
+
+import io.debezium.relational.TableId;
 import org.apache.kafka.connect.source.SourceRecord;
 import org.junit.Test;
-import scala.tools.nsc.transform.SpecializeTypes;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -35,15 +32,12 @@ import static org.junit.Assert.assertArrayEquals;
 /** Tests for {@link TiDBScanFetchTask}. */
 
 /**
- * VALUES (default, "scooter", "Small 2-wheel scooter", 3.14),
- *        (default, "car battery", "12V car battery", 8.1),
- *        (default, "12-pack drill bits", "12-pack of drill bits with sizes ranging from #40 to #3", 0.8),
- *        (default, "hammer", "12oz carpenter's hammer", 0.75),
- *        (default, "hammer", "14oz carpenter's hammer", 0.875),
- *        (default, "hammer", "16oz carpenter's hammer", 1.0),
- *        (default, "rocks", "box of assorted rocks", 5.3),
- *        (default, "jacket", "water resistent black wind breaker", 0.1),
- *        (default, "spare tire", "24 inch spare tire", 22.2);
+ * VALUES (default, "scooter", "Small 2-wheel scooter", 3.14), (default, "car battery", "12V car
+ * battery", 8.1), (default, "12-pack drill bits", "12-pack of drill bits with sizes ranging from
+ * #40 to #3", 0.8), (default, "hammer", "12oz carpenter's hammer", 0.75), (default, "hammer", "14oz
+ * carpenter's hammer", 0.875), (default, "hammer", "16oz carpenter's hammer", 1.0), (default,
+ * "rocks", "box of assorted rocks", 5.3), (default, "jacket", "water resistent black wind breaker",
+ * 0.1), (default, "spare tire", "24 inch spare tire", 22.2);
  */
 public class TiDBScanFetchTaskTest extends TiDBTestBase {
     private static final String databaseName = "customer";
@@ -56,28 +50,34 @@ public class TiDBScanFetchTaskTest extends TiDBTestBase {
     public void testChangingDataInSnapshotScan() throws Exception {
         initializeTidbTable("customer");
         String tableId = databaseName + "." + tableName;
-        String[] changingDataSql = new String[]{
-                "UPDATE " + tableId + " SET address = 'Hangzhou' where id = 103",
-                "DELETE FROM " + tableId + " where id = 102",
-                "INSERT INTO " + tableId + " VALUES(102, 'user_2','hangzhou','123567891234')",
-                "UPDATE " + tableId + " SET address = 'Shanghai' where id = 103",
-                "UPDATE " + tableId + " SET address = 'Hangzhou' where id = 110",
-                "UPDATE " + tableId + " SET address = 'Hangzhou' where id = 111",
-        };
-        String[] expected =
-                new String[]{
-                        "+I[101, user_1, Shanghai, 123567891234]",
-                        "+I[102, user_2, Shanghai, 123567891234]",
-                        "+I[103, user_3, Shanghai, 123567891234]",
-                        "+I[109, user_4, Shanghai, 123567891234]",
-                        "+I[110, user_5, Shanghai, 123567891234]",
-                        "+I[111, user_6, Shanghai, 123567891234]",
-                        "+I[118, user_7, Shanghai, 123567891234]",
-                        "+I[121, user_8, Shanghai, 123567891234]",
-                        "+I[123, user_9, Shanghai, 123567891234]",
+        String[] changingDataSql =
+                new String[] {
+                    "UPDATE " + tableId + " SET address = 'Hangzhou' where id = 103",
+                    "DELETE FROM " + tableId + " where id = 102",
+                    "INSERT INTO " + tableId + " VALUES(102, 'user_2','hangzhou','123567891234')",
+                    "UPDATE " + tableId + " SET address = 'Shanghai' where id = 103",
+                    "UPDATE " + tableId + " SET address = 'Hangzhou' where id = 110",
+                    "UPDATE " + tableId + " SET address = 'Hangzhou' where id = 111",
                 };
-        List<String> actual = getDataInSnapshotScan(
-                changingDataSql, databaseName, tableName, USE_PRE_HIGHWATERMARK_HOOK, false);
+        String[] expected =
+                new String[] {
+                    "+I[101, user_1, Shanghai, 123567891234]",
+                    "+I[102, user_2, Shanghai, 123567891234]",
+                    "+I[103, user_3, Shanghai, 123567891234]",
+                    "+I[109, user_4, Shanghai, 123567891234]",
+                    "+I[110, user_5, Shanghai, 123567891234]",
+                    "+I[111, user_6, Shanghai, 123567891234]",
+                    "+I[118, user_7, Shanghai, 123567891234]",
+                    "+I[121, user_8, Shanghai, 123567891234]",
+                    "+I[123, user_9, Shanghai, 123567891234]",
+                };
+        List<String> actual =
+                getDataInSnapshotScan(
+                        changingDataSql,
+                        databaseName,
+                        tableName,
+                        USE_PRE_HIGHWATERMARK_HOOK,
+                        false);
         assertEqualsInAnyOrder(Arrays.asList(expected), actual);
     }
 
@@ -94,7 +94,7 @@ public class TiDBScanFetchTaskTest extends TiDBTestBase {
         tiDBSourceConfigFactory.username(TiDBTestBase.TIDB_USER);
         tiDBSourceConfigFactory.password(TiDBTestBase.TIDB_PASSWORD);
         tiDBSourceConfigFactory.databaseList(this.databaseName);
-        tiDBSourceConfigFactory.tableList(this.databaseName+"."+this.tableName);
+        tiDBSourceConfigFactory.tableList(this.databaseName + "." + this.tableName);
         tiDBSourceConfigFactory.splitSize(10);
         tiDBSourceConfigFactory.skipSnapshotBackfill(skipSnapshotBackfill);
         TiDBSourceConfig tiDBSourceConfig = tiDBSourceConfigFactory.create(0);
@@ -128,7 +128,8 @@ public class TiDBScanFetchTaskTest extends TiDBTestBase {
             TiDBSourceFetchTaskContext tidbsourceFetchTaskContext =
                     new TiDBSourceFetchTaskContext(tiDBSourceConfig, tiDBDialect, tiDBConnection);
 
-            return readTableSnapshotSplits(snapshotSplits, tidbsourceFetchTaskContext,1,dataType,hooks);
+            return readTableSnapshotSplits(
+                    snapshotSplits, tidbsourceFetchTaskContext, 1, dataType, hooks);
         }
     }
 
@@ -146,8 +147,10 @@ public class TiDBScanFetchTaskTest extends TiDBTestBase {
         for (int i = 0; i < scanSplitsNum; i++) {
             SnapshotSplit sqlSplit = snapshotSplits.get(i);
             if (sourceScanFetcher.isFinished()) {
-                FetchTask<SourceSplitBase> fetchTask
-                        = taskContext.getDataSourceDialect().createFetchTask(sqlSplit); // return TiDBScanFetchTask
+                FetchTask<SourceSplitBase> fetchTask =
+                        taskContext
+                                .getDataSourceDialect()
+                                .createFetchTask(sqlSplit); // return TiDBScanFetchTask
                 ((AbstractScanFetchTask) fetchTask).setSnapshotPhaseHooks(snapshotPhaseHooks);
                 sourceScanFetcher.submitTask(fetchTask);
             }
@@ -165,7 +168,6 @@ public class TiDBScanFetchTaskTest extends TiDBTestBase {
         assertTrue(sourceScanFetcher.getExecutorService().isTerminated());
 
         return formatResult(result, dataType);
-
     }
 
     private List<String> formatResult(List<SourceRecord> records, DataType dataType) {
@@ -203,7 +205,7 @@ public class TiDBScanFetchTaskTest extends TiDBTestBase {
     protected TiDBSourceConfigFactory getMockTiDBSourceConfigFactory(
             String hostName,
             int port,
-             String userName,
+            String userName,
             String password,
             String databaseName,
             String schemaName,
@@ -222,5 +224,4 @@ public class TiDBScanFetchTaskTest extends TiDBTestBase {
         tiDBSourceConfigFactory.skipSnapshotBackfill(skipSnapshotBackfill);
         return tiDBSourceConfigFactory;
     }
-
 }

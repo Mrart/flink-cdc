@@ -262,7 +262,7 @@ public class PostgresScanFetchTaskTest extends PostgresTestBase {
                             DataTypes.FIELD("address", DataTypes.STRING()),
                             DataTypes.FIELD("phone_number", DataTypes.STRING()));
 
-            //调用获取splits
+            // 调用获取splits
             List<SnapshotSplit> snapshotSplits = getSnapshotSplits(sourceConfig, postgresDialect);
 
             PostgresSourceFetchTaskContext postgresSourceFetchTaskContext =

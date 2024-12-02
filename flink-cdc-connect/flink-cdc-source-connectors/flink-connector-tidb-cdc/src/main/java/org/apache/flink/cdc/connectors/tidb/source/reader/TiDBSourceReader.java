@@ -8,31 +8,32 @@ import org.apache.flink.cdc.connectors.base.source.reader.IncrementalSourceReade
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.connector.base.source.reader.RecordEmitter;
 import org.apache.flink.connector.base.source.reader.synchronization.FutureCompletingBlockingQueue;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.function.Supplier;
 
 public class TiDBSourceReader extends IncrementalSourceReaderWithCommit {
-  private static final Logger LOG = LoggerFactory.getLogger(TiDBSourceReader.class);
+    private static final Logger LOG = LoggerFactory.getLogger(TiDBSourceReader.class);
 
-  public TiDBSourceReader(
-      FutureCompletingBlockingQueue elementQueue,
-      Supplier supplier,
-      RecordEmitter recordEmitter,
-      Configuration config,
-      IncrementalSourceReaderContext incrementalSourceReaderContext,
-      SourceConfig sourceConfig,
-      SourceSplitSerializer sourceSplitSerializer,
-      DataSourceDialect dialect) {
-    super(
-        elementQueue,
-        supplier,
-        recordEmitter,
-        config,
-        incrementalSourceReaderContext,
-        sourceConfig,
-        sourceSplitSerializer,
-        dialect);
-  }
+    public TiDBSourceReader(
+            FutureCompletingBlockingQueue elementQueue,
+            Supplier supplier,
+            RecordEmitter recordEmitter,
+            Configuration config,
+            IncrementalSourceReaderContext incrementalSourceReaderContext,
+            SourceConfig sourceConfig,
+            SourceSplitSerializer sourceSplitSerializer,
+            DataSourceDialect dialect) {
+        super(
+                elementQueue,
+                supplier,
+                recordEmitter,
+                config,
+                incrementalSourceReaderContext,
+                sourceConfig,
+                sourceSplitSerializer,
+                dialect);
+    }
 }

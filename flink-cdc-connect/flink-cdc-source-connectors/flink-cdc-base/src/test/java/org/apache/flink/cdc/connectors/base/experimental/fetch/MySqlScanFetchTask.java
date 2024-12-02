@@ -68,7 +68,7 @@ public class MySqlScanFetchTask extends AbstractScanFetchTask {
     protected void executeDataSnapshot(Context context) throws Exception {
         MySqlSourceFetchTaskContext sourceFetchContext = (MySqlSourceFetchTaskContext) context;
         MySqlSnapshotSplitReadTask snapshotSplitReadTask =
-                //so
+                // so
                 new MySqlSnapshotSplitReadTask(
                         sourceFetchContext.getDbzConnectorConfig(),
                         sourceFetchContext.getOffsetContext(),

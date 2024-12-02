@@ -1,7 +1,8 @@
 package org.apache.flink.cdc.connectors.tidb.source.offset;
 
-import io.debezium.pipeline.spi.OffsetContext;
 import org.apache.flink.cdc.connectors.base.source.meta.offset.Offset;
+
+import io.debezium.pipeline.spi.OffsetContext;
 
 import java.util.HashMap;
 import java.util.Map;

@@ -28,15 +28,15 @@ import org.apache.flink.table.catalog.ResolvedCatalogTable;
 import org.apache.flink.table.catalog.ResolvedSchema;
 import org.apache.flink.table.catalog.UniqueConstraint;
 import org.apache.flink.table.connector.source.DynamicTableSource;
-import org.apache.flink.cdc.connectors.base.options.SourceOptions;
 import org.apache.flink.table.factories.FactoryUtil;
-import static org.apache.flink.cdc.connectors.tidb.source.config.TiDBSourceOptions.*;
+
 import org.junit.Test;
 
 import java.time.Duration;
 import java.time.ZoneId;
 import java.util.*;
 
+import static org.apache.flink.cdc.connectors.tidb.source.config.TiDBSourceOptions.*;
 import static org.junit.Assert.assertEquals;
 
 /** Unit tests for TiDB table source factory. */
@@ -76,6 +76,7 @@ public class TiDBTableSourceFactoryTest {
     private static final String HOST_MAPPING = "host1:1;host2:2;host3:3";
     private static final Map<String, String> OPTIONS = new HashMap<>();
     private static final Properties PROPERTIES = new Properties();
+
     @Test
     public void testCommonProperties() {
         Map<String, String> properties = getAllOptions();
@@ -96,7 +97,7 @@ public class TiDBTableSourceFactoryTest {
                         ZoneId.of("UTC").toString(),
                         PROPERTIES,
                         HEARTBEAT_INTERVAL.defaultValue(),
-                       PD_ADDRESS,
+                        PD_ADDRESS,
                         HOST_MAPPING,
                         CONNECT_TIMEOUT.defaultValue(),
                         OPTIONS,
@@ -113,16 +114,13 @@ public class TiDBTableSourceFactoryTest {
         assertEquals(expectedSource, actualSource);
     }
 
-
-
     @Test
     public void testOptionalProperties() {
         Map<String, String> properties = getAllOptions();
-        properties.put("port","4111");
-        properties.put("scan.startup.mode","latest-offset");
+        properties.put("port", "4111");
+        properties.put("scan.startup.mode", "latest-offset");
         properties.put("heartbeat.interval", "15213ms");
         properties.put("server-time-zone", "Asia/Shanghai");
-
 
         Properties dbzProperties = new Properties();
         dbzProperties.put("snapshot.mode", "never");
@@ -175,9 +173,9 @@ public class TiDBTableSourceFactoryTest {
         options.put("database-name", MY_DATABASE);
         options.put("table-name", MY_TABLE);
         options.put("pd-addresses", PD_ADDRESS);
-        options.put("username",MY_USERNAME);
-        options.put("password",MY_PASSWORD);
-        options.put("host-mapping",HOST_MAPPING);
+        options.put("username", MY_USERNAME);
+        options.put("password", MY_PASSWORD);
+        options.put("host-mapping", HOST_MAPPING);
         options.put("scan.startup.mode", "initial");
         return options;
     }

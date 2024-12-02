@@ -1,8 +1,9 @@
 package org.apache.flink.cdc.connectors.tidb.source.schema;
 
-import io.debezium.relational.TableId;
 import org.apache.flink.cdc.connectors.tidb.utils.TiDBUtils;
 import org.apache.flink.util.CollectionUtil;
+
+import io.debezium.relational.TableId;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -13,9 +14,7 @@ public class TiDBTableDefinition {
     List<String> primaryKeys;
 
     public TiDBTableDefinition(
-            TableId tableId,
-            List<TiDBFieldDefinition> fieldDefinitions,
-            List<String> primaryKeys) {
+            TableId tableId, List<TiDBFieldDefinition> fieldDefinitions, List<String> primaryKeys) {
         this.tableId = tableId;
         this.fieldDefinitions = fieldDefinitions;
         this.primaryKeys = primaryKeys;
@@ -46,6 +45,4 @@ public class TiDBTableDefinition {
         }
         return pkDefinition.toString();
     }
-
-
 }

@@ -1,8 +1,9 @@
 package io.debezium.connector.tidb;
 
+import org.apache.flink.cdc.connectors.tidb.source.config.TiDBConnectorConfig;
+
 import io.debezium.pipeline.spi.Partition;
 import io.debezium.util.Collect;
-import org.apache.flink.cdc.connectors.tidb.source.config.TiDBConnectorConfig;
 
 import java.util.Collections;
 import java.util.Map;
@@ -31,7 +32,8 @@ public class TiDBPartition implements Partition {
         if (obj == null || getClass() != obj.getClass()) {
             return false;
         }
-        final io.debezium.connector.tidb.TiDBPartition other = (io.debezium.connector.tidb.TiDBPartition) obj;
+        final io.debezium.connector.tidb.TiDBPartition other =
+                (io.debezium.connector.tidb.TiDBPartition) obj;
         return Objects.equals(serverName, other.serverName);
     }
 
@@ -45,7 +47,8 @@ public class TiDBPartition implements Partition {
         return "TiDBPartition [sourcePartition=" + getSourcePartition() + "]";
     }
 
-    public static class Provider implements Partition.Provider<io.debezium.connector.tidb.TiDBPartition> {
+    public static class Provider
+            implements Partition.Provider<io.debezium.connector.tidb.TiDBPartition> {
         private final TiDBConnectorConfig connectorConfig;
 
         public Provider(TiDBConnectorConfig connectorConfig) {
@@ -54,7 +57,8 @@ public class TiDBPartition implements Partition {
 
         @Override
         public Set<io.debezium.connector.tidb.TiDBPartition> getPartitions() {
-            return Collections.singleton(new io.debezium.connector.tidb.TiDBPartition(connectorConfig.getLogicalName()));
+            return Collections.singleton(
+                    new io.debezium.connector.tidb.TiDBPartition(connectorConfig.getLogicalName()));
         }
     }
 }

@@ -1,8 +1,8 @@
 package org.apache.flink.cdc.connectors.tidb.source.handler;
 
-import io.debezium.schema.SchemaChangeEvent;
 import org.apache.flink.cdc.connectors.base.relational.handler.SchemaChangeEventHandler;
-import org.apache.kafka.connect.data.Struct;
+
+import io.debezium.schema.SchemaChangeEvent;
 
 import java.util.HashMap;
 import java.util.Map;

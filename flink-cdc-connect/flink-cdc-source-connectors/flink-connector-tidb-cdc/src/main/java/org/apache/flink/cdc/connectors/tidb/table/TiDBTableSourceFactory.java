@@ -14,7 +14,6 @@ import org.apache.flink.table.factories.DynamicTableSourceFactory;
 import org.apache.flink.table.factories.FactoryUtil;
 
 import java.time.Duration;
-
 import java.util.*;
 
 import static org.apache.flink.cdc.connectors.base.options.JdbcSourceOptions.*;
@@ -56,7 +55,7 @@ public class TiDBTableSourceFactory implements DynamicTableSourceFactory {
         options.add(HOST_MAPPING);
         options.add(JDBC_DRIVER);
 
-//      increment snapshot options
+        //      increment snapshot options
         options.add(SCAN_INCREMENTAL_SNAPSHOT_CHUNK_SIZE);
         options.add(CHUNK_META_GROUP_SIZE);
         options.add(CONNECTION_POOL_SIZE);
@@ -65,11 +64,11 @@ public class TiDBTableSourceFactory implements DynamicTableSourceFactory {
         options.add(SCAN_INCREMENTAL_SNAPSHOT_CHUNK_KEY_COLUMN);
         options.add(SPLIT_KEY_EVEN_DISTRIBUTION_FACTOR_UPPER_BOUND);
         options.add(SPLIT_KEY_EVEN_DISTRIBUTION_FACTOR_LOWER_BOUND);
-//        options.add(SCAN_NEWLY_ADDED_TABLE_ENABLED);
-//        options.add(SCAN_INCREMENTAL_CLOSE_IDLE_READER_ENABLED);
-//        options.add(HEARTBEAT_INTERVAL);
+        //        options.add(SCAN_NEWLY_ADDED_TABLE_ENABLED);
+        //        options.add(SCAN_INCREMENTAL_CLOSE_IDLE_READER_ENABLED);
+        //        options.add(HEARTBEAT_INTERVAL);
 
-//        options.add(SCAN_INCREMENTAL_SNAPSHOT_BACKFILL_SKIP);
+        //        options.add(SCAN_INCREMENTAL_SNAPSHOT_BACKFILL_SKIP);
         return options;
     }
 
@@ -103,17 +102,14 @@ public class TiDBTableSourceFactory implements DynamicTableSourceFactory {
         }
     }
 
-
     @Override
     public DynamicTableSource createDynamicTableSource(Context context) {
         final FactoryUtil.TableFactoryHelper helper =
                 FactoryUtil.createTableFactoryHelper(this, context);
 
-
-        //作用
+        // 作用
         helper.validateExcept(
-                JdbcUrlUtils.PROPERTIES_PREFIX,
-                DebeziumOptions.DEBEZIUM_OPTIONS_PREFIX);
+                JdbcUrlUtils.PROPERTIES_PREFIX, DebeziumOptions.DEBEZIUM_OPTIONS_PREFIX);
 
         final ReadableConfig config = helper.getOptions();
 
@@ -141,7 +137,6 @@ public class TiDBTableSourceFactory implements DynamicTableSourceFactory {
                 config.getOptional(SCAN_INCREMENTAL_SNAPSHOT_CHUNK_KEY_COLUMN).orElse(null);
         double distributionFactorUpper = config.get(SPLIT_KEY_EVEN_DISTRIBUTION_FACTOR_UPPER_BOUND);
         double distributionFactorLower = config.get(SPLIT_KEY_EVEN_DISTRIBUTION_FACTOR_LOWER_BOUND);
-
 
         ResolvedSchema physicalSchema =
                 getPhysicalSchema(context.getCatalogTable().getResolvedSchema());
@@ -177,10 +172,8 @@ public class TiDBTableSourceFactory implements DynamicTableSourceFactory {
                 distributionFactorLower,
                 chunkKeyColumn,
                 jdbcDriver,
-                startupOptions
-        );
+                startupOptions);
     }
-
 
     static class TiKVOptions {
         private static final String TIKV_OPTIONS_PREFIX = "tikv.";

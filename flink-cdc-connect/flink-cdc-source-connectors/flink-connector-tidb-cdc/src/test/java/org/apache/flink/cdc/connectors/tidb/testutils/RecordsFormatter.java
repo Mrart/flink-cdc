@@ -28,6 +28,7 @@ import org.apache.flink.table.types.logical.RowType;
 import org.apache.flink.table.types.utils.TypeConversions;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
+
 import org.apache.kafka.connect.source.SourceRecord;
 
 import java.time.ZoneId;

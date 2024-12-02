@@ -1,7 +1,5 @@
 package org.apache.flink.cdc.connectors.tidb.chunkSplitter;
 
-import io.debezium.jdbc.JdbcConnection;
-import io.debezium.relational.TableId;
 import org.apache.flink.cdc.connectors.base.dialect.JdbcDataSourceDialect;
 import org.apache.flink.cdc.connectors.base.source.assigner.splitter.ChunkRange;
 import org.apache.flink.cdc.connectors.base.source.assigner.splitter.ChunkSplitter;
@@ -12,23 +10,23 @@ import org.apache.flink.cdc.connectors.tidb.TiDBTestBase;
 import org.apache.flink.cdc.connectors.tidb.source.TiDBDialect;
 import org.apache.flink.cdc.connectors.tidb.source.config.TiDBSourceConfig;
 import org.apache.flink.cdc.connectors.tidb.source.config.TiDBSourceConfigFactory;
+import org.apache.flink.cdc.connectors.tidb.source.splitter.TiDBChunkSplitter;
 import org.apache.flink.cdc.connectors.tidb.table.TiDBConnectorRegionITCase;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.table.api.EnvironmentSettings;
 import org.apache.flink.table.api.bridge.java.StreamTableEnvironment;
-import org.junit.Before;
+
+import io.debezium.jdbc.JdbcConnection;
+import io.debezium.relational.TableId;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.apache.flink.table.planner.factories.TestValuesTableFactory;
-import java.sql.SQLException;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.stream.Collectors;
-import org.apache.flink.cdc.connectors.tidb.source.splitter.TiDBChunkSplitter;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class ChunkSplitterTest extends TiDBTestBase {
 
@@ -39,10 +37,9 @@ public class ChunkSplitterTest extends TiDBTestBase {
             StreamTableEnvironment.create(
                     env, EnvironmentSettings.newInstance().inStreamingMode().build());
 
-
     @Test
     public void testSplitEvenlySizedChunksOverflow() {
-        TiDBChunkSplitter  splitter = new TiDBChunkSplitter(null, null);
+        TiDBChunkSplitter splitter = new TiDBChunkSplitter(null, null);
         List<ChunkRange> res =
                 splitter.splitEvenlySizedChunks(
                         new TableId("catalog", "db", "tab"),
@@ -76,46 +73,46 @@ public class ChunkSplitterTest extends TiDBTestBase {
     @Test
     public void testChunkSplitter() throws Exception {
 
-
         String databaseName = "customer";
         String tableName = "customers";
 
         initializeTidbTable("customer");
 
-        TiDBSourceConfigFactory sourceConfigFactory = getConfigFactory(databaseName, new String[] {tableName} , 10);
+        TiDBSourceConfigFactory sourceConfigFactory =
+                getConfigFactory(databaseName, new String[] {tableName}, 10);
         TiDBSourceConfig sourceConfig = sourceConfigFactory.create(0);
         TiDBDialect tiDBDialect = new TiDBDialect(sourceConfig);
         String tableId = databaseName + "." + tableName;
-        String [] deleteDataSql =
-                new String[]{
-                        "DELETE FROM " + tableId + " where id = 101",
-                        "DELETE FROM " + tableId + " where id = 102",
+        String[] deleteDataSql =
+                new String[] {
+                    "DELETE FROM " + tableId + " where id = 101",
+                    "DELETE FROM " + tableId + " where id = 102",
                 };
         SnapshotPhaseHooks hooks = new SnapshotPhaseHooks();
 
-        try (JdbcConnection jdbcConnection = tiDBDialect.openJdbcConnection(sourceConfig)){
+        try (JdbcConnection jdbcConnection = tiDBDialect.openJdbcConnection(sourceConfig)) {
             SnapshotPhaseHook snapshotPhaseHook =
-                (config, split)-> {
-                    jdbcConnection.execute(deleteDataSql);
-                    jdbcConnection.commit();
-                    try {
-                        Thread.sleep(500L);
-                    }catch (InterruptedException e){
-                        throw new RuntimeException(e);
-                    }
-                };
+                    (config, split) -> {
+                        jdbcConnection.execute(deleteDataSql);
+                        jdbcConnection.commit();
+                        try {
+                            Thread.sleep(500L);
+                        } catch (InterruptedException e) {
+                            throw new RuntimeException(e);
+                        }
+                    };
             hooks.setPreHighWatermarkAction(snapshotPhaseHook);
 
-            //调用获取splits
+            // 调用获取splits
             List<SnapshotSplit> snapshotSplits = getSnapshotSplits(sourceConfig, tiDBDialect);
 
             System.out.println(snapshotSplits);
         }
     }
 
-
-    //mockConfigFactory
-    public static TiDBSourceConfigFactory getConfigFactory(String databaseName, String[] captureTables, int splitSize) {
+    // mockConfigFactory
+    public static TiDBSourceConfigFactory getConfigFactory(
+            String databaseName, String[] captureTables, int splitSize) {
         return (TiDBSourceConfigFactory)
                 new TiDBSourceConfigFactory()
                         .hostname(TIDB.getHost())
@@ -127,9 +124,8 @@ public class ChunkSplitterTest extends TiDBTestBase {
                         .splitSize(splitSize);
     }
 
-
     private List<SnapshotSplit> getSnapshotSplits(
-           TiDBSourceConfig sourceConfig, JdbcDataSourceDialect sourceDialect) {
+            TiDBSourceConfig sourceConfig, JdbcDataSourceDialect sourceDialect) {
 
         List<TableId> discoverTables = sourceDialect.discoverDataCollections(sourceConfig);
         final ChunkSplitter chunkSplitter = sourceDialect.createChunkSplitter(sourceConfig);
@@ -141,7 +137,4 @@ public class ChunkSplitterTest extends TiDBTestBase {
         }
         return snapshotSplitList;
     }
-
-
-
 }

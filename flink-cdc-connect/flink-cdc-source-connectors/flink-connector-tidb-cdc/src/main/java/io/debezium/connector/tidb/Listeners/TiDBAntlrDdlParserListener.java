@@ -6,7 +6,8 @@ import io.debezium.text.ParsingException;
 
 import java.util.Collection;
 
-public class TiDBAntlrDdlParserListener extends MySqlParserBaseListener implements AntlrDdlParserListener {
+public class TiDBAntlrDdlParserListener extends MySqlParserBaseListener
+        implements AntlrDdlParserListener {
     @Override
     public Collection<ParsingException> getErrors() {
         return null;

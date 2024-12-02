@@ -1,20 +1,20 @@
-//package org.apache.flink.cdc.connectors.tidb.table.utils;
-//import org.apache.flink.cdc.connectors.tidb.TiDBTestBase;
-//import org.junit.ClassRule;
-//import org.slf4j.Logger;
-//import org.slf4j.LoggerFactory;
-//import org.testcontainers.containers.FixedHostPortGenericContainer;
-//import org.testcontainers.containers.GenericContainer;
-//import org.testcontainers.containers.JdbcDatabaseContainer;
-//import org.testcontainers.containers.Network;
-//import org.testcontainers.containers.output.Slf4jLogConsumer;
-//import org.testcontainers.utility.DockerImageName;
+// package org.apache.flink.cdc.connectors.tidb.table.utils;
+// import org.apache.flink.cdc.connectors.tidb.TiDBTestBase;
+// import org.junit.ClassRule;
+// import org.slf4j.Logger;
+// import org.slf4j.LoggerFactory;
+// import org.testcontainers.containers.FixedHostPortGenericContainer;
+// import org.testcontainers.containers.GenericContainer;
+// import org.testcontainers.containers.JdbcDatabaseContainer;
+// import org.testcontainers.containers.Network;
+// import org.testcontainers.containers.output.Slf4jLogConsumer;
+// import org.testcontainers.utility.DockerImageName;
 //
-//import java.time.Duration;
-//import java.util.concurrent.Future;
-//import java.util.regex.Pattern;
+// import java.time.Duration;
+// import java.util.concurrent.Future;
+// import java.util.regex.Pattern;
 //
-//public class TiDBContainer extends  JdbcDatabaseContainer<TiDBContainer>{
+// public class TiDBContainer extends  JdbcDatabaseContainer<TiDBContainer>{
 //
 //    private static final Logger LOG = LoggerFactory.getLogger(TiDBTestBase.class);
 //    private static final Pattern COMMENT_PATTERN = Pattern.compile("^(.*)--.*$");
@@ -79,4 +79,4 @@
 //    protected String getTestQueryString() {
 //        return null;
 //    }
-//}
+// }

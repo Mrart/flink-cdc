@@ -17,5 +17,4 @@ public enum TiDBVersion {
     public String toString() {
         return "TiDBVersion{" + "version='" + version + '\'' + '}';
     }
-
 }

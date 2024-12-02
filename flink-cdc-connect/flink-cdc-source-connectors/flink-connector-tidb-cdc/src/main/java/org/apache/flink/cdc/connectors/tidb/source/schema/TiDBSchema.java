@@ -1,6 +1,10 @@
 package org.apache.flink.cdc.connectors.tidb.source.schema;
 
-import io.debezium.connector.mysql.MySqlOffsetContext;
+import org.apache.flink.cdc.connectors.tidb.source.config.TiDBConnectorConfig;
+import org.apache.flink.cdc.connectors.tidb.source.config.TiDBSourceConfig;
+import org.apache.flink.cdc.connectors.tidb.source.offset.CDCEventOffsetContext;
+import org.apache.flink.util.FlinkRuntimeException;
+
 import io.debezium.connector.tidb.TiDBPartition;
 import io.debezium.connector.tidb.TidbTopicSelector;
 import io.debezium.jdbc.JdbcConnection;
@@ -11,10 +15,6 @@ import io.debezium.relational.history.TableChanges;
 import io.debezium.relational.history.TableChanges.TableChange;
 import io.debezium.schema.SchemaChangeEvent;
 import io.debezium.schema.TopicSelector;
-import org.apache.flink.cdc.connectors.tidb.source.config.TiDBConnectorConfig;
-import org.apache.flink.cdc.connectors.tidb.source.config.TiDBSourceConfig;
-import org.apache.flink.cdc.connectors.tidb.source.offset.CDCEventOffsetContext;
-import org.apache.flink.util.FlinkRuntimeException;
 
 import java.sql.SQLException;
 import java.time.Instant;
@@ -24,7 +24,6 @@ public class TiDBSchema {
     private static final String SHOW_CREATE_TABLE = "SHOW CREATE TABLE ";
     private static final String DESC_TABLE = "DESC ";
 
-
     private final TiDBConnectorConfig connectorConfig;
     private final TiDBDatabaseSchema databaseSchema;
     private final Map<TableId, TableChange> schemasByTableId;
@@ -32,7 +31,6 @@ public class TiDBSchema {
     //    public TiDBSchema(Map<TableId, TableChanges.TableChange> schemasByTableId) {
     //        this.schemasByTableId = schemasByTableId;
     //    }
-
 
     public TiDBSchema(TiDBSourceConfig sourceConfig, boolean isTableIdCaseSensitive) {
         this.connectorConfig = sourceConfig.getDbzConnectorConfig();
@@ -53,21 +51,17 @@ public class TiDBSchema {
     public static TiDBDatabaseSchema createTiDBDatabaseSchema(
             TiDBConnectorConfig dbzTiDBConfig, boolean isTableIdCaseSensitive) {
         TopicSelector<TableId> topicSelector = TidbTopicSelector.defaultSelector(dbzTiDBConfig);
-//        Key.KeyMapper customKeysMapper = new CustomeKeyMapper();
+        //        Key.KeyMapper customKeysMapper = new CustomeKeyMapper();
         return new TiDBDatabaseSchema(
-                dbzTiDBConfig,
-                topicSelector,
-                isTableIdCaseSensitive,
-                dbzTiDBConfig.getKeyMapper());
+                dbzTiDBConfig, topicSelector, isTableIdCaseSensitive, dbzTiDBConfig.getKeyMapper());
     }
 
-    private TableChange readTableSchema(JdbcConnection jdbc, TableId tableId){
-//        final Map<TableId, TableChanges.TableChange> tableChangeMap = new HashMap<>();
-//        MySqlOffsetContext offsetContext = MySqlOffsetContext.initial(connectorConfig);
+    private TableChange readTableSchema(JdbcConnection jdbc, TableId tableId) {
+        //        final Map<TableId, TableChanges.TableChange> tableChangeMap = new HashMap<>();
+        //        MySqlOffsetContext offsetContext = MySqlOffsetContext.initial(connectorConfig);
         CDCEventOffsetContext offsetContext = CDCEventOffsetContext.initial(connectorConfig);
-        final TiDBPartition partition =
-                new TiDBPartition(connectorConfig.getLogicalName());
-//        final String sql = "SHOW CREATE TABLE " + TiDBUtils.quote(tableId);
+        final TiDBPartition partition = new TiDBPartition(connectorConfig.getLogicalName());
+        //        final String sql = "SHOW CREATE TABLE " + TiDBUtils.quote(tableId);
 
         offsetContext.event(tableId, Instant.now());
         Tables tables = new Tables();

@@ -18,7 +18,6 @@
 package org.apache.flink.cdc.connectors.tidb;
 
 import org.apache.flink.cdc.connectors.tidb.source.config.TiDBSourceConfigFactory;
-import org.apache.flink.cdc.connectors.tidb.source.schema.TiDBDatabaseSchema;
 import org.apache.flink.test.util.AbstractTestBase;
 
 import com.alibaba.dcm.DnsCacheManipulator;
@@ -138,9 +137,9 @@ public class TiDBTestBase extends AbstractTestBase {
 
     @AfterClass
     public static void stopContainers() {
-        //        DnsCacheManipulator.removeDnsCache(PD_SERVICE_NAME);
-        //        DnsCacheManipulator.removeDnsCache(TIKV_SERVICE_NAME);
-        //        Stream.of(TIKV, PD, TIDB).forEach(GenericContainer::stop);
+        DnsCacheManipulator.removeDnsCache(PD_SERVICE_NAME);
+        DnsCacheManipulator.removeDnsCache(TIKV_SERVICE_NAME);
+        Stream.of(TIKV, PD, TIDB).forEach(GenericContainer::stop);
     }
 
     public String getJdbcUrl(String databaseName) {
@@ -213,5 +212,29 @@ public class TiDBTestBase extends AbstractTestBase {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    protected TiDBSourceConfigFactory getMockTiDBSourceConfigFactory(
+            String database, String schemaName, String tableName, int splitSize) {
+        return getMockTiDBSourceConfigFactory(database, schemaName, tableName, splitSize, false);
+    }
+
+    protected TiDBSourceConfigFactory getMockTiDBSourceConfigFactory(
+            String database,
+            String schemaName,
+            String tableName,
+            int splitSize,
+            boolean skipSnapshotBackfill) {
+
+        TiDBSourceConfigFactory TiDBSourceConfigFactory = new TiDBSourceConfigFactory();
+        TiDBSourceConfigFactory.hostname(TIDB.getContainerIpAddress());
+        TiDBSourceConfigFactory.port(TIDB.getMappedPort(TIDB_PORT));
+        TiDBSourceConfigFactory.username(TIDB_USER);
+        TiDBSourceConfigFactory.password(TIDB_PASSWORD);
+        TiDBSourceConfigFactory.databaseList(database);
+        TiDBSourceConfigFactory.tableList(schemaName + "." + tableName);
+        TiDBSourceConfigFactory.splitSize(splitSize);
+        TiDBSourceConfigFactory.skipSnapshotBackfill(skipSnapshotBackfill);
+        return TiDBSourceConfigFactory;
     }
 }

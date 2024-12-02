@@ -28,38 +28,64 @@ import java.util.regex.Pattern;
 
 public class TiDBDefaultValueConverter implements DefaultValueConverter {
 
-
     private static final Logger LOGGER = LoggerFactory.getLogger(MySqlDefaultValueConverter.class);
 
-    private static final Pattern EPOCH_EQUIVALENT_TIMESTAMP = Pattern.compile("(\\d{4}-\\d{2}-00|\\d{4}-00-\\d{2}|0000-\\d{2}-\\d{2}) (00:00:00(\\.\\d{1,6})?)");
+    private static final Pattern EPOCH_EQUIVALENT_TIMESTAMP =
+            Pattern.compile(
+                    "(\\d{4}-\\d{2}-00|\\d{4}-00-\\d{2}|0000-\\d{2}-\\d{2}) (00:00:00(\\.\\d{1,6})?)");
 
-    private static final Pattern EPOCH_EQUIVALENT_DATE = Pattern.compile("\\d{4}-\\d{2}-00|\\d{4}-00-\\d{2}|0000-\\d{2}-\\d{2}");
+    private static final Pattern EPOCH_EQUIVALENT_DATE =
+            Pattern.compile("\\d{4}-\\d{2}-00|\\d{4}-00-\\d{2}|0000-\\d{2}-\\d{2}");
 
     private static final String EPOCH_TIMESTAMP = "1970-01-01 00:00:00";
 
     private static final String EPOCH_DATE = "1970-01-01";
 
-    private static final Pattern TIMESTAMP_PATTERN = Pattern.compile("([0-9]*-[0-9]*-[0-9]*) ([0-9]*:[0-9]*:[0-9]*(\\.([0-9]*))?)");
+    private static final Pattern TIMESTAMP_PATTERN =
+            Pattern.compile("([0-9]*-[0-9]*-[0-9]*) ([0-9]*:[0-9]*:[0-9]*(\\.([0-9]*))?)");
 
-    private static final Pattern CHARSET_INTRODUCER_PATTERN = Pattern.compile("^_[A-Za-z0-9]+'(.*)'$");
-
-    @Immutable
-    private static final Set<Integer> TRIM_DATA_TYPES = Collect.unmodifiableSet(Types.TINYINT, Types.INTEGER,
-            Types.DATE, Types.TIMESTAMP, Types.TIMESTAMP_WITH_TIMEZONE, Types.TIME, Types.BOOLEAN, Types.BIT,
-            Types.NUMERIC, Types.DECIMAL, Types.FLOAT, Types.DOUBLE, Types.REAL);
+    private static final Pattern CHARSET_INTRODUCER_PATTERN =
+            Pattern.compile("^_[A-Za-z0-9]+'(.*)'$");
 
     @Immutable
-    private static final Set<Integer> NUMBER_DATA_TYPES = Collect.unmodifiableSet(Types.BIT, Types.TINYINT,
-            Types.SMALLINT, Types.INTEGER, Types.BIGINT, Types.FLOAT, Types.REAL, Types.DOUBLE, Types.NUMERIC,
-            Types.DECIMAL);
+    private static final Set<Integer> TRIM_DATA_TYPES =
+            Collect.unmodifiableSet(
+                    Types.TINYINT,
+                    Types.INTEGER,
+                    Types.DATE,
+                    Types.TIMESTAMP,
+                    Types.TIMESTAMP_WITH_TIMEZONE,
+                    Types.TIME,
+                    Types.BOOLEAN,
+                    Types.BIT,
+                    Types.NUMERIC,
+                    Types.DECIMAL,
+                    Types.FLOAT,
+                    Types.DOUBLE,
+                    Types.REAL);
 
-    private static final DateTimeFormatter ISO_LOCAL_DATE_WITH_OPTIONAL_TIME = new DateTimeFormatterBuilder()
-            .append(DateTimeFormatter.ISO_LOCAL_DATE)
-            .optionalStart()
-            .appendLiteral(" ")
-            .append(DateTimeFormatter.ISO_LOCAL_TIME)
-            .optionalEnd()
-            .toFormatter();
+    @Immutable
+    private static final Set<Integer> NUMBER_DATA_TYPES =
+            Collect.unmodifiableSet(
+                    Types.BIT,
+                    Types.TINYINT,
+                    Types.SMALLINT,
+                    Types.INTEGER,
+                    Types.BIGINT,
+                    Types.FLOAT,
+                    Types.REAL,
+                    Types.DOUBLE,
+                    Types.NUMERIC,
+                    Types.DECIMAL);
+
+    private static final DateTimeFormatter ISO_LOCAL_DATE_WITH_OPTIONAL_TIME =
+            new DateTimeFormatterBuilder()
+                    .append(DateTimeFormatter.ISO_LOCAL_DATE)
+                    .optionalStart()
+                    .appendLiteral(" ")
+                    .append(DateTimeFormatter.ISO_LOCAL_TIME)
+                    .optionalEnd()
+                    .toFormatter();
 
     private final TiDBValueConverters converters;
 
@@ -103,7 +129,8 @@ public class TiDBDefaultValueConverter implements DefaultValueConverter {
         value = stripCharacterSetIntroducer(value);
 
         // boolean is also INT(1) or TINYINT(1)
-        if (NUMBER_DATA_TYPES.contains(column.jdbcType()) && ("true".equalsIgnoreCase(value) || "false".equalsIgnoreCase(value))) {
+        if (NUMBER_DATA_TYPES.contains(column.jdbcType())
+                && ("true".equalsIgnoreCase(value) || "false".equalsIgnoreCase(value))) {
             if (Types.DECIMAL == column.jdbcType() || Types.NUMERIC == column.jdbcType()) {
                 return convertToDecimal(column, value.equalsIgnoreCase("true") ? "1" : "0");
             }
@@ -136,7 +163,10 @@ public class TiDBDefaultValueConverter implements DefaultValueConverter {
     }
 
     private Object convertToLocalDate(Column column, String value) {
-        final boolean zero = EPOCH_EQUIVALENT_DATE.matcher(value).matches() || EPOCH_EQUIVALENT_TIMESTAMP.matcher(value).matches() || "0".equals(value);
+        final boolean zero =
+                EPOCH_EQUIVALENT_DATE.matcher(value).matches()
+                        || EPOCH_EQUIVALENT_TIMESTAMP.matcher(value).matches()
+                        || "0".equals(value);
 
         if (zero && column.isOptional()) {
             return null;
@@ -147,29 +177,32 @@ public class TiDBDefaultValueConverter implements DefaultValueConverter {
 
         try {
             return LocalDate.from(ISO_LOCAL_DATE_WITH_OPTIONAL_TIME.parse(value));
-        }
-        catch (Exception e) {
-            LOGGER.warn("Invalid default value '{}' for date column '{}'; {}", value, column.name(), e.getMessage());
+        } catch (Exception e) {
+            LOGGER.warn(
+                    "Invalid default value '{}' for date column '{}'; {}",
+                    value,
+                    column.name(),
+                    e.getMessage());
             if (column.isOptional()) {
                 return null;
-            }
-            else {
+            } else {
                 return LocalDate.from(ISO_LOCAL_DATE_WITH_OPTIONAL_TIME.parse(EPOCH_DATE));
             }
         }
     }
 
     /**
-     * Converts a string object for an object type of {@link LocalDateTime}.
-     * If the column definition allows null and default value is 0000-00-00 00:00:00, we need return null,
-     * else 0000-00-00 00:00:00 will be replaced with 1970-01-01 00:00:00;
+     * Converts a string object for an object type of {@link LocalDateTime}. If the column
+     * definition allows null and default value is 0000-00-00 00:00:00, we need return null, else
+     * 0000-00-00 00:00:00 will be replaced with 1970-01-01 00:00:00;
      *
      * @param column the column definition describing the {@code data} value; never null
      * @param value the string object to be converted into a {@link LocalDateTime} type;
      * @return the converted value;
      */
     private Object convertToLocalDateTime(Column column, String value) {
-        final boolean matches = EPOCH_EQUIVALENT_TIMESTAMP.matcher(value).matches() || "0".equals(value);
+        final boolean matches =
+                EPOCH_EQUIVALENT_TIMESTAMP.matcher(value).matches() || "0".equals(value);
         if (matches) {
             if (column.isOptional()) {
                 return null;
@@ -180,29 +213,34 @@ public class TiDBDefaultValueConverter implements DefaultValueConverter {
 
         try {
             return LocalDateTime.from(timestampFormat(column.length()).parse(value));
-        }
-        catch (Exception e) {
-            LOGGER.warn("Invalid default value '{}' for datetime column '{}'; {}", value, column.name(), e.getMessage());
+        } catch (Exception e) {
+            LOGGER.warn(
+                    "Invalid default value '{}' for datetime column '{}'; {}",
+                    value,
+                    column.name(),
+                    e.getMessage());
             if (column.isOptional()) {
                 return null;
-            }
-            else {
+            } else {
                 return LocalDateTime.from(timestampFormat(column.length()).parse(EPOCH_TIMESTAMP));
             }
         }
     }
 
     /**
-     * Converts a string object for an object type of {@link Timestamp}.
-     * If the column definition allows null and default value is 0000-00-00 00:00:00, we need return null,
-     * else 0000-00-00 00:00:00 will be replaced with 1970-01-01 00:00:00;
+     * Converts a string object for an object type of {@link Timestamp}. If the column definition
+     * allows null and default value is 0000-00-00 00:00:00, we need return null, else 0000-00-00
+     * 00:00:00 will be replaced with 1970-01-01 00:00:00;
      *
      * @param column the column definition describing the {@code data} value; never null
      * @param value the string object to be converted into a {@link Timestamp} type;
      * @return the converted value;
      */
     private Object convertToTimestamp(Column column, String value) {
-        final boolean matches = EPOCH_EQUIVALENT_TIMESTAMP.matcher(value).matches() || "0".equals(value) || EPOCH_TIMESTAMP.equals(value);
+        final boolean matches =
+                EPOCH_EQUIVALENT_TIMESTAMP.matcher(value).matches()
+                        || "0".equals(value)
+                        || EPOCH_TIMESTAMP.equals(value);
         if (matches) {
             if (column.isOptional()) {
                 return null;
@@ -247,7 +285,9 @@ public class TiDBDefaultValueConverter implements DefaultValueConverter {
      * @return the converted value;
      */
     private Object convertToDecimal(Column column, String value) {
-        return column.scale().isPresent() ? new BigDecimal(value).setScale(column.scale().get(), RoundingMode.HALF_UP) : new BigDecimal(value);
+        return column.scale().isPresent()
+                ? new BigDecimal(value).setScale(column.scale().get(), RoundingMode.HALF_UP)
+                : new BigDecimal(value);
     }
 
     /**
@@ -267,8 +307,7 @@ public class TiDBDefaultValueConverter implements DefaultValueConverter {
     private Object convertToBit(String value) {
         try {
             return Short.parseShort(value) != 0;
-        }
-        catch (NumberFormatException ignore) {
+        } catch (NumberFormatException ignore) {
             return Boolean.parseBoolean(value);
         }
     }
@@ -287,29 +326,29 @@ public class TiDBDefaultValueConverter implements DefaultValueConverter {
 
     /**
      * Converts a string object for an expected JDBC type of {@link Types#BOOLEAN}.
-     * @param value the string object to be converted into a {@link Types#BOOLEAN} type;
      *
+     * @param value the string object to be converted into a {@link Types#BOOLEAN} type;
      * @return the converted value;
      */
     private Object convertToBoolean(String value) {
         try {
             return Integer.parseInt(value) != 0;
-        }
-        catch (NumberFormatException ignore) {
+        } catch (NumberFormatException ignore) {
             return Boolean.parseBoolean(value);
         }
     }
 
     private DateTimeFormatter timestampFormat(int length) {
-        final DateTimeFormatterBuilder dtf = new DateTimeFormatterBuilder()
-                .appendPattern("yyyy-MM-dd")
-                .optionalStart()
-                .appendLiteral(" ")
-                .append(DateTimeFormatter.ISO_LOCAL_TIME)
-                .optionalEnd()
-                .parseDefaulting(ChronoField.HOUR_OF_DAY, 0)
-                .parseDefaulting(ChronoField.MINUTE_OF_HOUR, 0)
-                .parseDefaulting(ChronoField.SECOND_OF_MINUTE, 0);
+        final DateTimeFormatterBuilder dtf =
+                new DateTimeFormatterBuilder()
+                        .appendPattern("yyyy-MM-dd")
+                        .optionalStart()
+                        .appendLiteral(" ")
+                        .append(DateTimeFormatter.ISO_LOCAL_TIME)
+                        .optionalEnd()
+                        .parseDefaulting(ChronoField.HOUR_OF_DAY, 0)
+                        .parseDefaulting(ChronoField.MINUTE_OF_HOUR, 0)
+                        .parseDefaulting(ChronoField.SECOND_OF_MINUTE, 0);
         if (length > 0) {
             dtf.appendFraction(ChronoField.MICRO_OF_SECOND, 0, length, true);
         }
@@ -372,8 +411,7 @@ public class TiDBDefaultValueConverter implements DefaultValueConverter {
             month = Integer.parseInt(s.substring(firstDash + 1, secondDash));
             if (dividingSpace != -1) {
                 day = Integer.parseInt(s.substring(secondDash + 1, dividingSpace));
-            }
-            else {
+            } else {
                 day = Integer.parseInt(s.substring(secondDash + 1, len));
             }
 
@@ -389,20 +427,17 @@ public class TiDBDefaultValueConverter implements DefaultValueConverter {
         if (dividingSpace != -1 && dividingSpace < len - 1) {
             if (firstColon == -1) {
                 hour = Integer.parseInt(s.substring(dividingSpace + 1, len));
-            }
-            else {
+            } else {
                 hour = Integer.parseInt(s.substring(dividingSpace + 1, firstColon));
                 if (firstColon < len - 1) {
                     if (secondColon == -1) {
                         minute = Integer.parseInt(s.substring(firstColon + 1, len));
-                    }
-                    else {
+                    } else {
                         minute = Integer.parseInt(s.substring(firstColon + 1, secondColon));
                         if (secondColon < len - 1) {
                             if (period == -1) {
                                 second = Integer.parseInt(s.substring(secondColon + 1, len));
-                            }
-                            else {
+                            } else {
                                 second = Integer.parseInt(s.substring(secondColon + 1, period));
                             }
                         }
@@ -412,8 +447,11 @@ public class TiDBDefaultValueConverter implements DefaultValueConverter {
         }
 
         StringBuilder cleanedTimestamp = new StringBuilder();
-        cleanedTimestamp = cleanedTimestamp
-                .append(String.format("%04d-%02d-%02d %02d:%02d:%02d", year, month, day, hour, minute, second));
+        cleanedTimestamp =
+                cleanedTimestamp.append(
+                        String.format(
+                                "%04d-%02d-%02d %02d:%02d:%02d",
+                                year, month, day, hour, minute, second));
 
         if (period != -1 && period < len - 1) {
             cleanedTimestamp = cleanedTimestamp.append(".").append(s.substring(period + 1));

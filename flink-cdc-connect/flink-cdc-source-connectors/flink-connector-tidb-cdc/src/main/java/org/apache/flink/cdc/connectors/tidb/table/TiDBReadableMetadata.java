@@ -1,7 +1,5 @@
 package org.apache.flink.cdc.connectors.tidb.table;
 
-import io.debezium.connector.AbstractSourceInfo;
-import io.debezium.data.Envelope;
 import org.apache.flink.cdc.debezium.table.MetadataConverter;
 import org.apache.flink.cdc.debezium.table.RowDataMetadataConverter;
 import org.apache.flink.table.api.DataTypes;
@@ -9,6 +7,9 @@ import org.apache.flink.table.data.RowData;
 import org.apache.flink.table.data.StringData;
 import org.apache.flink.table.data.TimestampData;
 import org.apache.flink.table.types.DataType;
+
+import io.debezium.connector.AbstractSourceInfo;
+import io.debezium.data.Envelope;
 import org.apache.kafka.connect.data.Struct;
 import org.apache.kafka.connect.source.SourceRecord;
 
@@ -84,8 +85,6 @@ public enum TiDBReadableMetadata {
                 }
             });
 
-
-
     private final String key;
 
     private final DataType dataType;
@@ -110,4 +109,3 @@ public enum TiDBReadableMetadata {
         return converter;
     }
 }
-

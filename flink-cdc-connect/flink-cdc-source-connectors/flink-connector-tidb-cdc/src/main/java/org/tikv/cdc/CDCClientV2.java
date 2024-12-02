@@ -1,12 +1,12 @@
 package org.tikv.cdc;
 
 public interface CDCClientV2 {
-  void execute(final long startTs);
+    void execute(final long startTs);
 
-  long getResolvedTs();
+    long getResolvedTs();
 
-  /** @return null if no more data */
-  RawKVEntry get();
+    /** @return null if no more data */
+    RawKVEntry get();
 
-  void close();
+    void close();
 }

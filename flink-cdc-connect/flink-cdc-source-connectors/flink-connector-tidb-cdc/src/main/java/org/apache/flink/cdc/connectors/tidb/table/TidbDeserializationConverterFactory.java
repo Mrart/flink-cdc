@@ -1,12 +1,5 @@
 package org.apache.flink.cdc.connectors.tidb.table;
 
-import com.esri.core.geometry.ogc.OGCGeometry;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectWriter;
-import io.debezium.data.EnumSet;
-import io.debezium.data.geometry.Geometry;
-import io.debezium.data.geometry.Point;
 import org.apache.flink.cdc.debezium.table.DeserializationRuntimeConverter;
 import org.apache.flink.cdc.debezium.table.DeserializationRuntimeConverterFactory;
 import org.apache.flink.table.data.GenericArrayData;
@@ -14,6 +7,14 @@ import org.apache.flink.table.data.StringData;
 import org.apache.flink.table.types.logical.ArrayType;
 import org.apache.flink.table.types.logical.LogicalType;
 import org.apache.flink.table.types.logical.LogicalTypeFamily;
+
+import com.esri.core.geometry.ogc.OGCGeometry;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
+import io.debezium.data.EnumSet;
+import io.debezium.data.geometry.Geometry;
+import io.debezium.data.geometry.Point;
 import org.apache.kafka.connect.data.Schema;
 import org.apache.kafka.connect.data.Struct;
 
@@ -128,8 +129,8 @@ public class TidbDeserializationConverterFactory {
             return Optional.empty();
         }
     }
+
     private static boolean hasFamily(LogicalType logicalType, LogicalTypeFamily family) {
         return logicalType.getTypeRoot().getFamilies().contains(family);
     }
-
 }

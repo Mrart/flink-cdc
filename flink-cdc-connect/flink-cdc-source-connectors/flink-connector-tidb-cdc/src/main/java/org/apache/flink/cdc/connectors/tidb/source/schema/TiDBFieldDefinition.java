@@ -1,7 +1,8 @@
 package org.apache.flink.cdc.connectors.tidb.source.schema;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.flink.cdc.connectors.tidb.utils.TiDBUtils;
+
+import org.apache.commons.lang3.StringUtils;
 
 public class TiDBFieldDefinition {
     private String columnName;
@@ -73,10 +74,6 @@ public class TiDBFieldDefinition {
     }
 
     public String toDdl() {
-        return TiDBUtils.quote(columnName)
-                + " "
-                + columnType
-                + " "
-                + (nullable ? "" : "NOT NULL");
+        return TiDBUtils.quote(columnName) + " " + columnType + " " + (nullable ? "" : "NOT NULL");
     }
 }

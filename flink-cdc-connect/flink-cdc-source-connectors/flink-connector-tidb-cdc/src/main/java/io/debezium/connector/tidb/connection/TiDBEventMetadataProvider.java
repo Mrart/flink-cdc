@@ -21,12 +21,13 @@ public class TiDBEventMetadataProvider implements EventMetadataProvider {
     public static final String QUERY_KEY = "query";
 
     @Override
-    public Instant getEventTimestamp(DataCollectionId source, OffsetContext offset, Object key, Struct value) {
-        if (value == null){
+    public Instant getEventTimestamp(
+            DataCollectionId source, OffsetContext offset, Object key, Struct value) {
+        if (value == null) {
             return null;
         }
         final Struct sourceInfo = value.getStruct(Envelope.FieldName.SOURCE);
-        if (sourceInfo == null){
+        if (sourceInfo == null) {
             return null;
         }
         final Long timestamp = sourceInfo.getInt64(AbstractSourceInfo.TIMESTAMP_KEY);
@@ -34,7 +35,8 @@ public class TiDBEventMetadataProvider implements EventMetadataProvider {
     }
 
     @Override
-    public Map<String, String> getEventSourcePosition(DataCollectionId source, OffsetContext offset, Object key, Struct value) {
+    public Map<String, String> getEventSourcePosition(
+            DataCollectionId source, OffsetContext offset, Object key, Struct value) {
         if (value == null) {
             return null;
         }
@@ -52,12 +54,14 @@ public class TiDBEventMetadataProvider implements EventMetadataProvider {
     }
 
     @Override
-    public String getTransactionId(DataCollectionId source, OffsetContext offset, Object key, Struct value) {
+    public String getTransactionId(
+            DataCollectionId source, OffsetContext offset, Object key, Struct value) {
         return ((MySqlOffsetContext) offset).getTransactionId();
     }
 
     @Override
-    public String toSummaryString(DataCollectionId source, OffsetContext offset, Object key, Struct value) {
+    public String toSummaryString(
+            DataCollectionId source, OffsetContext offset, Object key, Struct value) {
         return EventMetadataProvider.super.toSummaryString(source, offset, key, value);
     }
 }

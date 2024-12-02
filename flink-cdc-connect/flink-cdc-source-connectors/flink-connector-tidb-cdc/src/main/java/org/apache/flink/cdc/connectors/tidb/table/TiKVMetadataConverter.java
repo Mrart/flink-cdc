@@ -19,7 +19,6 @@ package org.apache.flink.cdc.connectors.tidb.table;
 
 import org.apache.flink.cdc.common.annotation.Internal;
 
-import org.apache.flink.cdc.debezium.table.MetadataConverter;
 import org.tikv.kvproto.Cdcpb;
 import org.tikv.kvproto.Kvrpcpb;
 
