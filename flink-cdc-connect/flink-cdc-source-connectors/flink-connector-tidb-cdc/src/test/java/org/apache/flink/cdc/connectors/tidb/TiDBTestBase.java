@@ -17,10 +17,9 @@
 
 package org.apache.flink.cdc.connectors.tidb;
 
+import com.alibaba.dcm.DnsCacheManipulator;
 import org.apache.flink.cdc.connectors.tidb.source.config.TiDBSourceConfigFactory;
 import org.apache.flink.test.util.AbstractTestBase;
-
-import com.alibaba.dcm.DnsCacheManipulator;
 import org.awaitility.Awaitility;
 import org.awaitility.core.ConditionTimeoutException;
 import org.junit.AfterClass;
@@ -54,187 +53,178 @@ import static org.junit.Assert.assertNotNull;
 
 /** Utility class for tidb tests. */
 public class TiDBTestBase extends AbstractTestBase {
-    private static final Logger LOG = LoggerFactory.getLogger(TiDBTestBase.class);
-    private static final Pattern COMMENT_PATTERN = Pattern.compile("^(.*)--.*$");
+  private static final Logger LOG = LoggerFactory.getLogger(TiDBTestBase.class);
+  private static final Pattern COMMENT_PATTERN = Pattern.compile("^(.*)--.*$");
 
-    public static final String PD_SERVICE_NAME = "pd0";
-    public static final String TIKV_SERVICE_NAME = "tikv0";
-    public static final String TIDB_SERVICE_NAME = "tidb0";
+  public static final String PD_SERVICE_NAME = "pd0";
+  public static final String TIKV_SERVICE_NAME = "tikv0";
+  public static final String TIDB_SERVICE_NAME = "tidb0";
 
-    public static final String TIDB_USER = "root";
-    public static final String TIDB_PASSWORD = "";
+  public static final String TIDB_USER = "root";
+  public static final String TIDB_PASSWORD = "";
 
-    public static final int TIDB_PORT = 4000;
-    public static final int TIKV_PORT_ORIGIN = 20160;
-    public static final int PD_PORT_ORIGIN = 2379;
-    public static int pdPort = PD_PORT_ORIGIN + 10;
+  public static final int TIDB_PORT = 4000;
+  public static final int TIKV_PORT_ORIGIN = 20160;
+  public static final int PD_PORT_ORIGIN = 2379;
+  public static int pdPort = PD_PORT_ORIGIN + 10;
 
-    @ClassRule public static final Network NETWORK = Network.newNetwork();
+  @ClassRule public static final Network NETWORK = Network.newNetwork();
 
-    @ClassRule
-    public static final GenericContainer<?> PD =
-            new FixedHostPortGenericContainer<>("pingcap/pd:v6.5.11")
-                    .withFileSystemBind("src/test/resources/config/pd.toml", "/pd.toml")
-                    .withFixedExposedPort(pdPort, PD_PORT_ORIGIN)
-                    .withCommand(
-                            "--name=pd0",
-                            "--client-urls=http://0.0.0.0:" + pdPort + ",http://0.0.0.0:2379",
-                            "--peer-urls=http://0.0.0.0:2380",
-                            "--advertise-client-urls=http://pd0:" + pdPort + ",http://pd0:2379",
-                            "--advertise-peer-urls=http://pd0:2380",
-                            "--initial-cluster=pd0=http://pd0:2380",
-                            "--data-dir=/data/pd0",
-                            "--config=/pd.toml",
-                            "--log-file=/logs/pd0.log")
-                    .withNetwork(NETWORK)
-                    .withNetworkAliases(PD_SERVICE_NAME)
-                    .withStartupTimeout(Duration.ofSeconds(120))
-                    .withLogConsumer(new Slf4jLogConsumer(LOG));
+  @ClassRule
+  public static final GenericContainer<?> PD =
+      new FixedHostPortGenericContainer<>("pingcap/pd:v6.5.11")
+          .withFileSystemBind("src/test/resources/config/pd.toml", "/pd.toml")
+          .withFixedExposedPort(pdPort, PD_PORT_ORIGIN)
+          .withCommand(
+              "--name=pd0",
+              "--client-urls=http://0.0.0.0:" + pdPort + ",http://0.0.0.0:2379",
+              "--peer-urls=http://0.0.0.0:2380",
+              "--advertise-client-urls=http://pd0:" + pdPort + ",http://pd0:2379",
+              "--advertise-peer-urls=http://pd0:2380",
+              "--initial-cluster=pd0=http://pd0:2380",
+              "--data-dir=/data/pd0",
+              "--config=/pd.toml",
+              "--log-file=/logs/pd0.log")
+          .withNetwork(NETWORK)
+          .withNetworkAliases(PD_SERVICE_NAME)
+          .withStartupTimeout(Duration.ofSeconds(120))
+          .withLogConsumer(new Slf4jLogConsumer(LOG));
 
-    @ClassRule
-    public static final GenericContainer<?> TIKV =
-            new FixedHostPortGenericContainer<>("pingcap/tikv:v6.5.11")
-                    .withFixedExposedPort(TIKV_PORT_ORIGIN, TIKV_PORT_ORIGIN)
-                    .withFileSystemBind("src/test/resources/config/tikv.toml", "/tikv.toml")
-                    .withCommand(
-                            "--addr=0.0.0.0:20160",
-                            "--advertise-addr=tikv0:20160",
-                            "--data-dir=/data/tikv0",
-                            "--pd=pd0:2379",
-                            "--config=/tikv.toml",
-                            "--log-file=/logs/tikv0.log")
-                    .withNetwork(NETWORK)
-                    .dependsOn(PD)
-                    .withNetworkAliases(TIKV_SERVICE_NAME)
-                    .withStartupTimeout(Duration.ofSeconds(120))
-                    .withLogConsumer(new Slf4jLogConsumer(LOG));
+  @ClassRule
+  public static final GenericContainer<?> TIKV =
+      new FixedHostPortGenericContainer<>("pingcap/tikv:v6.5.11")
+          .withFixedExposedPort(TIKV_PORT_ORIGIN, TIKV_PORT_ORIGIN)
+          .withFileSystemBind("src/test/resources/config/tikv.toml", "/tikv.toml")
+          .withCommand(
+              "--addr=0.0.0.0:20160",
+              "--advertise-addr=tikv0:20160",
+              "--data-dir=/data/tikv0",
+              "--pd=pd0:2379",
+              "--config=/tikv.toml",
+              "--log-file=/logs/tikv0.log")
+          .withNetwork(NETWORK)
+          .dependsOn(PD)
+          .withNetworkAliases(TIKV_SERVICE_NAME)
+          .withStartupTimeout(Duration.ofSeconds(120))
+          .withLogConsumer(new Slf4jLogConsumer(LOG));
 
-    @ClassRule
-    public static final GenericContainer<?> TIDB =
-            new GenericContainer<>("pingcap/tidb:v6.5.11")
-                    .withExposedPorts(TIDB_PORT)
-                    .withFileSystemBind("src/test/resources/config/tidb.toml", "/tidb.toml")
-                    .withCommand(
-                            "--store=tikv",
-                            "--path=pd0:2379",
-                            "--config=/tidb.toml",
-                            "--advertise-address=tidb0")
-                    .withNetwork(NETWORK)
-                    .dependsOn(TIKV)
-                    .withNetworkAliases(TIDB_SERVICE_NAME)
-                    .withStartupTimeout(Duration.ofSeconds(120))
-                    .withLogConsumer(new Slf4jLogConsumer(LOG));
+  @ClassRule
+  public static final GenericContainer<?> TIDB =
+      new GenericContainer<>("pingcap/tidb:v6.5.11")
+          .withExposedPorts(TIDB_PORT)
+          .withFileSystemBind("src/test/resources/config/tidb.toml", "/tidb.toml")
+          .withCommand(
+              "--store=tikv", "--path=pd0:2379", "--config=/tidb.toml", "--advertise-address=tidb0")
+          .withNetwork(NETWORK)
+          .dependsOn(TIKV)
+          .withNetworkAliases(TIDB_SERVICE_NAME)
+          .withStartupTimeout(Duration.ofSeconds(120))
+          .withLogConsumer(new Slf4jLogConsumer(LOG));
 
-    @BeforeClass
-    public static void startContainers() throws Exception {
-        // Add jvm dns cache for flink to invoke pd interface.
-        DnsCacheManipulator.setDnsCache(PD_SERVICE_NAME, "127.0.0.1");
-        DnsCacheManipulator.setDnsCache(TIKV_SERVICE_NAME, "127.0.0.1");
-        LOG.info("Starting containers...");
-        Startables.deepStart(Stream.of(PD, TIKV, TIDB)).join();
-        LOG.info("Containers are started.");
+  @BeforeClass
+  public static void startContainers() throws Exception {
+    // Add jvm dns cache for flink to invoke pd interface.
+    DnsCacheManipulator.setDnsCache(PD_SERVICE_NAME, "127.0.0.1");
+    DnsCacheManipulator.setDnsCache(TIKV_SERVICE_NAME, "127.0.0.1");
+    LOG.info("Starting containers...");
+    Startables.deepStart(Stream.of(PD, TIKV, TIDB)).join();
+    LOG.info("Containers are started.");
+  }
+
+  @AfterClass
+  public static void stopContainers() {
+    DnsCacheManipulator.removeDnsCache(PD_SERVICE_NAME);
+    DnsCacheManipulator.removeDnsCache(TIKV_SERVICE_NAME);
+    Stream.of(TIKV, PD, TIDB).forEach(GenericContainer::stop);
+  }
+
+  public String getJdbcUrl(String databaseName) {
+    return "jdbc:mysql://"
+        + TIDB.getContainerIpAddress()
+        + ":"
+        + TIDB.getMappedPort(TIDB_PORT)
+        + "/"
+        + databaseName;
+  }
+
+  protected Connection getJdbcConnection(String databaseName) throws SQLException {
+    return DriverManager.getConnection(getJdbcUrl(databaseName), TIDB_USER, TIDB_PASSWORD);
+  }
+
+  private static void dropTestDatabase(Connection connection, String databaseName)
+      throws SQLException {
+    try {
+      Awaitility.await(String.format("Dropping database %s", databaseName))
+          .atMost(120, TimeUnit.SECONDS)
+          .until(
+              () -> {
+                try {
+                  String sql = String.format("DROP DATABASE IF EXISTS %s", databaseName);
+                  connection.createStatement().execute(sql);
+                  return true;
+                } catch (SQLException e) {
+                  LOG.warn(
+                      String.format("DROP DATABASE %s failed: {}", databaseName), e.getMessage());
+                  return false;
+                }
+              });
+    } catch (ConditionTimeoutException e) {
+      throw new IllegalStateException("Failed to drop test database", e);
     }
+  }
 
-    @AfterClass
-    public static void stopContainers() {
-        DnsCacheManipulator.removeDnsCache(PD_SERVICE_NAME);
-        DnsCacheManipulator.removeDnsCache(TIKV_SERVICE_NAME);
-        Stream.of(TIKV, PD, TIDB).forEach(GenericContainer::stop);
+  /**
+   * Executes a JDBC statement using the default jdbc config without autocommitting the connection.
+   */
+  protected void initializeTidbTable(String sqlFile) {
+    final String ddlFile = String.format("ddl/%s.sql", sqlFile);
+    final URL ddlTestFile = TiDBTestBase.class.getClassLoader().getResource(ddlFile);
+    assertNotNull("Cannot locate " + ddlFile, ddlTestFile);
+    try (Connection connection = getJdbcConnection("");
+        Statement statement = connection.createStatement()) {
+      dropTestDatabase(connection, sqlFile);
+      final List<String> statements =
+          Arrays.stream(
+                  Files.readAllLines(Paths.get(ddlTestFile.toURI())).stream()
+                      .map(String::trim)
+                      .filter(x -> !x.startsWith("--") && !x.isEmpty())
+                      .map(
+                          x -> {
+                            final Matcher m = COMMENT_PATTERN.matcher(x);
+                            return m.matches() ? m.group(1) : x;
+                          })
+                      .collect(Collectors.joining("\n"))
+                      .split(";"))
+              .collect(Collectors.toList());
+      for (String stmt : statements) {
+        statement.execute(stmt);
+      }
+    } catch (Exception e) {
+      throw new RuntimeException(e);
     }
+  }
 
-    public String getJdbcUrl(String databaseName) {
-        return "jdbc:mysql://"
-                + TIDB.getContainerIpAddress()
-                + ":"
-                + TIDB.getMappedPort(TIDB_PORT)
-                + "/"
-                + databaseName;
-    }
+  protected TiDBSourceConfigFactory getMockTiDBSourceConfigFactory(
+      String database, String schemaName, String tableName, int splitSize) {
+    return getMockTiDBSourceConfigFactory(database, schemaName, tableName, splitSize, false);
+  }
 
-    protected Connection getJdbcConnection(String databaseName) throws SQLException {
-        return DriverManager.getConnection(getJdbcUrl(databaseName), TIDB_USER, TIDB_PASSWORD);
-    }
+  protected TiDBSourceConfigFactory getMockTiDBSourceConfigFactory(
+      String database,
+      String schemaName,
+      String tableName,
+      int splitSize,
+      boolean skipSnapshotBackfill) {
 
-    private static void dropTestDatabase(Connection connection, String databaseName)
-            throws SQLException {
-        try {
-            Awaitility.await(String.format("Dropping database %s", databaseName))
-                    .atMost(120, TimeUnit.SECONDS)
-                    .until(
-                            () -> {
-                                try {
-                                    String sql =
-                                            String.format(
-                                                    "DROP DATABASE IF EXISTS %s", databaseName);
-                                    connection.createStatement().execute(sql);
-                                    return true;
-                                } catch (SQLException e) {
-                                    LOG.warn(
-                                            String.format(
-                                                    "DROP DATABASE %s failed: {}", databaseName),
-                                            e.getMessage());
-                                    return false;
-                                }
-                            });
-        } catch (ConditionTimeoutException e) {
-            throw new IllegalStateException("Failed to drop test database", e);
-        }
-    }
-
-    /**
-     * Executes a JDBC statement using the default jdbc config without autocommitting the
-     * connection.
-     */
-    protected void initializeTidbTable(String sqlFile) {
-        final String ddlFile = String.format("ddl/%s.sql", sqlFile);
-        final URL ddlTestFile = TiDBTestBase.class.getClassLoader().getResource(ddlFile);
-        assertNotNull("Cannot locate " + ddlFile, ddlTestFile);
-        try (Connection connection = getJdbcConnection("");
-                Statement statement = connection.createStatement()) {
-            dropTestDatabase(connection, sqlFile);
-            final List<String> statements =
-                    Arrays.stream(
-                                    Files.readAllLines(Paths.get(ddlTestFile.toURI())).stream()
-                                            .map(String::trim)
-                                            .filter(x -> !x.startsWith("--") && !x.isEmpty())
-                                            .map(
-                                                    x -> {
-                                                        final Matcher m =
-                                                                COMMENT_PATTERN.matcher(x);
-                                                        return m.matches() ? m.group(1) : x;
-                                                    })
-                                            .collect(Collectors.joining("\n"))
-                                            .split(";"))
-                            .collect(Collectors.toList());
-            for (String stmt : statements) {
-                statement.execute(stmt);
-            }
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    protected TiDBSourceConfigFactory getMockTiDBSourceConfigFactory(
-            String database, String schemaName, String tableName, int splitSize) {
-        return getMockTiDBSourceConfigFactory(database, schemaName, tableName, splitSize, false);
-    }
-
-    protected TiDBSourceConfigFactory getMockTiDBSourceConfigFactory(
-            String database,
-            String schemaName,
-            String tableName,
-            int splitSize,
-            boolean skipSnapshotBackfill) {
-
-        TiDBSourceConfigFactory TiDBSourceConfigFactory = new TiDBSourceConfigFactory();
-        TiDBSourceConfigFactory.hostname(TIDB.getContainerIpAddress());
-        TiDBSourceConfigFactory.port(TIDB.getMappedPort(TIDB_PORT));
-        TiDBSourceConfigFactory.username(TIDB_USER);
-        TiDBSourceConfigFactory.password(TIDB_PASSWORD);
-        TiDBSourceConfigFactory.databaseList(database);
-        TiDBSourceConfigFactory.tableList(schemaName + "." + tableName);
-        TiDBSourceConfigFactory.splitSize(splitSize);
-        TiDBSourceConfigFactory.skipSnapshotBackfill(skipSnapshotBackfill);
-        return TiDBSourceConfigFactory;
-    }
+    TiDBSourceConfigFactory TiDBSourceConfigFactory = new TiDBSourceConfigFactory();
+    TiDBSourceConfigFactory.hostname(TIDB.getContainerIpAddress());
+    TiDBSourceConfigFactory.port(TIDB.getMappedPort(TIDB_PORT));
+    TiDBSourceConfigFactory.username(TIDB_USER);
+    TiDBSourceConfigFactory.password(TIDB_PASSWORD);
+    TiDBSourceConfigFactory.databaseList(database);
+    TiDBSourceConfigFactory.tableList(database + "." + tableName);
+    TiDBSourceConfigFactory.splitSize(splitSize);
+    TiDBSourceConfigFactory.skipSnapshotBackfill(skipSnapshotBackfill);
+    return TiDBSourceConfigFactory;
+  }
 }
