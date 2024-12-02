@@ -1,5 +1,0 @@
-#NOTE: This is a Maven Resolver internal implementation file, its format can be changed without prior notice.
-#Fri Nov 29 13:48:32 CST 2024
-flink-streaming-java-1.18.1-tests.jar>nexus=
-flink-streaming-java-1.18.1.jar>nexus=
-flink-streaming-java-1.18.1.pom>nexus=
