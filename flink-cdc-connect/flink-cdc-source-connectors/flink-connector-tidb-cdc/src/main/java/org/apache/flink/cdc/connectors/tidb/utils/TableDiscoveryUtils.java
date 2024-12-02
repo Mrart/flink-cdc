@@ -13,23 +13,22 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 public class TableDiscoveryUtils {
-    private static final Logger LOG = LoggerFactory.getLogger(TableDiscoveryUtils.class);
+  private static final Logger LOG = LoggerFactory.getLogger(TableDiscoveryUtils.class);
 
-    public static List<TableId> listTables(
-            String database, JdbcConnection jdbc, RelationalTableFilters tableFilters)
-            throws SQLException {
+  public static List<TableId> listTables(
+      String database, JdbcConnection jdbc, RelationalTableFilters tableFilters)
+      throws SQLException {
 
-        Set<TableId> allTableIds =
-                jdbc.readTableNames(database, null, null, new String[] {"TABLE"});
+    Set<TableId> allTableIds = jdbc.readTableNames(database, null, null, new String[] {"TABLE"});
 
-        Set<TableId> capturedTables =
-                allTableIds.stream()
-                        .filter(t -> tableFilters.dataCollectionFilter().isIncluded(t))
-                        .collect(Collectors.toSet());
-        LOG.info(
-                "Postgres captured tables : {} .",
-                capturedTables.stream().map(TableId::toString).collect(Collectors.joining(",")));
+    Set<TableId> capturedTables =
+        allTableIds.stream()
+            .filter(t -> tableFilters.dataCollectionFilter().isIncluded(t))
+            .collect(Collectors.toSet());
+    LOG.info(
+        "TiDB captured tables : {} .",
+        capturedTables.stream().map(TableId::toString).collect(Collectors.joining(",")));
 
-        return new ArrayList<>(capturedTables);
-    }
+    return new ArrayList<>(capturedTables);
+  }
 }
