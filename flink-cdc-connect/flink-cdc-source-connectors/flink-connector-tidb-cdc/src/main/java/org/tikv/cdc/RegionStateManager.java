@@ -2,7 +2,6 @@ package org.tikv.cdc;
 
 import org.tikv.common.region.TiRegion;
 import org.tikv.kvproto.Coprocessor.KeyRange;
-import org.tikv.shade.io.grpc.ManagedChannel;
 
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
@@ -20,10 +19,10 @@ public class RegionStateManager {
   static class SingleRegionInfo {
     private final TiRegion.RegionVerID verID;
     private final KeyRange span;
-    private final ManagedChannel rpcCtx;
+    private final RPCContext rpcCtx;
     private final LockedRange lockedRange;
 
-    public SingleRegionInfo(TiRegion.RegionVerID verID, KeyRange span, ManagedChannel rpcCtx) {
+    public SingleRegionInfo(TiRegion.RegionVerID verID, KeyRange span, RPCContext rpcCtx) {
       this.verID = verID;
       this.span = span;
       this.rpcCtx = rpcCtx;
@@ -32,6 +31,14 @@ public class RegionStateManager {
 
     public long getResolvedTs() {
       return lockedRange.getCheckpointTs();
+    }
+
+    public RPCContext getRpcCtx() {
+      return this.rpcCtx;
+    }
+
+    public KeyRange getSpan() {
+      return span;
     }
   }
 
@@ -44,6 +51,9 @@ public class RegionStateManager {
     public RegionFeedState(SingleRegionInfo sri, long requestID) {
       this.sri = sri;
       this.requestID = requestID;
+    }
+
+    public void start() {
       this.matcher = new Matcher();
     }
 
@@ -53,6 +63,14 @@ public class RegionStateManager {
 
     public Matcher getMatcher() {
       return this.matcher;
+    }
+
+    public KeyRange getKeyRange() {
+      return this.sri.span;
+    }
+
+    public long getRegionId() {
+      return this.sri.verID.getId();
     }
 
     public boolean isStale() {
@@ -75,8 +93,16 @@ public class RegionStateManager {
       return sri.lockedRange.getCheckpointTs();
     }
 
+    public SingleRegionInfo getSri() {
+      return sri;
+    }
+
     public void updateResolvedTs(long resolvedTs) {
       sri.lockedRange.updateCheckpointTs(resolvedTs);
+    }
+
+    public long getRequestID() {
+      return requestID;
     }
   }
 
@@ -116,12 +142,13 @@ public class RegionStateManager {
 
   static class SyncRegionFeedStateMap {
     private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
-    private final ConcurrentHashMap<Long, RegionFeedState> states = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<Long, RegionFeedState> statesInternal =
+        new ConcurrentHashMap<>();
 
     public void setByRequestID(long requestID, RegionFeedState state) {
       lock.writeLock().lock();
       try {
-        states.put(requestID, state);
+        statesInternal.put(requestID, state);
       } finally {
         lock.writeLock().unlock();
       }
@@ -129,8 +156,13 @@ public class RegionStateManager {
 
     public RegionFeedState takeByRequestID(long requestID) {
       lock.writeLock().lock();
+
       try {
-        return states.remove(requestID);
+        RegionFeedState state = statesInternal.get(requestID);
+        if (state != null) {
+          statesInternal.remove(requestID);
+        }
+        return state;
       } finally {
         lock.writeLock().unlock();
       }
@@ -139,7 +171,7 @@ public class RegionStateManager {
     public void delByRegionID(long regionID) {
       lock.writeLock().lock();
       try {
-        states.remove(regionID);
+        statesInternal.remove(regionID);
       } finally {
         lock.writeLock().unlock();
       }
@@ -148,7 +180,7 @@ public class RegionStateManager {
     public int size() {
       lock.readLock().lock();
       try {
-        return states.size();
+        return statesInternal.size();
       } finally {
         lock.readLock().unlock();
       }
@@ -178,7 +210,7 @@ public class RegionStateManager {
 
     public RegionFeedState getState(long regionID) {
       int bucketIndex = getBucket(regionID);
-      return states[bucketIndex].states.get(regionID);
+      return states[bucketIndex].statesInternal.get(regionID);
     }
 
     public void delState(long regionID) {
