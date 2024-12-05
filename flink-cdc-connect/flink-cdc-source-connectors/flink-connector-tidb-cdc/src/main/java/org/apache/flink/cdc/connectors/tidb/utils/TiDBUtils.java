@@ -291,7 +291,7 @@ public class TiDBUtils {
     private static void addPrimaryKeyColumnsToCondition(
             RowType pkRowType, StringBuilder sql, String predicate) {
         for (Iterator<String> fieldNamesIt = pkRowType.getFieldNames().iterator();
-                fieldNamesIt.hasNext(); ) {
+             fieldNamesIt.hasNext(); ) {
             sql.append(fieldNamesIt.next()).append(predicate);
             if (fieldNamesIt.hasNext()) {
                 sql.append(" AND ");
@@ -349,7 +349,7 @@ public class TiDBUtils {
     private static String getPrimaryKeyColumnsProjection(RowType pkRowType) {
         StringBuilder sql = new StringBuilder();
         for (Iterator<String> fieldNamesIt = pkRowType.getFieldNames().iterator();
-                fieldNamesIt.hasNext(); ) {
+             fieldNamesIt.hasNext(); ) {
             sql.append(fieldNamesIt.next());
             if (fieldNamesIt.hasNext()) {
                 sql.append(" , ");
@@ -361,7 +361,7 @@ public class TiDBUtils {
     private static String getMaxPrimaryKeyColumnsProjection(RowType pkRowType) {
         StringBuilder sql = new StringBuilder();
         for (Iterator<String> fieldNamesIt = pkRowType.getFieldNames().iterator();
-                fieldNamesIt.hasNext(); ) {
+             fieldNamesIt.hasNext(); ) {
             sql.append("MAX(" + fieldNamesIt.next() + ")");
             if (fieldNamesIt.hasNext()) {
                 sql.append(" , ");
@@ -377,7 +377,8 @@ public class TiDBUtils {
                     showMasterStmt,
                     rs -> {
                         if (rs.next()) {
-                            return new CDCEventOffset(0, Instant.now().toEpochMilli());
+                            final long binlogPosition = rs.getLong(2);
+                            return new CDCEventOffset(0, getPhysicalTimeFromTso(binlogPosition));
                         } else {
                             throw new FlinkRuntimeException(
                                     "Cannot read the binlog filename and position via '"
@@ -414,5 +415,10 @@ public class TiDBUtils {
         //    Key.KeyMapper customKeysMapper = new CustomeKeyMapper();
         return new TiDBDatabaseSchema(
                 dbzTiDBConfig, topicSelector, isTableIdCaseSensitive, dbzTiDBConfig.getKeyMapper());
+    }
+
+    public static long getPhysicalTimeFromTso(long tso) {
+        // The first 41 bits represent the physical timestamp in milliseconds since epoch
+        return tso >> 18; // Convert milliseconds to microseconds
     }
 }

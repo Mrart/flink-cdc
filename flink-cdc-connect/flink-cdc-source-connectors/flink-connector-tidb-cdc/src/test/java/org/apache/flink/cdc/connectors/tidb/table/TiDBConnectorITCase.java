@@ -92,7 +92,7 @@ public class TiDBConnectorITCase extends TiDBTestBase {
                         TIDB_USER,
                         "inventory",
                         "products",
-                        "snapshot");
+                        "initial");
 
         String sinkDDL =
                 "CREATE TABLE sink ("
