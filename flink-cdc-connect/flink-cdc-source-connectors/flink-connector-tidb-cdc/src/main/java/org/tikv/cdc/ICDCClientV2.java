@@ -1,12 +1,12 @@
 package org.tikv.cdc;
 
 public interface ICDCClientV2 {
-    void execute(final long startTs);
+  void execute(final long startTs, final long tableId);
 
-    long getResolvedTs();
+  long getResolvedTs();
 
-    /** @return null if no more data */
-    RawKVEntry get();
+  /** @return null if no more data */
+  RegionFeedEvent get();
 
-    void close();
+  void close();
 }

@@ -61,15 +61,15 @@ public class TiDBScanFetchTaskTest extends TiDBTestBase {
                 };
         String[] expected =
                 new String[] {
-                    "+I[101, user_1, Shanghai, 123567891234]",
-                    "+I[102, user_2, Shanghai, 123567891234]",
-                    "+I[103, user_3, Shanghai, 123567891234]",
-                    "+I[109, user_4, Shanghai, 123567891234]",
-                    "+I[110, user_5, Shanghai, 123567891234]",
-                    "+I[111, user_6, Shanghai, 123567891234]",
-                    "+I[118, user_7, Shanghai, 123567891234]",
-                    "+I[121, user_8, Shanghai, 123567891234]",
-                    "+I[123, user_9, Shanghai, 123567891234]",
+                        "+I[101, user_1, Shanghai, 123567891234]",
+                        "+I[102, user_2, hangzhou, 123567891234]",
+                        "+I[103, user_3, Shanghai, 123567891234]",
+                        "+I[109, user_4, Shanghai, 123567891234]",
+                        "+I[110, user_5, Hangzhou, 123567891234]",
+                        "+I[111, user_6, Hangzhou, 123567891234]",
+                        "+I[118, user_7, Shanghai, 123567891234]",
+                        "+I[121, user_8, Shanghai, 123567891234]",
+                        "+I[123, user_9, Shanghai, 123567891234]",
                 };
         List<String> actual =
                 getDataInSnapshotScan(
@@ -78,6 +78,136 @@ public class TiDBScanFetchTaskTest extends TiDBTestBase {
                         false);
         assertEqualsInAnyOrder(Arrays.asList(expected), actual);
     }
+
+
+    @Test
+    public void testInsertDataInSnapshotScan() throws Exception{
+        initializeTidbTable("customer");
+        String tableId = databaseName + "." + tableName;
+        String[] insertDataSql =
+                new String[] {
+                        "INSERT INTO " + tableId + " VALUES(112, 'user_12','Shanghai','123567891234')",
+                        "INSERT INTO " + tableId + " VALUES(113, 'user_13','Shanghai','123567891234')",
+                };
+
+        String[] expected =
+                new String[] {
+                        "+I[101, user_1, Shanghai, 123567891234]",
+                        "+I[102, user_2, Shanghai, 123567891234]",
+                        "+I[103, user_3, Shanghai, 123567891234]",
+                        "+I[109, user_4, Shanghai, 123567891234]",
+                        "+I[110, user_5, Shanghai, 123567891234]",
+                        "+I[111, user_6, Shanghai, 123567891234]",
+                        "+I[112, user_12, Shanghai, 123567891234]",
+                        "+I[113, user_13, Shanghai, 123567891234]",
+                        "+I[118, user_7, Shanghai, 123567891234]",
+                        "+I[121, user_8, Shanghai, 123567891234]",
+                        "+I[123, user_9, Shanghai, 123567891234]",
+                };
+
+        List<String> actual =
+                getDataInSnapshotScan(
+                        insertDataSql, databaseName, tableName, USE_POST_LOWWATERMARK_HOOK, false);
+        assertEqualsInAnyOrder(Arrays.asList(expected), actual);
+    }
+
+    @Test
+    public void testDeleteDataInSnapshotScan() throws Exception {
+        initializeTidbTable("customer");
+        String tableId = databaseName + "." + tableName;
+        String[] deleteDataSql =
+                new String[] {
+                        "DELETE FROM " + tableId + " where id = 101",
+                        "DELETE FROM " + tableId + " where id = 102",
+                };
+        String[] expected =
+                new String[] {
+                        "+I[103, user_3, Shanghai, 123567891234]",
+                        "+I[109, user_4, Shanghai, 123567891234]",
+                        "+I[110, user_5, Shanghai, 123567891234]",
+                        "+I[111, user_6, Shanghai, 123567891234]",
+                        "+I[118, user_7, Shanghai, 123567891234]",
+                        "+I[121, user_8, Shanghai, 123567891234]",
+                        "+I[123, user_9, Shanghai, 123567891234]",
+                };
+        List<String> actual =
+                getDataInSnapshotScan(
+                        deleteDataSql, databaseName, tableName, USE_POST_LOWWATERMARK_HOOK, false);
+        assertEqualsInAnyOrder(Arrays.asList(expected), actual);
+    }
+
+    @Test
+    public void testSnapshotScanSkipBackfillWithPostLowWatermark() throws Exception {
+        initializeTidbTable("customer");
+        String tableId = databaseName + "." + tableName;
+
+        String[] changingDataSql =
+                new String[] {
+                        "UPDATE " + tableId + " SET address = 'Hangzhou' where id = 103",
+                        "DELETE FROM " + tableId + " where id = 102",
+                        "INSERT INTO " + tableId + " VALUES(102, 'user_2','hangzhou','123567891234')",
+                        "UPDATE " + tableId + " SET address = 'Shanghai' where id = 103",
+                        "UPDATE " + tableId + " SET address = 'Hangzhou' where id = 110",
+                        "UPDATE " + tableId + " SET address = 'Hangzhou' where id = 111",
+                };
+
+        String[] expected =
+                new String[] {
+                        "+I[101, user_1, Shanghai, 123567891234]",
+                        "+I[102, user_2, hangzhou, 123567891234]",
+                        "+I[103, user_3, Shanghai, 123567891234]",
+                        "+I[109, user_4, Shanghai, 123567891234]",
+                        "+I[110, user_5, Hangzhou, 123567891234]",
+                        "+I[111, user_6, Hangzhou, 123567891234]",
+                        "+I[118, user_7, Shanghai, 123567891234]",
+                        "+I[121, user_8, Shanghai, 123567891234]",
+                        "+I[123, user_9, Shanghai, 123567891234]",
+                };
+
+        // Change data during [low_watermark, snapshot) will not be captured by snapshotting
+        List<String> actual =
+                getDataInSnapshotScan(
+                        changingDataSql,databaseName, tableName, USE_POST_LOWWATERMARK_HOOK, true);
+        assertEqualsInAnyOrder(Arrays.asList(expected), actual);
+    }
+
+    @Test
+    public void testSnapshotScanSkipBackfillWithPreHighWatermark() throws Exception {
+        initializeTidbTable("customer");
+        String tableId = databaseName + "." + tableName;
+
+        String[] changingDataSql =
+                new String[] {
+                        "UPDATE " + tableId + " SET address = 'Hangzhou' where id = 103",
+                        "DELETE FROM " + tableId + " where id = 102",
+                        "INSERT INTO " + tableId + " VALUES(102, 'user_2','hangzhou','123567891234')",
+                        "UPDATE " + tableId + " SET address = 'Shanghai' where id = 103",
+                        "UPDATE " + tableId + " SET address = 'Hangzhou' where id = 110",
+                        "UPDATE " + tableId + " SET address = 'Hangzhou' where id = 111",
+                };
+
+        String[] expected =
+                new String[] {
+                        "+I[101, user_1, Shanghai, 123567891234]",
+                        "+I[102, user_2, Shanghai, 123567891234]",
+                        "+I[103, user_3, Shanghai, 123567891234]",
+                        "+I[109, user_4, Shanghai, 123567891234]",
+                        "+I[110, user_5, Shanghai, 123567891234]",
+                        "+I[111, user_6, Shanghai, 123567891234]",
+                        "+I[118, user_7, Shanghai, 123567891234]",
+                        "+I[121, user_8, Shanghai, 123567891234]",
+                        "+I[123, user_9, Shanghai, 123567891234]",
+                };
+
+        // Change data during [snapshot, high_watermark) will not be captured by snapshotting
+        List<String> actual =
+                getDataInSnapshotScan(
+                        changingDataSql,databaseName, tableName, USE_POST_LOWWATERMARK_HOOK, true);
+        assertEqualsInAnyOrder(Arrays.asList(expected), actual);
+    }
+
+
+
 
     private List<String> getDataInSnapshotScan(
             String[] changingDataSql,
