@@ -82,6 +82,7 @@ public class TiDBDialect implements JdbcDataSourceDialect {
 
   @Override
   public boolean isIncludeDataCollection(JdbcSourceConfig sourceConfig, TableId tableId) {
+    //temp
     return true;
   }
 
