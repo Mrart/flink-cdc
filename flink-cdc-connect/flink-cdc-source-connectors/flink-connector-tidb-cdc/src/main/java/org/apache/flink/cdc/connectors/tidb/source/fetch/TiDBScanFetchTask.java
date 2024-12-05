@@ -132,6 +132,7 @@ public class TiDBScanFetchTask extends AbstractScanFetchTask {
                 TiDBPartition partition,
                 CDCEventOffsetContext previousOffset)
                 throws InterruptedException {
+            // todo 返回为null
             SnapshottingTask snapshottingTask = getSnapshottingTask(partition, previousOffset);
             final TiDBSnapshotContext ctx;
             try {
@@ -165,7 +166,7 @@ public class TiDBScanFetchTask extends AbstractScanFetchTask {
                 ChangeEventSourceContext context,
                 CDCEventOffsetContext previousOffset,
                 SnapshotContext snapshotContext,
-                SnapshottingTask snapshottingTask)
+                SnapshottingTask snapshottingTask) // 没有调用这个参数
                 throws Exception {
             final TiDBSnapshotContext ctx = (TiDBSnapshotContext) snapshotContext;
             ctx.offset = offsetContext;
@@ -269,7 +270,7 @@ public class TiDBScanFetchTask extends AbstractScanFetchTask {
         @Override
         protected SnapshottingTask getSnapshottingTask(
                 TiDBPartition partition, CDCEventOffsetContext previousOffset) {
-            return null;
+            return new SnapshottingTask(false, true);
         }
 
         @Override

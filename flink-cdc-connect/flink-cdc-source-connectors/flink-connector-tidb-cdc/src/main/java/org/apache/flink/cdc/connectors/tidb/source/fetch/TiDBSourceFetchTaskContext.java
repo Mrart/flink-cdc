@@ -184,12 +184,13 @@ public class TiDBSourceFetchTaskContext extends JdbcSourceFetchTaskContext {
 
     private CDCEventOffsetContext loadStartingOffsetState(
             CDCEventOffsetContext.Loader loader, SourceSplitBase sourceSplitBase) {
-        Offset offset =
-                sourceSplitBase.isSnapshotSplit()
-                        ? new CDCEventOffsetFactory()
-                                .createInitialOffset() // get an offset for starting snapshot
-                        : sourceSplitBase.asStreamSplit().getStartingOffset();
-
+//        Offset offset =
+//                sourceSplitBase.isSnapshotSplit()
+//                        ? new CDCEventOffsetFactory()
+//                                .createInitialOffset() // get an offset for starting snapshot
+//                        : sourceSplitBase.asStreamSplit().getStartingOffset();
+        Offset offset = new CDCEventOffsetFactory()
+                                .createInitialOffset();
         //    if (!isBinlogAvailable(mySqlOffsetContext)) {
         //      throw new IllegalStateException(
         //              "The connector is trying to read binlog starting at "

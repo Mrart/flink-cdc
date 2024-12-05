@@ -79,7 +79,7 @@ public class PostgreSQLConnectorITCase extends PostgresTestBase {
         TestValuesTableFactory.clearAllData();
         env.setRestartStrategy(RestartStrategies.noRestart());
         if (parallelismSnapshot) {
-            env.setParallelism(4);
+            env.setParallelism(1);
             env.enableCheckpointing(200);
         } else {
             env.setParallelism(1);

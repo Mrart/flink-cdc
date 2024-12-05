@@ -74,8 +74,6 @@ public class TiDBScanFetchTaskTest extends TiDBTestBase {
         List<String> actual =
                 getDataInSnapshotScan(
                         changingDataSql,
-                        databaseName,
-                        tableName,
                         USE_PRE_HIGHWATERMARK_HOOK,
                         false);
         assertEqualsInAnyOrder(Arrays.asList(expected), actual);
@@ -83,8 +81,6 @@ public class TiDBScanFetchTaskTest extends TiDBTestBase {
 
     private List<String> getDataInSnapshotScan(
             String[] changingDataSql,
-            String databaseName,
-            String tableName,
             int hookType,
             boolean skipSnapshotBackfill)
             throws Exception {

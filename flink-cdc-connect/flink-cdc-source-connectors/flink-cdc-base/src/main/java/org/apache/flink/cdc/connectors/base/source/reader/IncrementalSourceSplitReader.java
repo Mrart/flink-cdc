@@ -147,7 +147,7 @@ public class IncrementalSourceSplitReader<C extends SourceConfig>
             // (1) Reads stream split firstly and then read snapshot split
             if (streamSplits.size() > 0) {
                 // the stream split may come from:
-                // (a) the initial stream split
+                // submitStreamSplit(a) the initial stream split
                 // (b) added back stream-split in newly added table process
                 StreamSplit nextSplit = streamSplits.poll();
                 submitStreamSplit(nextSplit);
