@@ -18,7 +18,6 @@ import org.apache.flink.cdc.connectors.tidb.source.connection.TiDBConnectionPool
 import org.apache.flink.cdc.connectors.tidb.source.fetch.TiDBScanFetchTask;
 import org.apache.flink.cdc.connectors.tidb.source.fetch.TiDBSourceFetchTaskContext;
 import org.apache.flink.cdc.connectors.tidb.source.fetch.TiDBStreamFetchTask;
-import org.apache.flink.cdc.connectors.tidb.source.fetch.TiDBStreamFetchTaskContext;
 import org.apache.flink.cdc.connectors.tidb.source.schema.TiDBSchema;
 import org.apache.flink.cdc.connectors.tidb.source.splitter.TiDBChunkSplitter;
 import org.apache.flink.cdc.connectors.tidb.utils.TableDiscoveryUtils;

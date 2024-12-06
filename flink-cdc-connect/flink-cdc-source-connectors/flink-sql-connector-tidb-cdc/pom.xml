@@ -55,6 +55,8 @@ limitations under the License.
                                     <include>io.debezium:debezium-api</include>
                                     <include>io.debezium:debezium-embedded</include>
                                     <include>io.debezium:debezium-core</include>
+                                    <include>io.debezium:debezium-ddl-parser</include>
+                                    <include>io.debezium:debezium-connector-mysql</include>
                                     <include>org.apache.flink:flink-cdc-base</include>
                                     <include>org.apache.flink:flink-cdc-common</include>
                                     <include>org.apache.flink:flink-connector-debezium</include>
