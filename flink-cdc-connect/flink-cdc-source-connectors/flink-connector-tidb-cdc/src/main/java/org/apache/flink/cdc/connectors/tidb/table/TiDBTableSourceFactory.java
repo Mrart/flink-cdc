@@ -54,6 +54,7 @@ public class TiDBTableSourceFactory implements DynamicTableSourceFactory {
         options.add(SERVER_TIME_ZONE);
         options.add(HOST_MAPPING);
         options.add(JDBC_DRIVER);
+        options.add(HEARTBEAT_INTERVAL);
 
         //      increment snapshot options
         options.add(SCAN_INCREMENTAL_SNAPSHOT_CHUNK_SIZE);

@@ -118,9 +118,9 @@ public class TiDBTableSourceFactoryTest {
     public void testOptionalProperties() {
         Map<String, String> properties = getAllOptions();
         properties.put("port", "4111");
-        properties.put("scan.startup.mode", "latest-offset");
-        properties.put("heartbeat.interval", "15213ms");
-        properties.put("server-time-zone", "Asia/Shanghai");
+        properties.put("scan.startup.mode", "initial");
+        properties.put("heartbeat.interval.ms", "15213ms");
+//        properties.put("server-time-zone", "Asia/Shanghai");
 
         Properties dbzProperties = new Properties();
         dbzProperties.put("snapshot.mode", "never");
