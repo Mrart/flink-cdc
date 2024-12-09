@@ -197,6 +197,13 @@ public class TiDBScanFetchTask extends AbstractScanFetchTask {
                     snapshotSplit.splitId(),
                     table.id());
 
+            final  String countSql =
+                    TiDBUtils.buildSplitScanCountQuery(snapshotSplit.getTableId(),
+                                                    snapshotSplit.getSplitKeyType(),
+                                                    snapshotSplit.getSplitStart() == null,
+                                                    snapshotSplit.getSplitEnd() == null);
+
+
             final String selectSql =
                     TiDBUtils.buildSplitScanQuery(
                             snapshotSplit.getTableId(),
@@ -210,6 +217,23 @@ public class TiDBScanFetchTask extends AbstractScanFetchTask {
                     selectSql);
 
             try (PreparedStatement selectStatement =
+                         TiDBUtils.readTableSplitDataStatement(
+                                 jdbcConnection,
+                                 countSql,
+                                 snapshotSplit.getSplitStart() == null,
+                                 snapshotSplit.getSplitEnd() == null,
+                                 snapshotSplit.getSplitStart(),
+                                 snapshotSplit.getSplitEnd(),
+                                 snapshotSplit.getSplitKeyType().getFieldCount(),
+                                 connectorConfig.getQueryFetchSize());
+                 ResultSet rs = selectStatement.executeQuery()){
+                ColumnUtils.ColumnArray columnArray = ColumnUtils.toArray(rs, table);
+                LOG.info(columnArray.toString());
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
+
+            try (PreparedStatement selectStatement =
                             TiDBUtils.readTableSplitDataStatement(
                                     jdbcConnection,
                                     selectSql,
@@ -220,7 +244,6 @@ public class TiDBScanFetchTask extends AbstractScanFetchTask {
                                     snapshotSplit.getSplitKeyType().getFieldCount(),
                                     connectorConfig.getQueryFetchSize());
                     ResultSet rs = selectStatement.executeQuery()) {
-
                 ColumnUtils.ColumnArray columnArray = ColumnUtils.toArray(rs, table);
                 long rows = 0;
                 Threads.Timer logTimer = getTableScanLogTimer();

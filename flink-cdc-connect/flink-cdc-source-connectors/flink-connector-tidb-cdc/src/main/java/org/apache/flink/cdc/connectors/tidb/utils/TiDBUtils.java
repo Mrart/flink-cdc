@@ -232,7 +232,12 @@ public class TiDBUtils {
 
     public static String buildSplitScanQuery(
             TableId tableId, RowType pkRowType, boolean isFirstSplit, boolean isLastSplit) {
-        return buildSplitQuery(tableId, pkRowType, isFirstSplit, isLastSplit, -1, true);
+        return buildSplitQuery(tableId, pkRowType, isFirstSplit, isLastSplit, -1, true ,false);
+    }
+
+    public static String buildSplitScanCountQuery(
+            TableId tableId, RowType pkRowType, boolean isFirstSplit, boolean isLastSplit) {
+        return buildSplitQuery(tableId, pkRowType, isFirstSplit, isLastSplit, -1, false ,true);
     }
 
     private static String buildSplitQuery(
@@ -241,7 +246,8 @@ public class TiDBUtils {
             boolean isFirstSplit,
             boolean isLastSplit,
             int limitSize,
-            boolean isScanningData) {
+            boolean isScanningData,
+            boolean isCountData) {
         final String condition;
 
         if (isFirstSplit && isLastSplit) {
@@ -259,7 +265,8 @@ public class TiDBUtils {
             final StringBuilder sql = new StringBuilder();
             addPrimaryKeyColumnsToCondition(pkRowType, sql, " >= ?");
             condition = sql.toString();
-        } else {
+        }
+        else {
             final StringBuilder sql = new StringBuilder();
             addPrimaryKeyColumnsToCondition(pkRowType, sql, " >= ?");
             if (isScanningData) {
@@ -275,7 +282,11 @@ public class TiDBUtils {
         if (isScanningData) {
             return buildSelectWithRowLimits(
                     tableId, limitSize, "*", Optional.ofNullable(condition), Optional.empty());
-        } else {
+        }
+        else if (isCountData){
+            return buildCountWithRowLimits(tableId, limitSize, "*", Optional.ofNullable(condition), Optional.empty());
+        }
+        else {
             final String orderBy =
                     pkRowType.getFieldNames().stream().collect(Collectors.joining(", "));
             return buildSelectWithBoundaryRowLimits(
@@ -323,6 +334,27 @@ public class TiDBUtils {
 
     private static String quotedTableIdString(TableId tableId) {
         return tableId.toQuotedString('`');
+    }
+
+    private static String buildCountWithRowLimits(
+            TableId tableId,
+            int limit,
+            String projection,
+            Optional<String> condition,
+            Optional<String> orderBy) {
+        final StringBuilder sql = new StringBuilder("COUNT ");
+        sql.append(projection).append(" FROM ");
+        sql.append(quotedTableIdString(tableId));
+        if (condition.isPresent()) {
+            sql.append(" WHERE ").append(condition.get());
+        }
+        if (orderBy.isPresent()) {
+            sql.append(" ORDER BY ").append(orderBy.get());
+        }
+        if (limit > 0) {
+            sql.append(" LIMIT ").append(limit);
+        }
+        return sql.toString();
     }
 
     private static String buildSelectWithRowLimits(
