@@ -232,13 +232,9 @@ public class TiDBUtils {
 
     public static String buildSplitScanQuery(
             TableId tableId, RowType pkRowType, boolean isFirstSplit, boolean isLastSplit) {
-        return buildSplitQuery(tableId, pkRowType, isFirstSplit, isLastSplit, -1, true ,false);
+        return buildSplitQuery(tableId, pkRowType, isFirstSplit, isLastSplit, -1, true);
     }
 
-    public static String buildSplitScanCountQuery(
-            TableId tableId, RowType pkRowType, boolean isFirstSplit, boolean isLastSplit) {
-        return buildSplitQuery(tableId, pkRowType, isFirstSplit, isLastSplit, -1, false ,true);
-    }
 
     private static String buildSplitQuery(
             TableId tableId,
@@ -246,8 +242,7 @@ public class TiDBUtils {
             boolean isFirstSplit,
             boolean isLastSplit,
             int limitSize,
-            boolean isScanningData,
-            boolean isCountData) {
+            boolean isScanningData) {
         final String condition;
 
         if (isFirstSplit && isLastSplit) {
@@ -282,9 +277,6 @@ public class TiDBUtils {
         if (isScanningData) {
             return buildSelectWithRowLimits(
                     tableId, limitSize, "*", Optional.ofNullable(condition), Optional.empty());
-        }
-        else if (isCountData){
-            return buildCountWithRowLimits(tableId, limitSize, "*", Optional.ofNullable(condition), Optional.empty());
         }
         else {
             final String orderBy =
@@ -336,26 +328,6 @@ public class TiDBUtils {
         return tableId.toQuotedString('`');
     }
 
-    private static String buildCountWithRowLimits(
-            TableId tableId,
-            int limit,
-            String projection,
-            Optional<String> condition,
-            Optional<String> orderBy) {
-        final StringBuilder sql = new StringBuilder("COUNT ");
-        sql.append(projection).append(" FROM ");
-        sql.append(quotedTableIdString(tableId));
-        if (condition.isPresent()) {
-            sql.append(" WHERE ").append(condition.get());
-        }
-        if (orderBy.isPresent()) {
-            sql.append(" ORDER BY ").append(orderBy.get());
-        }
-        if (limit > 0) {
-            sql.append(" LIMIT ").append(limit);
-        }
-        return sql.toString();
-    }
 
     private static String buildSelectWithRowLimits(
             TableId tableId,

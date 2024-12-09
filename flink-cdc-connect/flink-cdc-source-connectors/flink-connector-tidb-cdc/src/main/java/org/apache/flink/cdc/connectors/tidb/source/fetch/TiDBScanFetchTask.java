@@ -154,7 +154,7 @@ public class TiDBScanFetchTask extends AbstractScanFetchTask {
 
         private static class TiDBSnapshotContext
                 extends RelationalSnapshotChangeEventSource.RelationalSnapshotContext<
-                        TiDBPartition, CDCEventOffsetContext> {
+                TiDBPartition, CDCEventOffsetContext> {
 
             public TiDBSnapshotContext(TiDBPartition partition) throws SQLException {
                 super(partition, "");
@@ -197,11 +197,6 @@ public class TiDBScanFetchTask extends AbstractScanFetchTask {
                     snapshotSplit.splitId(),
                     table.id());
 
-            final  String countSql =
-                    TiDBUtils.buildSplitScanCountQuery(snapshotSplit.getTableId(),
-                                                    snapshotSplit.getSplitKeyType(),
-                                                    snapshotSplit.getSplitStart() == null,
-                                                    snapshotSplit.getSplitEnd() == null);
 
 
             final String selectSql =
@@ -219,31 +214,14 @@ public class TiDBScanFetchTask extends AbstractScanFetchTask {
             try (PreparedStatement selectStatement =
                          TiDBUtils.readTableSplitDataStatement(
                                  jdbcConnection,
-                                 countSql,
+                                 selectSql,
                                  snapshotSplit.getSplitStart() == null,
                                  snapshotSplit.getSplitEnd() == null,
                                  snapshotSplit.getSplitStart(),
                                  snapshotSplit.getSplitEnd(),
                                  snapshotSplit.getSplitKeyType().getFieldCount(),
                                  connectorConfig.getQueryFetchSize());
-                 ResultSet rs = selectStatement.executeQuery()){
-                ColumnUtils.ColumnArray columnArray = ColumnUtils.toArray(rs, table);
-                LOG.info(columnArray.toString());
-            } catch (SQLException e) {
-                throw new RuntimeException(e);
-            }
-
-            try (PreparedStatement selectStatement =
-                            TiDBUtils.readTableSplitDataStatement(
-                                    jdbcConnection,
-                                    selectSql,
-                                    snapshotSplit.getSplitStart() == null,
-                                    snapshotSplit.getSplitEnd() == null,
-                                    snapshotSplit.getSplitStart(),
-                                    snapshotSplit.getSplitEnd(),
-                                    snapshotSplit.getSplitKeyType().getFieldCount(),
-                                    connectorConfig.getQueryFetchSize());
-                    ResultSet rs = selectStatement.executeQuery()) {
+                 ResultSet rs = selectStatement.executeQuery()) {
                 ColumnUtils.ColumnArray columnArray = ColumnUtils.toArray(rs, table);
                 long rows = 0;
                 Threads.Timer logTimer = getTableScanLogTimer();
