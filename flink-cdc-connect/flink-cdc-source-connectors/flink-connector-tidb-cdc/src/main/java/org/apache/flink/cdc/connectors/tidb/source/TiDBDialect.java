@@ -88,8 +88,12 @@ public class TiDBDialect implements JdbcDataSourceDialect {
   @Override
   public List<TableId> discoverDataCollections(JdbcSourceConfig sourceConfig) {
     try (JdbcConnection jdbc = openJdbcConnection(sourceConfig)) {
-      return TableDiscoveryUtils.listTables(
-          sourceConfig.getDatabaseList().get(0), jdbc, sourceConfig.getTableFilters());
+      List<TableId> tableIds = TableDiscoveryUtils.listTables(
+              sourceConfig.getDatabaseList().get(0), jdbc, sourceConfig.getTableFilters());
+      if (tableIds.isEmpty()) {
+        throw new FlinkRuntimeException("No tables discovered for the given tables:" + sourceConfig.getTableList());
+      }
+      return tableIds;
     } catch (SQLException e) {
       throw new FlinkRuntimeException("Error to discover tables:" + e.getMessage(), e);
     }
