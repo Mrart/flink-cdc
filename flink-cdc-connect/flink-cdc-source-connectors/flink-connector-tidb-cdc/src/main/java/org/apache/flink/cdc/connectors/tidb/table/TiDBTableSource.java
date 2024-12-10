@@ -64,6 +64,8 @@ public class TiDBTableSource implements ScanTableSource, SupportsReadingMetadata
 
     private final Properties jdbcProperties;
     private final Map<String, String> options;
+    private final boolean enableParallelRead;
+
 
     /** Data type that describes the final output of the source. */
     protected DataType producedDataType;
@@ -82,6 +84,7 @@ public class TiDBTableSource implements ScanTableSource, SupportsReadingMetadata
             String password,
             String serverTimeZone,
             Properties jdbcProperties,
+            boolean enableParallelRead,
             Duration heartbeatInterval,
             String pdAddresses,
             String hostMapping,
@@ -110,6 +113,7 @@ public class TiDBTableSource implements ScanTableSource, SupportsReadingMetadata
         this.options = options;
 
         //  incremental snapshot options
+        this.enableParallelRead = enableParallelRead;
         this.splitSize = splitSize;
         this.splitMetaGroupSize = splitMetaGroupSize;
         this.fetchSize = fetchSize;
@@ -242,6 +246,7 @@ public class TiDBTableSource implements ScanTableSource, SupportsReadingMetadata
                         password,
                         serverTimeZone,
                         jdbcProperties,
+                        enableParallelRead,
                         heartbeatInterval,
                         pdAddresses,
                         hostMapping,
@@ -283,6 +288,7 @@ public class TiDBTableSource implements ScanTableSource, SupportsReadingMetadata
                 && Objects.equals(password, that.password)
                 && Objects.equals(serverTimeZone, that.serverTimeZone)
                 && Objects.equals(jdbcProperties, that.jdbcProperties)
+                && Objects.equals(enableParallelRead, that.enableParallelRead)
                 && Objects.equals(heartbeatInterval, that.heartbeatInterval)
                 && Objects.equals(pdAddresses, that.pdAddresses)
                 && Objects.equals(hostMapping, that.hostMapping)
@@ -306,6 +312,7 @@ public class TiDBTableSource implements ScanTableSource, SupportsReadingMetadata
                 password,
                 serverTimeZone,
                 jdbcProperties,
+                enableParallelRead,
                 heartbeatInterval,
                 pdAddresses,
                 hostMapping,

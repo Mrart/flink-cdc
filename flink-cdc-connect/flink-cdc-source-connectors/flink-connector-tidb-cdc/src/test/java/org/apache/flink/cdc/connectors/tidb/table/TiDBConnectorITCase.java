@@ -59,7 +59,7 @@ public class TiDBConnectorITCase extends TiDBTestBase {
     public void before() {
         TestValuesTableFactory.clearAllData();
 //        env.setRestartStrategy(RestartStrategies.noRestart());
-        env.setParallelism(1);
+        env.setParallelism(2);
     }
 
     @Test

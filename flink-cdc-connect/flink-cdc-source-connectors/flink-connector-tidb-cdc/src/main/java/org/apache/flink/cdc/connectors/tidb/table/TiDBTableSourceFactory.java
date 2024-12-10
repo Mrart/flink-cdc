@@ -57,6 +57,7 @@ public class TiDBTableSourceFactory implements DynamicTableSourceFactory {
         options.add(HEARTBEAT_INTERVAL);
 
         //      increment snapshot options
+        options.add(SCAN_INCREMENTAL_SNAPSHOT_ENABLED);
         options.add(SCAN_INCREMENTAL_SNAPSHOT_CHUNK_SIZE);
         options.add(CHUNK_META_GROUP_SIZE);
         options.add(CONNECTION_POOL_SIZE);
@@ -65,8 +66,8 @@ public class TiDBTableSourceFactory implements DynamicTableSourceFactory {
         options.add(SCAN_INCREMENTAL_SNAPSHOT_CHUNK_KEY_COLUMN);
         options.add(SPLIT_KEY_EVEN_DISTRIBUTION_FACTOR_UPPER_BOUND);
         options.add(SPLIT_KEY_EVEN_DISTRIBUTION_FACTOR_LOWER_BOUND);
-        //        options.add(SCAN_NEWLY_ADDED_TABLE_ENABLED);
-        //        options.add(SCAN_INCREMENTAL_CLOSE_IDLE_READER_ENABLED);
+//                options.add(SCAN_NEWLY_ADDED_TABLE_ENABLED);
+//                options.add(SCAN_INCREMENTAL_CLOSE_IDLE_READER_ENABLED);
         //        options.add(HEARTBEAT_INTERVAL);
 
         //        options.add(SCAN_INCREMENTAL_SNAPSHOT_BACKFILL_SKIP);
@@ -129,6 +130,7 @@ public class TiDBTableSourceFactory implements DynamicTableSourceFactory {
         String jdbcDriver = config.get(JDBC_DRIVER);
 
         //  increment snapshot options
+        boolean enableParallelRead = config.get(SCAN_INCREMENTAL_SNAPSHOT_ENABLED);
         int splitSize = config.get(SCAN_INCREMENTAL_SNAPSHOT_CHUNK_SIZE);
         int splitMetaGroupSize = config.get(CHUNK_META_GROUP_SIZE);
         int fetchSize = config.get(SCAN_SNAPSHOT_FETCH_SIZE);
@@ -159,6 +161,7 @@ public class TiDBTableSourceFactory implements DynamicTableSourceFactory {
                 password,
                 serverTimeZone,
                 getDebeziumProperties(context.getCatalogTable().getOptions()),
+                enableParallelRead,
                 heartbeatInterval,
                 pdAddresses,
                 hostMapping,
