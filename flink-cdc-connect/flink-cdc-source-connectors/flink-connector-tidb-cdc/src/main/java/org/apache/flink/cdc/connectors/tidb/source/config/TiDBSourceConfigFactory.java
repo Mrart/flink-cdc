@@ -47,7 +47,7 @@ public class TiDBSourceConfigFactory extends JdbcSourceConfigFactory {
         return this;
     }
 
-    public JdbcSourceConfigFactory jdbcProperties(Properties tikvProperties) {
+    public JdbcSourceConfigFactory jdbcProperties(Properties jdbcProperties) {
         this.jdbcProperties = jdbcProperties;
         return this;
     }
@@ -76,6 +76,10 @@ public class TiDBSourceConfigFactory extends JdbcSourceConfigFactory {
 
         if (jdbcProperties != null) {
             props.putAll(jdbcProperties);
+        }
+
+        if (tikvProperties != null){
+            props.putAll(tikvProperties);
         }
 
         Configuration dbzConfiguration = Configuration.from(props);
