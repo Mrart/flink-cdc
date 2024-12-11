@@ -83,7 +83,8 @@ public class TiDBConnectorITCase extends TiDBTestBase {
                                 + " 'username' = '%s',"
                                 + " 'database-name' = '%s',"
                                 + " 'table-name' = '%s',"
-                                + " 'scan.startup.mode' = '%s'"
+                                + " 'scan.startup.mode' = '%s',"
+                                + " 'scan.incremental.snapshot.chunk.key-column' = '%s'"
                                 + ")",
                         PD.getContainerIpAddress() + ":" + PD.getMappedPort(PD_PORT_ORIGIN),
                         TIDB.getHost(),
@@ -92,7 +93,8 @@ public class TiDBConnectorITCase extends TiDBTestBase {
                         TIDB_USER,
                         "inventory",
                         "products",
-                        "snapshot");
+                        "snapshot",
+                        "id");
 
         String sinkDDL =
                 "CREATE TABLE sink ("
