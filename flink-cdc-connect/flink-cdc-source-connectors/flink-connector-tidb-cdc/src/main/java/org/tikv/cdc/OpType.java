@@ -1,25 +1,28 @@
 package org.tikv.cdc;
 
 public enum OpType {
-    OpTypePut(1),
-    OpTypeDelete(2),
-    OpTypeResolved(3);
-    private int type;
+  Ddl(0),
+  Put(1),
+  Delete(2),
+  Heatbeat(3),
+  Resolved(4);
 
-    OpType(int type) {
-        this.type = type;
-    }
+  private int type;
 
-    public int getType() {
-        return this.type;
-    }
+  OpType(int type) {
+    this.type = type;
+  }
 
-    public static OpType valueOf(final int type) {
-        for (OpType opType : OpType.values()) {
-            if (opType.getType() == type) {
-                return opType;
-            }
-        }
-        throw new IllegalArgumentException("No enum constant with type " + type);
+  public int getType() {
+    return this.type;
+  }
+
+  public static OpType valueOf(final int type) {
+    for (OpType opType : OpType.values()) {
+      if (opType.getType() == type) {
+        return opType;
+      }
     }
+    throw new IllegalArgumentException("No enum constant with type " + type);
+  }
 }

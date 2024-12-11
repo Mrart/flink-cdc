@@ -1,12 +1,17 @@
 package org.tikv.cdc;
 
+import io.debezium.relational.TableId;
+import org.tikv.common.meta.TiTableInfo;
+
 public interface ICDCClientV2 {
-    void execute(final long startTs, final long tableId);
+  void execute(final long startTs, final TableId tableId);
 
-    long getResolvedTs();
+  long getResolvedTs();
 
-    /** @return null if no more data */
-    RegionFeedEvent get();
+  TiTableInfo getTableInfo(String database, String name);
 
-    void close();
+  /** @return null if no more data */
+  RegionFeedEvent get();
+
+  void close();
 }
