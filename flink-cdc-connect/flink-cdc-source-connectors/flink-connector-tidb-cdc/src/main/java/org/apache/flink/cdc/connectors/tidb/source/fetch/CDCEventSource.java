@@ -7,18 +7,21 @@ import io.debezium.pipeline.ErrorHandler;
 import io.debezium.pipeline.source.spi.StreamingChangeEventSource;
 import io.debezium.relational.TableId;
 import io.debezium.relational.TableSchema;
+import io.debezium.util.Clock;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.flink.cdc.connectors.base.relational.JdbcSourceEventDispatcher;
 import org.apache.flink.cdc.connectors.base.source.meta.split.StreamSplit;
 import org.apache.flink.cdc.connectors.tidb.source.config.TiDBConnectorConfig;
 import org.apache.flink.cdc.connectors.tidb.source.config.TiDBSourceConfig;
 import org.apache.flink.cdc.connectors.tidb.source.offset.CDCEventOffsetContext;
+import org.apache.flink.cdc.connectors.tidb.table.utils.UriHostMapping;
 import org.apache.flink.util.function.SerializableFunction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tikv.cdc.CDCClientV2;
 import org.tikv.cdc.ICDCClientV2;
 import org.tikv.cdc.OpType;
+import org.tikv.cdc.RawKVEntry;
 import org.tikv.cdc.RegionFeedEvent;
 import org.tikv.common.TiConfiguration;
 import org.tikv.common.key.RowKey;
@@ -29,9 +32,12 @@ import java.time.Instant;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+
+import static org.tikv.common.codec.TableCodec.decodeObjects;
 
 public class CDCEventSource
     implements StreamingChangeEventSource<TiDBPartition, CDCEventOffsetContext> {
@@ -105,6 +111,9 @@ public class CDCEventSource
               handleChange(partition, effectiveOffsetContext, Envelope.Operation.DELETE, event));
     }
     eventHandlers.put(OpType.Resolved, event -> LOG.trace("HEARTBEAT message: {}", event));
+    while (true) {
+      this.cdcClientV2.get();
+    }
   }
 
   @Override
@@ -125,7 +134,8 @@ public class CDCEventSource
       TiDBPartition partition,
       CDCEventOffsetContext offsetContext,
       Envelope.Operation operation,
-      RegionFeedEvent event) {
+      RegionFeedEvent event)
+      throws InterruptedException {
     final TableId tableId = tableIdProvider.apply(event);
     if (tableId == null) {
       LOG.warn("No valid tableId found, skipping log message: {}", event);
@@ -151,30 +161,53 @@ public class CDCEventSource
     final RowKey rowKey = RowKey.decode(event.getRawKVEntry().getKey().toByteArray());
     final long handle = rowKey.getHandle();
     TiTableInfo tableInfo = this.cdcClientV2.getTableInfo(event.getDbName(), event.getTableName());
-
-    //        for (DataMessage.Record.Field field : message.getFieldList()) {
-    //          if (field.isPrev()) {
-    //            if (before == null) {
-    //              before = new Serializable[fieldIndex.size()];
-    //            }
-    //            before[fieldIndex.get(field.getFieldname())] = (Serializable)
-    // getFieldValue(field);
-    //          } else {
-    //            if (after == null) {
-    //              after = new Serializable[fieldIndex.size()];
-    //            }
-    //            after[fieldIndex.get(field.getFieldname())] = (Serializable) getFieldValue(field);
-    //          }
-    //        }
-
-    //    eventDispatcher.dispatchDataChangeEvent(
-    //        partition,
-    //        tableId,
-    //        new LogMessageEmitter(partition, offsetContext, Clock.SYSTEM, operation, before,
-    // after));
+    switch (event.getRawKVEntry().getOpType()) {
+      case Delete:
+        before = new Serializable[fieldIndex.size()];
+        Object[] tikvValue =
+            decodeObjects(event.getRawKVEntry().getOldValue().toByteArray(), handle, tableInfo);
+        for (int i = 0; i < tikvValue.length; i++) {
+          before[i] = (Serializable) tikvValue[i];
+        }
+      case Put:
+        if (event.getRawKVEntry().isUpdate()) {
+          RawKVEntry[] rawKVEntries =
+              event.getRawKVEntry().splitUpdateKVEntry(event.getRawKVEntry());
+          RawKVEntry deleteRawKVEntry = rawKVEntries[0];
+          before = new Serializable[fieldIndex.size()];
+          Object[] tiKVValueBefore =
+              decodeObjects(deleteRawKVEntry.getOldValue().toByteArray(), handle, tableInfo);
+          for (int i = 0; i < tiKVValueBefore.length; i++) {
+            before[i] = (Serializable) tiKVValueBefore[i];
+          }
+          RawKVEntry insertKVEntry = rawKVEntries[1];
+          after = new Serializable[fieldIndex.size()];
+          Object[] tiKVValueAfter =
+              decodeObjects(insertKVEntry.getValue().toByteArray(), handle, tableInfo);
+          for (int i = 0; i < tiKVValueBefore.length; i++) {
+            after[i] = (Serializable) tiKVValueAfter[i];
+          }
+        } else {
+          // insert
+          after = new Serializable[fieldIndex.size()];
+          Object[] tiKVValueAfter =
+              decodeObjects(event.getRawKVEntry().getValue().toByteArray(), handle, tableInfo);
+          for (int i = 0; i < tiKVValueAfter.length; i++) {
+            after[i] = (Serializable) tiKVValueAfter[i];
+          }
+        }
+    }
+    eventDispatcher.dispatchDataChangeEvent(
+        partition,
+        tableId,
+        new CDCEventEmitter(partition, offsetContext, Clock.SYSTEM, operation, before, after));
   }
 
   private TiConfiguration getTiConfig(TiDBSourceConfig tiDBSourceConfig) {
-    return null;
+    final TiConfiguration tiConf = TiConfiguration.createDefault(tiDBSourceConfig.getPdAddresses());
+    Optional.of(new UriHostMapping(tiDBSourceConfig.getHostMapping()))
+        .ifPresent(tiConf::setHostMapping);
+    // get tikv config；
+    return tiConf;
   }
 }

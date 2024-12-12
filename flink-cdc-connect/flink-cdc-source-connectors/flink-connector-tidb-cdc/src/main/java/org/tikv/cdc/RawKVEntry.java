@@ -2,17 +2,24 @@ package org.tikv.cdc;
 
 import org.tikv.shade.com.google.protobuf.ByteString;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class RawKVEntry {
-  private OpType opType;
-  private ByteString key;
+  private final OpType opType;
+  private final ByteString key;
   private ByteString value;
   private ByteString oldValue;
-  private long startTs;
-  private long crts;
-  private long regionId;
+  private final long startTs;
+  private final long crts;
+  private final long regionId;
+
+  public RawKVEntry(RawKVEntry raw) {
+    this.opType = raw.getOpType();
+    this.key = raw.getKey();
+    this.value = raw.getValue();
+    this.oldValue = raw.getOldValue();
+    this.startTs = raw.getStartTs();
+    this.crts = raw.getCrts();
+    this.regionId = raw.getRegionId();
+  }
 
   private RawKVEntry(Builder builder) {
     this.opType = builder.opType;
@@ -36,8 +43,16 @@ public class RawKVEntry {
     return value;
   }
 
+  public void setValue(ByteString value) {
+    this.value = value;
+  }
+
   public ByteString getOldValue() {
     return oldValue;
+  }
+
+  public void setOldValue(ByteString oldValue) {
+    this.oldValue = oldValue;
   }
 
   public long getStartTs() {
@@ -106,17 +121,17 @@ public class RawKVEntry {
     return this.opType.equals(OpType.Put) && this.oldValue == null && this.value != null;
   }
 
-  public List<RawKVEntry> splitUpdateKVEntry(RawKVEntry rawKVEntry) {
-    List<RawKVEntry> rawKVEntries = new ArrayList<>();
-    if (rawKVEntry == null) {
+  public RawKVEntry[] splitUpdateKVEntry(RawKVEntry raw) {
+    if (raw == null) {
       throw new RuntimeException("Null raw kv entry cannot be split.");
     }
-    RawKVEntry deleteKVEntry = rawKVEntry;
-    deleteKVEntry.value = null;
-    RawKVEntry insertKVEntry = rawKVEntry;
-    insertKVEntry.oldValue = null;
-    rawKVEntries.add(deleteKVEntry);
-    rawKVEntries.add(insertKVEntry);
-    return rawKVEntries;
+    // Create the delete and insert entries by copying the raw entry
+    RawKVEntry deleteKVEntry = new RawKVEntry(raw);
+    deleteKVEntry.setValue(null); // Set value to null for delete entry
+
+    RawKVEntry insertKVEntry = new RawKVEntry(raw);
+    insertKVEntry.setOldValue(null); // Set oldValue to null for insert entry
+
+    return new RawKVEntry[] {deleteKVEntry, insertKVEntry};
   }
 }
