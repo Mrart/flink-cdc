@@ -112,7 +112,16 @@ public class CDCEventSource
     }
     eventHandlers.put(OpType.Resolved, event -> LOG.trace("HEARTBEAT message: {}", event));
     while (true) {
-      this.cdcClientV2.get();
+      RegionFeedEvent raw = null;
+      for (int i = 0; i < 2000; i++) {
+        raw = this.cdcClientV2.get();
+        eventHandlers
+            .getOrDefault(
+                raw.getRawKVEntry().getOpType(),
+                skipRaw -> LOG.trace("Skip raw message {}", skipRaw))
+            .accept(raw);
+      }
+      offsetContext.event(getTableId(raw), Instant.ofEpochSecond(this.cdcClientV2.getResolvedTs()));
     }
   }
 

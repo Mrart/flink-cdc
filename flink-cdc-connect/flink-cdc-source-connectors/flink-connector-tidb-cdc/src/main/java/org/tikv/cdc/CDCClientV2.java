@@ -26,6 +26,7 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -46,6 +47,7 @@ public class CDCClientV2 implements ICDCClientV2 {
   private final ConcurrentLinkedQueue<RegionStatefulEvent> resolveTsPool =
       new ConcurrentLinkedQueue<>();
   private final TableStoreStats tableStoreStats = new TableStoreStats();
+  private final AtomicLong resolvedTs = new AtomicLong(0);
   private final Consumer<RegionFeedEvent> eventConsumer;
 
   public CDCClientV2(TiConfiguration tiConf, StreamSplit split) {
