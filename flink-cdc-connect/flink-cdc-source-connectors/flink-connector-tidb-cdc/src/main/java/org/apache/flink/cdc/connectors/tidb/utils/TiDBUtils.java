@@ -1,7 +1,9 @@
 package org.apache.flink.cdc.connectors.tidb.utils;
 
+import io.debezium.connector.mysql.MySqlValueConverters;
 import org.apache.flink.cdc.connectors.tidb.source.config.TiDBConnectorConfig;
 import org.apache.flink.cdc.connectors.tidb.source.connection.TiDBConnection;
+import org.apache.flink.cdc.connectors.tidb.source.converter.TiDBValueConverters;
 import org.apache.flink.cdc.connectors.tidb.source.offset.CDCEventOffset;
 import org.apache.flink.cdc.connectors.tidb.source.schema.TiDBDatabaseSchema;
 import org.apache.flink.table.api.DataTypes;
@@ -22,6 +24,8 @@ import java.time.Instant;
 import java.util.Iterator;
 import java.util.Optional;
 import java.util.stream.Collectors;
+
+import static org.apache.flink.cdc.connectors.tidb.utils.TiDBConnectionUtils.getValueConverters;
 
 public class TiDBUtils {
     private static final String BIT = "BIT";
@@ -406,21 +410,35 @@ public class TiDBUtils {
             boolean isTableIdCaseSensitive)
             throws SQLException {
         //    Key.KeyMapper customKeysMapper = new CustomeKeyMapper();
+        TiDBValueConverters valueConverters = getValueConverters(config);
         TiDBDatabaseSchema schema =
                 new TiDBDatabaseSchema(
-                        config, topicSelector, isTableIdCaseSensitive, config.getKeyMapper());
+                        config,valueConverters,topicSelector, isTableIdCaseSensitive);
         schema.refresh(connection, false);
         return schema;
     }
 
-    public static TiDBDatabaseSchema createTiDBDatabaseSchema(
-            TiDBConnectorConfig dbzTiDBConfig, boolean isTableIdCaseSensitive) {
-        TopicSelector<TableId> topicSelector = TidbTopicSelector.defaultSelector(dbzTiDBConfig);
-        //    Key.KeyMapper customKeysMapper = new CustomeKeyMapper();
-        return new TiDBDatabaseSchema(
-                dbzTiDBConfig, topicSelector, isTableIdCaseSensitive, dbzTiDBConfig.getKeyMapper());
-    }
+//    public static TiDBDatabaseSchema createTiDBDatabaseSchema(
+//            TiDBConnectorConfig dbzTiDBConfig, boolean isTableIdCaseSensitive) {
+//        TopicSelector<TableId> topicSelector = TidbTopicSelector.defaultSelector(dbzTiDBConfig);
+//        //    Key.KeyMapper customKeysMapper = new CustomeKeyMapper();
+//        return new TiDBDatabaseSchema(
+//                dbzTiDBConfig, topicSelector, isTableIdCaseSensitive, dbzTiDBConfig.getKeyMapper());
+//    }
 
+    public static TiDBDatabaseSchema createTiDBDatabaseSchema(
+            TiDBConnectorConfig dbzTiDBConfig,
+            TopicSelector<TableId> topicSelector,
+            boolean isTableIdCaseSensitive) {
+        TiDBValueConverters valueConverters = getValueConverters(dbzTiDBConfig);
+        TiDBDatabaseSchema tiDBDatabaseSchema = new TiDBDatabaseSchema(
+                dbzTiDBConfig,
+                valueConverters,
+                topicSelector,
+                isTableIdCaseSensitive);
+//        tiDBDatabaseSchema.refresh(connection, false);
+        return tiDBDatabaseSchema;
+    }
     public static long getPhysicalTimeFromTso(long tso) {
         // The first 41 bits represent the physical timestamp in milliseconds since epoch
         return tso >> 18; // Convert milliseconds to microseconds

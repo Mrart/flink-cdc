@@ -197,8 +197,6 @@ public class TiDBScanFetchTask extends AbstractScanFetchTask {
                     snapshotSplit.splitId(),
                     table.id());
 
-
-
             final String selectSql =
                     TiDBUtils.buildSplitScanQuery(
                             snapshotSplit.getTableId(),
