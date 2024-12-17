@@ -62,8 +62,8 @@ public class CDCEventSource
     this.errorHandler = errorHandler;
     this.taskContext = taskContext;
     this.split = split;
-    this.tableIdProvider = message -> getTableId(message);
-    this.cdcClientV2 = new CDCClientV2(getTiConfig(connectorConfig.getSourceConfig()), split);
+    this.tableIdProvider = this::getTableId;
+    this.cdcClientV2 = new CDCClientV2(getTiConfig(connectorConfig.getSourceConfig()));
   }
 
   private TableId getTableId(RegionFeedEvent event) {
@@ -111,17 +111,23 @@ public class CDCEventSource
               handleChange(partition, effectiveOffsetContext, Envelope.Operation.DELETE, event));
     }
     eventHandlers.put(OpType.Resolved, event -> LOG.trace("HEARTBEAT message: {}", event));
+    this.cdcClientV2.execute(
+        Long.parseLong(this.split.getStartingOffset().getOffset().get("timestamp")),
+        new TableId("customer", null, "customers"));
     while (true) {
       RegionFeedEvent raw = null;
       for (int i = 0; i < 2000; i++) {
         raw = this.cdcClientV2.get();
-        eventHandlers
-            .getOrDefault(
-                raw.getRawKVEntry().getOpType(),
-                skipRaw -> LOG.trace("Skip raw message {}", skipRaw))
-            .accept(raw);
+        if (raw != null) {
+          eventHandlers
+              .getOrDefault(
+                  raw.getRawKVEntry().getOpType(),
+                  skipRaw -> LOG.trace("Skip raw message {}", skipRaw))
+              .accept(raw);
+          offsetContext.event(
+              getTableId(raw), Instant.ofEpochSecond(this.cdcClientV2.getResolvedTs()));
+        }
       }
-      offsetContext.event(getTableId(raw), Instant.ofEpochSecond(this.cdcClientV2.getResolvedTs()));
     }
   }
 
@@ -155,7 +161,8 @@ public class CDCEventSource
       LOG.warn("No table schema found, skipping log message: {}", event);
       return;
     }
-    offsetContext.event(tableId, Instant.ofEpochSecond(event.getResolved().getResolvedTs()));
+    offsetContext.event(tableId, Instant.ofEpochMilli(event.getRawKVEntry().getCrts()));
+
     Map<String, Integer> fieldIndex =
         fieldIndexMap.computeIfAbsent(
             tableSchema,
@@ -212,10 +219,12 @@ public class CDCEventSource
         new CDCEventEmitter(partition, offsetContext, Clock.SYSTEM, operation, before, after));
   }
 
-  private TiConfiguration getTiConfig(TiDBSourceConfig tiDBSourceConfig) {
+  public static TiConfiguration getTiConfig(TiDBSourceConfig tiDBSourceConfig) {
     final TiConfiguration tiConf = TiConfiguration.createDefault(tiDBSourceConfig.getPdAddresses());
     Optional.of(new UriHostMapping(tiDBSourceConfig.getHostMapping()))
         .ifPresent(tiConf::setHostMapping);
+    tiConf.setGrpcHealthCheckTimeout(60000);
+    tiConf.setTimeout(60000);
     // get tikv config；
     return tiConf;
   }

@@ -2,7 +2,6 @@ package org.tikv.cdc;
 
 import com.google.common.collect.Lists;
 import io.debezium.relational.TableId;
-import org.apache.flink.cdc.connectors.base.source.meta.split.StreamSplit;
 import org.apache.flink.cdc.connectors.tidb.table.utils.TableKeyRangeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,9 +25,11 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import static java.lang.Thread.sleep;
 
@@ -39,7 +40,7 @@ public class CDCClientV2 implements ICDCClientV2 {
   private final TiConfiguration tiConf;
   private final CDCConfig cdcConfig;
   private final TiSession tiSession;
-  private final StreamSplit split;
+  //  private final StreamSplit split;
   private final BlockingQueue<RegionFeedEvent> eventsBuffer;
 
   private final ConcurrentHashMap<String, EventFeedStream> storeStreamCache =
@@ -49,15 +50,15 @@ public class CDCClientV2 implements ICDCClientV2 {
   private final TableStoreStats tableStoreStats = new TableStoreStats();
   private final AtomicLong resolvedTs = new AtomicLong(0);
   private final Consumer<RegionFeedEvent> eventConsumer;
+  private TableId tableId;
 
-  public CDCClientV2(TiConfiguration tiConf, StreamSplit split) {
-    this(tiConf, split, new CDCConfig());
+  public CDCClientV2(TiConfiguration tiConf) {
+    this(tiConf, new CDCConfig());
   }
 
-  public CDCClientV2(TiConfiguration tiConf, StreamSplit split, CDCConfig cdcConfig) {
+  public CDCClientV2(TiConfiguration tiConf, CDCConfig cdcConfig) {
     this.tiConf = tiConf;
     this.cdcConfig = cdcConfig;
-    this.split = split;
     this.tiSession = new TiSession(tiConf);
     resolveTsPool.add(
         new RegionStatefulEvent.Builder()
@@ -84,8 +85,9 @@ public class CDCClientV2 implements ICDCClientV2 {
 
   @Override
   public void execute(final long startTs, TableId tableId) {
+    this.tableId = tableId;
     TiTableInfo tableInfo = getTableInfo(tableId.catalog(), tableId.table());
-    KeyRange keyRange = TableKeyRangeUtils.getTableKeyRange(tableInfo.getId(), 1, 1);
+    KeyRange keyRange = TableKeyRangeUtils.getTableKeyRange(tableInfo.getId(), 1, 0);
     List<RegionStateManager.SingleRegionInfo> singleRegionInfos = divideToRegions(keyRange);
     singleRegionInfos.forEach(
         singleRegionInfo -> {
@@ -105,7 +107,17 @@ public class CDCClientV2 implements ICDCClientV2 {
 
   @Override
   public RegionFeedEvent get() {
-    return eventsBuffer.poll();
+    try {
+      RegionFeedEvent rfe = eventsBuffer.take();
+      if (rfe != null) {
+        rfe.setDbName(this.tableId.catalog());
+        rfe.setTableName(this.tableId.table());
+        return rfe;
+      }
+    } catch (InterruptedException e) {
+      LOGGER.error("Take record from queue failed.", e);
+    }
+    return null;
   }
 
   @Override
@@ -209,23 +221,24 @@ public class CDCClientV2 implements ICDCClientV2 {
         throw new RuntimeException(ex);
       }
       // todo sendRequestToStoreError.
+      // Delete the stream from the cache so that when next time a region of
+      // this store is requested, a new stream to this store will be created.
+      deleteStream(streamClient);
+      // Remove the region from pendingRegions. If it's already removed, it should be already
+      // retried
+      // by `receiveFromStream`, so no need to retry here.
+      streamClient.getRegions().takeByRequestID(requestId);
     }
-    // Delete the stream from the cache so that when next time a region of
-    // this store is requested, a new stream to this store will be created.
-    deleteStream(streamClient);
-    // Remove the region from pendingRegions. If it's already removed, it should be already retried
-    // by `receiveFromStream`, so no need to retry here.
-    streamClient.getRegions().takeByRequestID(requestId);
   }
 
   private void receiveFromStream(
       EventFeedStream stream, Cdcpb.ChangeDataRequest request, long tableId) {
-    tableStoreStats.lock();
+    //    tableStoreStats.lock();
     String key = String.format("%d_%s", tableId, stream.getStoreId());
     if (!tableStoreStats.containsKey(key)) {
       tableStoreStats.put(key, new TableStoreStat());
     }
-    tableStoreStats.unlock();
+    //    tableStoreStats.unlock();
 
     RegionWorker worker = new RegionWorker(tiSession, stream, eventConsumer, cdcConfig);
     StreamObserver<Cdcpb.ChangeDataEvent> responseObserver =
@@ -245,28 +258,37 @@ public class CDCClientV2 implements ICDCClientV2 {
                   size,
                   regionCount);
             }
-            if (event.getEventsList().size() != 0) {}
-            if (event.getEventsList().get(0).hasEntries()) {
-              long commitTs = event.getEventsList().get(0).getEntries().getEntries(0).getCommitTs();
-              if (maxCommitTs < commitTs) {
-                maxCommitTs = commitTs;
+            if (event.getEventsList().size() != 0) {
+              if (event.getEventsList().get(0).hasEntries()) {
+                long commitTs =
+                    event.getEventsList().get(0).getEntries().getEntries(0).getCommitTs();
+                if (maxCommitTs < commitTs) {
+                  maxCommitTs = commitTs;
+                }
               }
             }
-            sendRegionChangeEvent(event.getEventsList(), worker);
-            if (event.hasResolvedTs()) {}
 
-            //            System.out.println("Received response from server: " + event);
+            sendRegionChangeEvent(event.getEventsList(), worker);
+            if (event.hasResolvedTs()) {
+              sendResolveTs(event.getResolvedTs(), worker);
+            }
           }
 
           @Override
           public void onError(Throwable t) {
-            // kvClientStreamRecvError
-            t.printStackTrace();
+            // kvClientStreamRecvError todo bo retry
+            LOGGER.error("kvClientStreamRecvError.", t);
+            // Retry with some random delay
+            try {
+              TimeUnit.MILLISECONDS.sleep(100);
+            } catch (InterruptedException e) {
+              Thread.currentThread().interrupt();
+            }
           }
 
           @Override
           public void onCompleted() {
-            System.out.println("Server completed streaming");
+            LOGGER.warn("Server completed streaming");
           }
         };
     final StreamObserver<Cdcpb.ChangeDataRequest> requestObserver =
@@ -312,7 +334,13 @@ public class CDCClientV2 implements ICDCClientV2 {
 
   private void sendRegionChangeEvent(List<Cdcpb.Event> events, RegionWorker worker) {
     List<List<RegionStatefulEvent>> regionStatefulEeventList =
-        new ArrayList<>(worker.getWorkerConcurrency());
+        IntStream.range(0, worker.getWorkerConcurrency())
+            .mapToObj(
+                i ->
+                    IntStream.range(0, events.size())
+                        .mapToObj(j -> new RegionStatefulEvent()) // 假设有一个无参构造函数
+                        .collect(Collectors.toList()))
+            .collect(Collectors.toList());
     int totalEvents = events.size();
     for (int i = 0; i < worker.getWorkerConcurrency(); i++) {
       // Calculate buffer length as 1.5 times the average number of events per worker
@@ -321,8 +349,8 @@ public class CDCClientV2 implements ICDCClientV2 {
     }
     for (Cdcpb.Event event : events) {
       RegionStateManager.RegionFeedState state = worker.getRegionState(event.getRegionId());
-      boolean valid = true;
-      if (valid) {
+      //      boolean valid = true;
+      if (state != null) {
         if (state.getRequestID() < event.getRequestId()) {
           LOGGER.debug(
               "region state entry will be replaced because received message of newer requestID.regionId {}, oldRequestId {}, requestId{}, add {},streamId {}",
@@ -331,19 +359,27 @@ public class CDCClientV2 implements ICDCClientV2 {
               event.getRegionId(),
               worker.getStream().getAddr(),
               worker.getStream().getStreamId());
+        } else if (state.getRequestID() > event.getRequestId()) {
+          LOGGER.debug(
+              "drop event due to event belongs to a stale request.regionId {}, oldRequestId {}, requestId{}, add {},streamId {}",
+              event.getRegionId(),
+              state.getRequestID(),
+              event.getRegionId(),
+              worker.getStream().getAddr(),
+              worker.getStream().getStreamId());
+          continue;
         }
-        valid = false;
-      } else if (state.getRequestID() > event.getRequestId()) {
-        LOGGER.debug(
-            "drop event due to event belongs to a stale request.regionId {}, oldRequestId {}, requestId{}, add {},streamId {}",
-            event.getRegionId(),
-            state.getRequestID(),
-            event.getRegionId(),
-            worker.getStream().getAddr(),
-            worker.getStream().getStreamId());
-        continue;
-      }
-      if (!valid) {
+        if (state.isStale()) {
+          LOGGER.warn(
+              "drop event due to region feed is stopped.regionId {}, oldRequestId {}, requestId{}, add {},streamId {}",
+              event.getRegionId(),
+              state.getRequestID(),
+              event.getRegionId(),
+              worker.getStream().getAddr(),
+              worker.getStream().getStreamId());
+          continue;
+        }
+      } else {
         // Firstly load the region info.
         RegionStateManager.RegionFeedState newState =
             worker.getStream().getRegions().takeByRequestID(event.getRequestId());
@@ -358,16 +394,8 @@ public class CDCClientV2 implements ICDCClientV2 {
           continue;
         }
         newState.start();
-        worker.setRegionState(event.getRegionId(), state);
-      } else if (state.isStale()) {
-        LOGGER.warn(
-            "drop event due to region feed is stopped.regionId {}, oldRequestId {}, requestId{}, add {},streamId {}",
-            event.getRegionId(),
-            state.getRequestID(),
-            event.getRegionId(),
-            worker.getStream().getAddr(),
-            worker.getStream().getStreamId());
-        continue;
+        state = newState;
+        worker.setRegionState(event.getRegionId(), newState);
       }
       if (event.hasError()) {
         LOGGER.error(
@@ -392,10 +420,17 @@ public class CDCClientV2 implements ICDCClientV2 {
   }
 
   private void sendResolveTs(Cdcpb.ResolvedTs resolvedTs, RegionWorker worker) {
-    List<RegionStatefulEvent> regionStatefulEvents = new ArrayList<>(worker.getWorkerConcurrency());
+    List<RegionStatefulEvent> regionStatefulEvents =
+        IntStream.range(0, worker.getWorkerConcurrency())
+            .mapToObj(i -> new RegionStatefulEvent()) // 假设有一个无参构造函数
+            .collect(Collectors.toList());
     for (int i = 0; i < worker.getWorkerConcurrency(); i++) {
       int buffLen = resolvedTs.getRegionsList().size() / worker.getWorkerConcurrency() * 2;
       RegionStatefulEvent rse = this.resolveTsPool.poll();
+      if (rse == null) {
+        rse = new RegionStatefulEvent();
+        this.resolveTsPool.add(rse);
+      }
       rse.getResolvedTsEvent().setResolvedTs(resolvedTs.getTs());
       rse.getResolvedTsEvent().setRegions(new ArrayList<>(buffLen));
       regionStatefulEvents.set(i, rse);
