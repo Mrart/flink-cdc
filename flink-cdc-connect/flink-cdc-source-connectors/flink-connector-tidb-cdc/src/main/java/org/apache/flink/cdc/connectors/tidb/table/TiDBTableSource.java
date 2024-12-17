@@ -222,6 +222,8 @@ public class TiDBTableSource implements ScanTableSource, SupportsReadingMetadata
                         .connectMaxRetries(connectMaxRetries)
                         .jdbcProperties(jdbcProperties)
                         .startupOptions(startupOptions)
+                        .pdAddresses(pdAddresses)
+                        .hostMapping(hostMapping)
                         .deserializer(deserializer)
                         //
                         // .snapshotEventDeserializer(snapshotEventDeserializationSchema)

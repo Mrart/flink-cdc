@@ -99,6 +99,15 @@ public class TiDBSourceBuilder<T> {
         return this;
     }
 
+    public TiDBSourceBuilder<T> pdAddresses (String pdAddresses){
+        this.configFactory.pdAddresses(pdAddresses);
+        return  this;
+    }
+
+    public TiDBSourceBuilder<T> hostMapping(String hostMapping) {
+        this.configFactory.hostMapping(hostMapping);
+        return this;
+    }
     /**
      * The split size (number of rows) of table snapshot, captured tables are split into multiple
      * splits when read the snapshot of table.
