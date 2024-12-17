@@ -5,6 +5,7 @@ import org.apache.flink.cdc.connectors.base.config.JdbcSourceConfig;
 import org.apache.flink.cdc.connectors.base.dialect.JdbcDataSourceDialect;
 import org.apache.flink.cdc.connectors.base.source.assigner.splitter.ChunkRange;
 import org.apache.flink.cdc.connectors.base.source.assigner.splitter.JdbcSourceChunkSplitter;
+import org.apache.flink.cdc.connectors.base.source.utils.JdbcChunkUtils;
 import org.apache.flink.cdc.connectors.base.utils.ObjectUtils;
 import org.apache.flink.cdc.connectors.tidb.utils.TiDBUtils;
 import org.apache.flink.table.types.DataType;
@@ -33,6 +34,17 @@ public class TiDBChunkSplitter extends JdbcSourceChunkSplitter {
             throws SQLException {
         return TiDBUtils.queryNextChunkMax(
                 jdbc, tableId, splitColumn.name(), chunkSize, includedLowerBound);
+    }
+
+    @Override
+    protected Object queryMin(
+            JdbcConnection jdbc, TableId tableId, Column splitColumn, Object excludedLowerBound)
+            throws SQLException {
+        return JdbcChunkUtils.queryMin(
+                jdbc,
+                jdbc.quotedTableIdString(tableId),
+                jdbc.quotedColumnIdString(splitColumn.name()),
+                excludedLowerBound);
     }
 
     @Override

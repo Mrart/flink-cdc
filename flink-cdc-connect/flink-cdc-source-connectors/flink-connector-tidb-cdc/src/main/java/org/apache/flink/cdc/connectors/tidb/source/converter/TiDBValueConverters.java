@@ -1,7 +1,7 @@
 package org.apache.flink.cdc.connectors.tidb.source.converter;
 
-import io.debezium.time.*;
 import org.apache.flink.cdc.connectors.tidb.source.config.TiDBConnectorConfig;
+import org.apache.flink.util.FlinkRuntimeException;
 
 import com.github.shyiko.mysql.binlog.event.deserialization.json.JsonBinary;
 import io.debezium.DebeziumException;
@@ -17,8 +17,8 @@ import io.debezium.jdbc.JdbcValueConverters;
 import io.debezium.jdbc.TemporalPrecisionMode;
 import io.debezium.relational.Column;
 import io.debezium.relational.ValueConverter;
+import io.debezium.time.*;
 import io.debezium.util.Strings;
-import org.apache.flink.util.FlinkRuntimeException;
 import org.apache.kafka.connect.data.Decimal;
 import org.apache.kafka.connect.data.Field;
 import org.apache.kafka.connect.data.SchemaBuilder;
@@ -41,7 +41,6 @@ import java.time.temporal.ChronoField;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.Temporal;
 import java.time.temporal.TemporalAdjuster;
-import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -77,7 +76,7 @@ public class TiDBValueConverters extends JdbcValueConverters {
         return temporal;
     }
 
-//    private final ParsingErrorHandler parsingErrorHandler;
+    //    private final ParsingErrorHandler parsingErrorHandler;
 
     // todo
     public TiDBValueConverters(TiDBConnectorConfig connectorConfig) {
@@ -88,10 +87,9 @@ public class TiDBValueConverters extends JdbcValueConverters {
                 x -> x,
                 BigIntUnsignedMode.PRECISE,
                 connectorConfig.binaryHandlingMode());
-//        this.compatibleMode = connectorConfig.getCompatibleMode();
-//        this.serverTimezone = connectorConfig.getServerTimeZone();
+        //        this.compatibleMode = connectorConfig.getCompatibleMode();
+        //        this.serverTimezone = connectorConfig.getServerTimeZone();
     }
-
 
     public TiDBValueConverters(
             DecimalMode decimalMode,
@@ -121,7 +119,7 @@ public class TiDBValueConverters extends JdbcValueConverters {
                 adjuster,
                 bigIntUnsignedMode,
                 binaryMode);
-//        this.parsingErrorHandler = parsingErrorHandler;
+        //        this.parsingErrorHandler = parsingErrorHandler;
     }
 
     @Override
@@ -196,21 +194,21 @@ public class TiDBValueConverters extends JdbcValueConverters {
                     return Decimal.builder(0);
             }
         }
-//        if (matches(typeName, "DATETIME")) {
-//            if (adaptiveTimeMicrosecondsPrecisionMode) {
-//                return SchemaBuilder.string();
-//            }
-//            if (adaptiveTimePrecisionMode) {
-//                if (getTimePrecision(column) <= 3+20) {
-//                    return Time.builder();
-//                }
-//                if (getTimePrecision(column) <= 6+20) {
-//                    return SchemaBuilder.string();
-//                }
-//                return NanoTime.builder();
-//            }
-//            return org.apache.kafka.connect.data.Time.builder();
-//        }
+        //        if (matches(typeName, "DATETIME")) {
+        //            if (adaptiveTimeMicrosecondsPrecisionMode) {
+        //                return SchemaBuilder.string();
+        //            }
+        //            if (adaptiveTimePrecisionMode) {
+        //                if (getTimePrecision(column) <= 3+20) {
+        //                    return Time.builder();
+        //                }
+        //                if (getTimePrecision(column) <= 6+20) {
+        //                    return SchemaBuilder.string();
+        //                }
+        //                return NanoTime.builder();
+        //            }
+        //            return org.apache.kafka.connect.data.Time.builder();
+        //        }
 
         // Otherwise, let the base class handle it ...
         return super.schemaBuilder(column);
@@ -350,12 +348,15 @@ public class TiDBValueConverters extends JdbcValueConverters {
                             } catch (IOException var5) {
                                 throw new FlinkRuntimeException("tidbvalueConverters error");
                                 //                                this.parsingErrorHandler.error(
-//                                        "Failed to parse and read a JSON value on '"
-//                                                + column
-//                                                + "' value "
-//                                                + Arrays.toString((byte[]) data),
-//                                        var5);
-//                                r.deliver(column.isOptional() ? null : "{}");
+                                //                                        "Failed to parse and read
+                                // a JSON value on '"
+                                //                                                + column
+                                //                                                + "' value "
+                                //                                                +
+                                // Arrays.toString((byte[]) data),
+                                //                                        var5);
+                                //                                r.deliver(column.isOptional() ?
+                                // null : "{}");
                             }
                         }
                     } else if (data instanceof String) {
