@@ -1,5 +1,8 @@
 package io.debezium.connector.tidb;
 
+import io.debezium.connector.mysql.antlr.MySqlAntlrDdlParser;
+import io.debezium.connector.mysql.antlr.listener.MySqlAntlrDdlParserListener;
+import io.debezium.connector.tidb.Listeners.TiDBAntlrDdlParserListener;
 import org.apache.flink.cdc.connectors.tidb.source.converter.TiDBValueConverters;
 
 import io.debezium.antlr.AntlrDdlParser;
@@ -19,7 +22,7 @@ import java.util.Arrays;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-public class TiDBAntlrDdlParser extends AntlrDdlParser<MySqlLexer, MySqlParser> {
+public class TiDBAntlrDdlParser extends MySqlAntlrDdlParser {
 
     private final ConcurrentMap<String, String> charsetNameForDatabase = new ConcurrentHashMap<>();
     private final TiDBValueConverters converters;
@@ -43,7 +46,7 @@ public class TiDBAntlrDdlParser extends AntlrDdlParser<MySqlLexer, MySqlParser> 
             boolean includeComments,
             TiDBValueConverters converters,
             Tables.TableFilter tableFilter) {
-        super(throwErrorsFromTreeWalk, includeViews, includeComments);
+//        super(throwErrorsFromTreeWalk, includeViews, includeComments);
         systemVariables = new MySqlSystemVariables();
         this.converters = converters;
         this.tableFilter = tableFilter;
@@ -56,7 +59,7 @@ public class TiDBAntlrDdlParser extends AntlrDdlParser<MySqlLexer, MySqlParser> 
 
     @Override
     protected AntlrDdlParserListener createParseTreeWalkerListener() {
-        return null;
+        return new TiDBAntlrDdlParserListener(this);
     }
 
     @Override

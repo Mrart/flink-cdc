@@ -82,7 +82,8 @@ public class TiDBConnectorITCase extends TiDBTestBase {
                                 + " 'username' = '%s',"
                                 + " 'database-name' = '%s',"
                                 + " 'table-name' = '%s',"
-                                + " 'scan.startup.mode' = '%s'"
+                                + " 'scan.startup.mode' = '%s',"
+                                + " 'scan.incremental.snapshot.chunk.key-column' = '%s'"
                                 + ")",
                         PD.getContainerIpAddress() + ":" + PD.getMappedPort(PD_PORT_ORIGIN),
                         TIDB.getHost(),
@@ -91,7 +92,8 @@ public class TiDBConnectorITCase extends TiDBTestBase {
                         TIDB_USER,
                         "inventory",
                         "products",
-                        "snapshot");
+                        "snapshot",
+                        "id");
 
         String sinkDDL =
                 "CREATE TABLE sink ("
@@ -115,6 +117,240 @@ public class TiDBConnectorITCase extends TiDBTestBase {
 
         try (Connection connection = getJdbcConnection("inventory");
                 Statement statement = connection.createStatement()) {
+
+            statement.execute(
+                    "UPDATE products SET description='18oz carpenter hammer' WHERE id=106;");
+            statement.execute("UPDATE products SET weight='5.1' WHERE id=107;");
+            statement.execute(
+                    "INSERT INTO products VALUES (default,'jacket','water resistent white wind breaker',0.2);"); // 110
+            statement.execute(
+                    "INSERT INTO products VALUES (default,'scooter','Big 2-wheel scooter ',5.18);");
+            statement.execute(
+                    "UPDATE products SET description='new water resistent white wind breaker', weight='0.5' WHERE id=110;");
+            statement.execute("UPDATE products SET weight='5.17' WHERE id=111;");
+            statement.execute("DELETE FROM products WHERE id=111;");
+        }
+
+        waitForSinkSize("sink", 16);
+
+        /*
+         * <pre>
+         * The final database table looks like this:
+         *
+         * > SELECT * FROM products;
+         * +-----+--------------------+---------------------------------------------------------+--------+
+         * | id  | name               | description                                             | weight |
+         * +-----+--------------------+---------------------------------------------------------+--------+
+         * | 101 | scooter            | Small 2-wheel scooter                                   |   3.14 |
+         * | 102 | car battery        | 12V car battery                                         |    8.1 |
+         * | 103 | 12-pack drill bits | 12-pack of drill bits with sizes ranging from #40 to #3 |    0.8 |
+         * | 104 | hammer             | 12oz carpenter's hammer                                 |   0.75 |
+         * | 105 | hammer             | 14oz carpenter's hammer                                 |  0.875 |
+         * | 106 | hammer             | 18oz carpenter hammer                                   |      1 |
+         * | 107 | rocks              | box of assorted rocks                                   |    5.1 |
+         * | 108 | jacket             | water resistent black wind breaker                      |    0.1 |
+         * | 109 | spare tire         | 24 inch spare tire                                      |   22.2 |
+         * | 110 | jacket             | new water resistent white wind breaker                  |    0.5 |
+         * +-----+--------------------+---------------------------------------------------------+--------+
+         * </pre>
+         */
+
+        List<String> expected =
+                Arrays.asList(
+                        "+I(101,scooter,Small 2-wheel scooter,3.1400000000)",
+                        "+I(102,car battery,12V car battery,8.1000000000)",
+                        "+I(103,12-pack drill bits,12-pack of drill bits with sizes ranging from #40 to #3,0.8000000000)",
+                        "+I(104,hammer,12oz carpenter's hammer,0.7500000000)",
+                        "+I(105,hammer,14oz carpenter's hammer,0.8750000000)",
+                        "+I(106,hammer,16oz carpenter's hammer,1.0000000000)",
+                        "+I(107,rocks,box of assorted rocks,5.3000000000)",
+                        "+I(108,jacket,water resistent black wind breaker,0.1000000000)",
+                        "+I(109,spare tire,24 inch spare tire,22.2000000000)",
+                        "+U(106,hammer,18oz carpenter hammer,1.0000000000)",
+                        "+U(107,rocks,box of assorted rocks,5.1000000000)",
+                        "+I(110,jacket,water resistent white wind breaker,0.2000000000)",
+                        "+I(111,scooter,Big 2-wheel scooter ,5.1800000000)",
+                        "+U(110,jacket,new water resistent white wind breaker,0.5000000000)",
+                        "+U(111,scooter,Big 2-wheel scooter ,5.1700000000)",
+                        "-D(111,scooter,Big 2-wheel scooter ,5.1700000000)");
+        List<String> actual = TestValuesTableFactory.getRawResults("sink");
+        assertEqualsInAnyOrder(expected, actual);
+        result.getJobClient().get().cancel().get();
+    }
+
+    @Test
+    public void testConsumingAllEventsTime() throws Exception {
+        initializeTidbTable("inventory_time");
+
+        String sourceDDL =
+                String.format(
+                        "CREATE TABLE tidb_source ("
+                                + " `id` INT NOT NULL,"
+                                + " name STRING,"
+                                + " description STRING,"
+                                + " weight DECIMAL(20, 10),"
+                                + " `pt_timestamp` timestamp(6),"
+                                + " PRIMARY KEY (`id`) NOT ENFORCED"
+                                + ") WITH ("
+                                + " 'connector' = 'tidb-cdc',"
+                                + " 'pd-addresses' = '%s',"
+                                + " 'hostname' = '%s',"
+                                + " 'port' = '%s',"
+                                + " 'password' = '%s',"
+                                + " 'username' = '%s',"
+                                + " 'database-name' = '%s',"
+                                + " 'table-name' = '%s',"
+                                + " 'scan.startup.mode' = '%s',"
+                                + " 'scan.incremental.snapshot.chunk.key-column' = '%s'"
+                                + ")",
+                        PD.getContainerIpAddress() + ":" + PD.getMappedPort(PD_PORT_ORIGIN),
+                        TIDB.getHost(),
+                        TIDB.getMappedPort(TIDB_PORT),
+                        TIDB_PASSWORD,
+                        TIDB_USER,
+                        "inventory",
+                        "products",
+                        "snapshot",
+                        "id");
+
+        String sinkDDL =
+                "CREATE TABLE sink ("
+                        + " `id` INT NOT NULL,"
+                        + " name STRING,"
+                        + " description STRING,"
+                        + " weight DECIMAL(20, 10),"
+                        + " `pt_timestamp` timestamp(6),"
+                        + " PRIMARY KEY (`id`) NOT ENFORCED"
+                        + ") WITH ("
+                        + " 'connector' = 'values',"
+                        + " 'sink-insert-only' = 'false',"
+                        + " 'sink-expected-messages-num' = '20'"
+                        + ")";
+        tEnv.executeSql(sourceDDL);
+        tEnv.executeSql(sinkDDL);
+        // async submit job
+        TableResult result = tEnv.executeSql("INSERT INTO sink SELECT * FROM tidb_source");
+
+        // wait for snapshot finished and begin binlog
+        waitForSinkSize("sink", 9);
+
+        try (Connection connection = getJdbcConnection("inventory");
+             Statement statement = connection.createStatement()) {
+
+//            statement.execute(
+//                    "UPDATE products SET description='18oz carpenter hammer' WHERE id=106;");
+//            statement.execute("UPDATE products SET weight='5.1' WHERE id=107;");
+//            statement.execute(
+//                    "INSERT INTO products VALUES (default,'jacket','water resistent white wind breaker',0.2);"); // 110
+//            statement.execute(
+//                    "INSERT INTO products VALUES (default,'scooter','Big 2-wheel scooter ',5.18);");
+//            statement.execute(
+//                    "UPDATE products SET description='new water resistent white wind breaker', weight='0.5' WHERE id=110;");
+//            statement.execute("UPDATE products SET weight='5.17' WHERE id=111;");
+//            statement.execute("DELETE FROM products WHERE id=111;");
+        }
+
+        waitForSinkSize("sink", 16);
+
+        /*
+         * <pre>
+         * The final database table looks like this:
+         *
+         * > SELECT * FROM products;
+         * +-----+--------------------+---------------------------------------------------------+--------+
+         * | id  | name               | description                                             | weight |
+         * +-----+--------------------+---------------------------------------------------------+--------+
+         * | 101 | scooter            | Small 2-wheel scooter                                   |   3.14 |
+         * | 102 | car battery        | 12V car battery                                         |    8.1 |
+         * | 103 | 12-pack drill bits | 12-pack of drill bits with sizes ranging from #40 to #3 |    0.8 |
+         * | 104 | hammer             | 12oz carpenter's hammer                                 |   0.75 |
+         * | 105 | hammer             | 14oz carpenter's hammer                                 |  0.875 |
+         * | 106 | hammer             | 18oz carpenter hammer                                   |      1 |
+         * | 107 | rocks              | box of assorted rocks                                   |    5.1 |
+         * | 108 | jacket             | water resistent black wind breaker                      |    0.1 |
+         * | 109 | spare tire         | 24 inch spare tire                                      |   22.2 |
+         * | 110 | jacket             | new water resistent white wind breaker                  |    0.5 |
+         * +-----+--------------------+---------------------------------------------------------+--------+
+         * </pre>
+         */
+
+        List<String> expected =
+                Arrays.asList(
+                        "+I(101,scooter,Small 2-wheel scooter,3.1400000000)",
+                        "+I(102,car battery,12V car battery,8.1000000000)",
+                        "+I(103,12-pack drill bits,12-pack of drill bits with sizes ranging from #40 to #3,0.8000000000)",
+                        "+I(104,hammer,12oz carpenter's hammer,0.7500000000)",
+                        "+I(105,hammer,14oz carpenter's hammer,0.8750000000)",
+                        "+I(106,hammer,16oz carpenter's hammer,1.0000000000)",
+                        "+I(107,rocks,box of assorted rocks,5.3000000000)",
+                        "+I(108,jacket,water resistent black wind breaker,0.1000000000)",
+                        "+I(109,spare tire,24 inch spare tire,22.2000000000)",
+                        "+U(106,hammer,18oz carpenter hammer,1.0000000000)",
+                        "+U(107,rocks,box of assorted rocks,5.1000000000)",
+                        "+I(110,jacket,water resistent white wind breaker,0.2000000000)",
+                        "+I(111,scooter,Big 2-wheel scooter ,5.1800000000)",
+                        "+U(110,jacket,new water resistent white wind breaker,0.5000000000)",
+                        "+U(111,scooter,Big 2-wheel scooter ,5.1700000000)",
+                        "-D(111,scooter,Big 2-wheel scooter ,5.1700000000)");
+        List<String> actual = TestValuesTableFactory.getRawResults("sink");
+        assertEqualsInAnyOrder(expected, actual);
+        result.getJobClient().get().cancel().get();
+    }
+
+    @Test
+    public void testConsumingAllEventsSplit() throws Exception {
+        initializeTidbTable("inventory2");
+
+        String sourceDDL =
+                String.format(
+                        "CREATE TABLE tidb_source ("
+                                + " name STRING,"
+                                + " description STRING,"
+                                + " weight DECIMAL(20, 10),"
+                                + " PRIMARY KEY (`name`) NOT ENFORCED"
+                                + ") WITH ("
+                                + " 'connector' = 'tidb-cdc',"
+                                + " 'pd-addresses' = '%s',"
+                                + " 'hostname' = '%s',"
+                                + " 'port' = '%s',"
+                                + " 'password' = '%s',"
+                                + " 'username' = '%s',"
+                                + " 'database-name' = '%s',"
+                                + " 'table-name' = '%s',"
+                                + " 'scan.startup.mode' = '%s',"
+                                + " 'scan.incremental.snapshot.chunk.key-column' = '%s'"
+                                + ")",
+                        PD.getContainerIpAddress() + ":" + PD.getMappedPort(PD_PORT_ORIGIN),
+                        TIDB.getHost(),
+                        TIDB.getMappedPort(TIDB_PORT),
+                        TIDB_PASSWORD,
+                        TIDB_USER,
+                        "inventory",
+                        "products",
+                        "snapshot",
+                        "name");
+
+        String sinkDDL =
+                "CREATE TABLE sink ("
+                        + " name STRING,"
+                        + " description STRING,"
+                        + " weight DECIMAL(20, 10),"
+                        + " PRIMARY KEY (`name`) NOT ENFORCED"
+                        + ") WITH ("
+                        + " 'connector' = 'values',"
+                        + " 'sink-insert-only' = 'false',"
+                        + " 'sink-expected-messages-num' = '20'"
+                        + ")";
+        tEnv.executeSql(sourceDDL);
+        tEnv.executeSql(sinkDDL);
+        // async submit job
+        TableResult result = tEnv.executeSql("INSERT INTO sink SELECT * FROM tidb_source");
+
+        // wait for snapshot finished and begin binlog
+        waitForSinkSize("sink", 9);
+
+        try (Connection connection = getJdbcConnection("inventory");
+             Statement statement = connection.createStatement()) {
 
             statement.execute(
                     "UPDATE products SET description='18oz carpenter hammer' WHERE id=106;");

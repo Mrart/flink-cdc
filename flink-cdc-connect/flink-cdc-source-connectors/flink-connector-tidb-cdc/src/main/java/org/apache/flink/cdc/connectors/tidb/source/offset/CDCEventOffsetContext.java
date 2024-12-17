@@ -16,6 +16,7 @@ import org.apache.kafka.connect.data.Struct;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 public class CDCEventOffsetContext implements OffsetContext {
     private static final String SNAPSHOT_COMPLETED_KEY = "snapshot_completed";
@@ -61,6 +62,18 @@ public class CDCEventOffsetContext implements OffsetContext {
             map.put(TIMESTAMP_KEY, String.valueOf(sourceInfo.timestamp().getEpochSecond()));
         }
         return map;
+    }
+
+    public void databaseEvent(String database, Instant timestamp) {
+        sourceInfo.setSourceTime(timestamp);
+        sourceInfo.databaseEvent(database);
+        sourceInfo.tableEvent((TableId) null);
+    }
+
+    public void tableEvent(String database, Set<TableId> tableIds, Instant timestamp) {
+        sourceInfo.setSourceTime(timestamp);
+        sourceInfo.databaseEvent(database);
+        sourceInfo.tableEvent(tableIds);
     }
 
     @Override

@@ -18,6 +18,7 @@ public class TiDBSourceInfo extends BaseSourceInfo {
     private Instant sourceTime;
     private Set<TableId> tableIds;
     private String transactionId;
+    private String databaseName;
 
     public TiDBSourceInfo(TiDBConnectorConfig config) {
         super(config);
@@ -34,13 +35,29 @@ public class TiDBSourceInfo extends BaseSourceInfo {
         this.sourceTime = sourceTime;
     }
 
+    public void databaseEvent(String databaseName) {
+        this.databaseName = databaseName;
+    }
+
+    public void tableEvent(Set<TableId> tableIds) {
+        this.tableIds = new HashSet<>(tableIds);
+    }
+
     public void tableEvent(TableId tableId) {
         this.tableIds = Collections.singleton(tableId);
     }
 
     @Override
     protected String database() {
-        return (tableIds != null) ? tableIds.iterator().next().catalog() : null;
+//        return (tableIds != null) ? tableIds.iterator().next().catalog() : null;
+        if (tableIds == null || tableIds.isEmpty()) {
+            return databaseName;
+        }
+        final TableId tableId = tableIds.iterator().next();
+        if (tableId == null) {
+            return databaseName;
+        }
+        return tableId.catalog();
     }
 
     public String tableSchema() {

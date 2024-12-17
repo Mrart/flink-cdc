@@ -54,21 +54,22 @@ public class TiDBConnectionUtils {
     }
 
     // MysqlValueConverters
-    private static TiDBValueConverters getValueConverters(TiDBConnectorConfig dbzTiDBConfig) {
+    public static TiDBValueConverters getValueConverters(TiDBConnectorConfig dbzTiDBConfig) {
         TemporalPrecisionMode timePrecisionMode = dbzTiDBConfig.getTemporalPrecisionMode();
         JdbcValueConverters.DecimalMode decimalMode = dbzTiDBConfig.getDecimalMode();
         String bigIntUnsignedHandlingModeStr =
                 dbzTiDBConfig
                         .getConfig()
-                        .getString(MySqlConnectorConfig.BIGINT_UNSIGNED_HANDLING_MODE);
-        MySqlConnectorConfig.BigIntUnsignedHandlingMode bigIntUnsignedHandlingMode =
-                MySqlConnectorConfig.BigIntUnsignedHandlingMode.parse(
+                        .getString(dbzTiDBConfig.BIGINT_UNSIGNED_HANDLING_MODE);
+        TiDBConnectorConfig.BigIntUnsignedHandlingMode bigIntUnsignedHandlingMode =
+                TiDBConnectorConfig.BigIntUnsignedHandlingMode.parse(
                         bigIntUnsignedHandlingModeStr);
         JdbcValueConverters.BigIntUnsignedMode bigIntUnsignedMode =
                 bigIntUnsignedHandlingMode.asBigIntUnsignedMode();
 
         // dbzTiDBConfig.getConfig().getBoolean(TiDBConnectorConfig.ENABLE_TIME_ADJUSTER)
-        boolean timeAdjusterEnabled = false;
+        boolean timeAdjusterEnabled =
+                dbzTiDBConfig.getConfig().getBoolean(dbzTiDBConfig.ENABLE_TIME_ADJUSTER);;
         return new TiDBValueConverters(
                 decimalMode,
                 timePrecisionMode,
@@ -78,9 +79,9 @@ public class TiDBConnectionUtils {
                 TiDBValueConverters::defaultParsingErrorHandler);
     }
 
-    public static TiDBDatabaseSchema createTiDBDatabaseSchema(
-            TiDBConnectorConfig dbzTiDBConfig, boolean isTableIdCaseSensitive) {
-        TopicSelector<TableId> topicSelector = TidbTopicSelector.defaultSelector(dbzTiDBConfig);
-        return new TiDBDatabaseSchema(dbzTiDBConfig, topicSelector, isTableIdCaseSensitive);
-    }
+//    public static TiDBDatabaseSchema createTiDBDatabaseSchema(
+//            TiDBConnectorConfig dbzTiDBConfig, boolean isTableIdCaseSensitive) {
+//        TopicSelector<TableId> topicSelector = TidbTopicSelector.defaultSelector(dbzTiDBConfig);
+//        return new TiDBDatabaseSchema(dbzTiDBConfig, topicSelector, isTableIdCaseSensitive);
+//    }
 }
