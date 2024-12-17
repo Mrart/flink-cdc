@@ -205,8 +205,7 @@ public class TiDBSourceFetchTaskContext extends JdbcSourceFetchTaskContext {
     //    return (TiDBSourceConfig) sourceConfig;
     //  }
 
-    public TiDBSourceFetchTaskContext getTaskContext(){
+    public TiDBSourceFetchTaskContext getTaskContext() {
         return this;
     }
-
 }

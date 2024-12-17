@@ -15,6 +15,7 @@ import org.apache.flink.table.types.logical.LogicalType;
 import org.apache.flink.table.types.logical.RowType;
 import org.apache.flink.table.types.utils.TypeConversions;
 import org.apache.flink.util.CloseableIterator;
+
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -25,17 +26,14 @@ import java.util.stream.Collectors;
 
 import static org.junit.Assert.*;
 
-
 /** Tests for TiDB Source based on incremental snapshot framework . */
 public class TiDBSourceExampleTest extends TiDBTestBase {
-
 
     private static final String databaseName = "inventory";
     private static final String tableName = "products";
 
     private static final int USE_POST_LOWWATERMARK_HOOK = 1;
     private static final int USE_PRE_HIGHWATERMARK_HOOK = 2;
-
 
     @Test
     @Ignore
@@ -49,16 +47,17 @@ public class TiDBSourceExampleTest extends TiDBTestBase {
 
         initializeTidbTable("inventory");
 
-        JdbcIncrementalSource<RowData> TiDBIncrementalSource = TiDBSourceBuilder.TiDBIncrementalSource.<RowData>builder()
-                .hostname(TIDB.getHost())
-                .port(TIDB.getMappedPort(TIDB_PORT))
-                .username(TiDBTestBase.TIDB_USER)
-                .password(TiDBTestBase.TIDB_PASSWORD)
-                .databaseList(databaseName)
-                .tableList(this.databaseName + "." + this.tableName)
-                .splitSize(10)
-                .deserializer(buildRowDataDebeziumDeserializeSchema(dataType))
-                .build();
+        JdbcIncrementalSource<RowData> TiDBIncrementalSource =
+                TiDBSourceBuilder.TiDBIncrementalSource.<RowData>builder()
+                        .hostname(TIDB.getHost())
+                        .port(TIDB.getMappedPort(TIDB_PORT))
+                        .username(TiDBTestBase.TIDB_USER)
+                        .password(TiDBTestBase.TIDB_PASSWORD)
+                        .databaseList(databaseName)
+                        .tableList(this.databaseName + "." + this.tableName)
+                        .splitSize(10)
+                        .deserializer(buildRowDataDebeziumDeserializeSchema(dataType))
+                        .build();
 
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
 
@@ -70,18 +69,17 @@ public class TiDBSourceExampleTest extends TiDBTestBase {
                         .setParallelism(2)
                         .executeAndCollect(); // collect record
 
-
         String[] snapshotExpectedRecords =
                 new String[] {
-                        "+I[101, scooter, Small 2-wheel scooter, 3.14]",
-                        "+I[102, car battery, 12V car battery, 8.1]",
-                        "+I[103, 12-pack drill bits, 12-pack of drill bits with sizes ranging from #40 to #3, 0.8]",
-                        "+I[104, hammer, 12oz carpenter's hammer, 0.75]",
-                        "+I[105, hammer, 14oz carpenter's hammer, 0.875]",
-                        "+I[106, hammer, 16oz carpenter's hammer, 1.0]",
-                        "+I[107, rocks, box of assorted rocks, 5.3]",
-                        "+I[108, jacket, water resistent black wind breaker, 0.1]",
-                        "+I[109, spare tire, 24 inch spare tire, 22.2]"
+                    "+I[101, scooter, Small 2-wheel scooter, 3.14]",
+                    "+I[102, car battery, 12V car battery, 8.1]",
+                    "+I[103, 12-pack drill bits, 12-pack of drill bits with sizes ranging from #40 to #3, 0.8]",
+                    "+I[104, hammer, 12oz carpenter's hammer, 0.75]",
+                    "+I[105, hammer, 14oz carpenter's hammer, 0.875]",
+                    "+I[106, hammer, 16oz carpenter's hammer, 1.0]",
+                    "+I[107, rocks, box of assorted rocks, 5.3]",
+                    "+I[108, jacket, water resistent black wind breaker, 0.1]",
+                    "+I[109, spare tire, 24 inch spare tire, 22.2]"
                 };
 
         // step-1: consume snapshot data
@@ -93,7 +91,6 @@ public class TiDBSourceExampleTest extends TiDBTestBase {
         List<String> snapshotActualRecords = formatResult(snapshotRowDataList, dataType);
         assertEqualsInAnyOrder(Arrays.asList(snapshotExpectedRecords), snapshotActualRecords);
     }
-
 
     private DebeziumDeserializationSchema<RowData> buildRowDataDebeziumDeserializeSchema(
             DataType dataType) {
@@ -126,5 +123,4 @@ public class TiDBSourceExampleTest extends TiDBTestBase {
         assertEquals(expected.size(), actual.size());
         assertArrayEquals(expected.toArray(new String[0]), actual.toArray(new String[0]));
     }
-
 }

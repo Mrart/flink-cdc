@@ -1,4 +1,3 @@
 package org.tikv.cdc;
 
-public class CDCClientContext {
-}
+public class CDCClientContext {}

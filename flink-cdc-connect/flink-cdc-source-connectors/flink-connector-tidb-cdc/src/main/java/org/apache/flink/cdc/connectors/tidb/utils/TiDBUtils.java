@@ -18,7 +18,6 @@ import io.debezium.schema.TopicSelector;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.time.Instant;
 import java.util.Iterator;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -235,7 +234,6 @@ public class TiDBUtils {
         return buildSplitQuery(tableId, pkRowType, isFirstSplit, isLastSplit, -1, true);
     }
 
-
     private static String buildSplitQuery(
             TableId tableId,
             RowType pkRowType,
@@ -260,8 +258,7 @@ public class TiDBUtils {
             final StringBuilder sql = new StringBuilder();
             addPrimaryKeyColumnsToCondition(pkRowType, sql, " >= ?");
             condition = sql.toString();
-        }
-        else {
+        } else {
             final StringBuilder sql = new StringBuilder();
             addPrimaryKeyColumnsToCondition(pkRowType, sql, " >= ?");
             if (isScanningData) {
@@ -277,8 +274,7 @@ public class TiDBUtils {
         if (isScanningData) {
             return buildSelectWithRowLimits(
                     tableId, limitSize, "*", Optional.ofNullable(condition), Optional.empty());
-        }
-        else {
+        } else {
             final String orderBy =
                     pkRowType.getFieldNames().stream().collect(Collectors.joining(", "));
             return buildSelectWithBoundaryRowLimits(
@@ -294,7 +290,7 @@ public class TiDBUtils {
     private static void addPrimaryKeyColumnsToCondition(
             RowType pkRowType, StringBuilder sql, String predicate) {
         for (Iterator<String> fieldNamesIt = pkRowType.getFieldNames().iterator();
-             fieldNamesIt.hasNext(); ) {
+                fieldNamesIt.hasNext(); ) {
             sql.append(fieldNamesIt.next()).append(predicate);
             if (fieldNamesIt.hasNext()) {
                 sql.append(" AND ");
@@ -328,7 +324,6 @@ public class TiDBUtils {
         return tableId.toQuotedString('`');
     }
 
-
     private static String buildSelectWithRowLimits(
             TableId tableId,
             int limit,
@@ -353,7 +348,7 @@ public class TiDBUtils {
     private static String getPrimaryKeyColumnsProjection(RowType pkRowType) {
         StringBuilder sql = new StringBuilder();
         for (Iterator<String> fieldNamesIt = pkRowType.getFieldNames().iterator();
-             fieldNamesIt.hasNext(); ) {
+                fieldNamesIt.hasNext(); ) {
             sql.append(fieldNamesIt.next());
             if (fieldNamesIt.hasNext()) {
                 sql.append(" , ");
@@ -365,7 +360,7 @@ public class TiDBUtils {
     private static String getMaxPrimaryKeyColumnsProjection(RowType pkRowType) {
         StringBuilder sql = new StringBuilder();
         for (Iterator<String> fieldNamesIt = pkRowType.getFieldNames().iterator();
-             fieldNamesIt.hasNext(); ) {
+                fieldNamesIt.hasNext(); ) {
             sql.append("MAX(" + fieldNamesIt.next() + ")");
             if (fieldNamesIt.hasNext()) {
                 sql.append(" , ");
