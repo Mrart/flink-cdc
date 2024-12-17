@@ -72,10 +72,12 @@ public class TiDBDatabaseSchema extends RelationalDatabaseSchema {
         this.ddlChanges = this.ddlParser.getDdlChanges();
     }
 
-    public TiDBDatabaseSchema refresh(TiDBConnection connection, boolean printReplicaIdentityInfo)
+    public TiDBDatabaseSchema refresh(TiDBConnection connection,TiDBConnectorConfig config,boolean printReplicaIdentityInfo)
             throws SQLException {
         // read all the information from the DB
-        connection.readSchema(tables(), null, null, getTableFilter(), null, true);
+        // connection.readSchema(tables(), null, null, getTableFilter(), null, true);
+        connection.readSchema(config,this,tables(), null, null, getTableFilter(), null, true);
+
         //    if (printReplicaIdentityInfo) {
         //      // print out all the replica identity info
         //      tableIds().forEach(tableId -> printReplicaIdentityInfo(connection, tableId));

@@ -1,10 +1,18 @@
 package org.apache.flink.cdc.connectors.tidb.source.connection;
 
+import io.debezium.connector.tidb.TiDBPartition;
 import io.debezium.jdbc.JdbcConfiguration;
 import io.debezium.jdbc.JdbcConnection;
 import io.debezium.relational.Column;
 import io.debezium.relational.TableId;
 import io.debezium.relational.Tables;
+import io.debezium.relational.history.TableChanges;
+import io.debezium.schema.SchemaChangeEvent;
+import org.apache.flink.cdc.connectors.tidb.source.config.TiDBConnectorConfig;
+import org.apache.flink.cdc.connectors.tidb.source.offset.CDCEventOffsetContext;
+import org.apache.flink.cdc.connectors.tidb.source.schema.TiDBDatabaseSchema;
+import org.apache.flink.cdc.connectors.tidb.utils.TiDBUtils;
+import org.apache.flink.util.FlinkRuntimeException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -14,6 +22,7 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.sql.Types;
 import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -33,7 +42,7 @@ public class TiDBConnection extends JdbcConnection {
     private static final Properties DEFAULT_JDBC_PROPERTIES = initializeDefaultJdbcProperties();
     private static final String MYSQL_URL_PATTERN =
             "jdbc:mysql://${hostname}:${port}/?connectTimeout=${connectTimeout}";
-
+    private static final String SHOW_CREATE_TABLE = "SHOW CREATE TABLE ";
     private static final int TYPE_BINARY_FLOAT = 100;
     private static final int TYPE_BINARY_DOUBLE = 101;
     private static final int TYPE_TIMESTAMP_WITH_TIME_ZONE = -101;
@@ -304,5 +313,170 @@ public class TiDBConnection extends JdbcConnection {
             }
         }
         return tableIds;
+    }
+
+    //新的readSchema
+    public void readSchema(TiDBConnectorConfig config,TiDBDatabaseSchema databaseSchema, Tables tables, String databaseCatalog, String schemaNamePattern,
+                           Tables.TableFilter tableFilter, Tables.ColumnNameFilter columnFilter, boolean removeTablesNotFoundInJdbc)
+            throws SQLException {
+        // Before we make any changes, get the copy of the set of table IDs ...
+        Set<TableId> tableIdsBefore = new HashSet<>(tables.tableIds());
+
+        // Read the metadata for the table columns ...
+        DatabaseMetaData metadata = connection().getMetaData();
+
+        // Find regular and materialized views as they cannot be snapshotted
+        final Set<TableId> viewIds = new HashSet<>();
+        final Set<TableId> tableIds = new HashSet<>();
+
+        int totalTables = 0;
+        try (final ResultSet rs = metadata.getTables(databaseCatalog, schemaNamePattern, null, supportedTableTypes())) {
+            while (rs.next()) {
+                final String catalogName = resolveCatalogName(rs.getString(1));
+                final String schemaName = rs.getString(2);
+                final String tableName = rs.getString(3);
+                final String tableType = rs.getString(4);
+                if (isTableType(tableType)) {
+                    totalTables++;
+                    TableId tableId = new TableId(catalogName, schemaName, tableName);
+                    if (tableFilter == null || tableFilter.isIncluded(tableId)) {
+                        tableIds.add(tableId);
+                    }
+                }
+                else {
+                    TableId tableId = new TableId(catalogName, schemaName, tableName);
+                    viewIds.add(tableId);
+                }
+            }
+        }
+
+        Map<TableId, List<Column>> columnsByTable = new HashMap<>();
+        if (totalTables == tableIds.size() ) {
+
+            columnsByTable = getColumnsDetailsWithTableChange(config,databaseSchema,databaseCatalog, schemaNamePattern, null, tableFilter, columnFilter, metadata, viewIds);
+            System.out.println(columnsByTable);
+        }
+        else {
+            for (TableId includeTable : tableIds) {
+//                LOGGER.debug("Retrieving columns of table {}", includeTable);
+
+                Map<TableId, List<Column>> cols = getColumnsDetails(databaseCatalog, schemaNamePattern, includeTable.table(), tableFilter,
+                        columnFilter, metadata, viewIds);
+                columnsByTable.putAll(cols);
+            }
+        }
+
+        // Read the metadata for the primary keys ...
+        for (Map.Entry<TableId, List<Column>> tableEntry : columnsByTable.entrySet()) {
+            // First get the primary key information, which must be done for *each* table ...
+            List<String> pkColumnNames = readPrimaryKeyOrUniqueIndexNames(metadata, tableEntry.getKey());
+
+            // Then define the table ...
+            List<Column> columns = tableEntry.getValue();
+            Collections.sort(columns);
+            String defaultCharsetName = null; // JDBC does not expose character sets
+            tables.overwriteTable(tableEntry.getKey(), columns, pkColumnNames, defaultCharsetName);
+        }
+
+        if (removeTablesNotFoundInJdbc) {
+            // Remove any definitions for tables that were not found in the database metadata ...
+            tableIdsBefore.removeAll(columnsByTable.keySet());
+            tableIdsBefore.forEach(tables::removeTable);
+        }
+    }
+
+    protected Map<TableId, List<Column>> getColumnsDetailsWithTableChange(TiDBConnectorConfig config, TiDBDatabaseSchema databaseSchema, String databaseCatalog, String schemaNamePattern,
+                                                                          String tableName, Tables.TableFilter tableFilter, Tables.ColumnNameFilter columnFilter, DatabaseMetaData metadata,
+                                                                          final Set<TableId> viewIds)
+            throws SQLException {
+        Map<TableId, List<Column>> columnsByTable = new HashMap<>();
+        try (ResultSet columnMetadata = metadata.getColumns(databaseCatalog, schemaNamePattern, tableName, null)) {
+            while (columnMetadata.next()) {
+                String catalogName = resolveCatalogName(columnMetadata.getString(1));
+                String schemaName = columnMetadata.getString(2);
+                String metaTableName = columnMetadata.getString(3);
+                TableId tableId = new TableId(catalogName, schemaName, metaTableName);
+
+                // exclude views and non-captured tables
+                if (viewIds.contains(tableId) ||
+                        (tableFilter != null && !tableFilter.isIncluded(tableId))) {
+                    continue;
+                }
+                TableChanges.TableChange tableChange = readTableSchema(config,databaseSchema,tableId);
+                if (tableChange!=null){
+                    ArrayList<Column> columns = new ArrayList<>(tableChange.getTable().columns());
+                    columnsByTable.put(tableId,columns);
+                    System.out.println(tableChange.getTable().columns());
+                }
+
+//                // add all included columns
+//                readTableColumn(columnMetadata, tableId, columnFilter).ifPresent(column -> {
+//                    columnsByTable.computeIfAbsent(tableId, t -> new ArrayList<>())
+//                            .add(column.create());
+//                });
+            }
+        }
+        return columnsByTable;
+    }
+
+    private TableChanges.TableChange readTableSchema(TiDBConnectorConfig connectorConfig,TiDBDatabaseSchema databaseSchema, TableId tableId){
+        final Map<TableId, TableChanges.TableChange> tableChangeMap = new HashMap<>();
+        String showCreateTable = SHOW_CREATE_TABLE + TiDBUtils.quote(tableId);
+        final TiDBPartition partition = new TiDBPartition(connectorConfig.getLogicalName());
+        buildSchemaByShowCreateTable(connectorConfig,databaseSchema,partition, this, tableId, tableChangeMap);
+//        if (!tableChangeMap.containsKey(tableId)) {
+//            // fallback to desc table
+//            String descTable = DESC_TABLE + TiDBUtils.quote(tableId);
+//            buildSchemaByDescTable(partition, jdbc, descTable, tableId, tableChangeMap);
+//            if (!tableChangeMap.containsKey(tableId)) {
+//                throw new FlinkRuntimeException(
+//                        String.format(
+//                                "Can't obtain schema for table %s by running %s and %s ",
+//                                tableId, showCreateTable, descTable));
+//            }
+//        }
+        return tableChangeMap.get(tableId);
+    }
+
+    private void buildSchemaByShowCreateTable(
+            TiDBConnectorConfig config,
+            TiDBDatabaseSchema databaseSchema,
+            TiDBPartition partition,
+            JdbcConnection jdbc,
+            TableId tableId,
+            Map<TableId, TableChanges.TableChange> tableChangeMap) {
+        final String sql = SHOW_CREATE_TABLE + TiDBUtils.quote(tableId);
+        try {
+            jdbc.query(
+                    sql,
+                    rs -> {
+                        if (rs.next()) {
+                            final String ddl = rs.getString(2);
+                            parseSchemaByDdl(config,databaseSchema,partition, ddl, tableId, tableChangeMap);
+                        }
+                    });
+        } catch (SQLException e) {
+            throw new FlinkRuntimeException(
+                    String.format("Failed to read schema for table %s by running %s", tableId, sql),
+                    e);
+        }
+    }
+
+    private void parseSchemaByDdl(
+            TiDBConnectorConfig config,
+            TiDBDatabaseSchema databaseSchema,
+            TiDBPartition partition,
+            String ddl,
+            TableId tableId,
+            Map<TableId, TableChanges.TableChange> tableChangeMap) {
+        final CDCEventOffsetContext offsetContext = CDCEventOffsetContext.initial(config);
+        List<SchemaChangeEvent> schemaChangeEvents =
+                databaseSchema.parseSnapshotDdl(
+                        partition, ddl, tableId.catalog(), offsetContext, Instant.now());
+        for (SchemaChangeEvent schemaChangeEvent : schemaChangeEvents) {
+            for (TableChanges.TableChange tableChange : schemaChangeEvent.getTableChanges()) {
+                tableChangeMap.put(tableId, tableChange);
+            }
+        }
     }
 }

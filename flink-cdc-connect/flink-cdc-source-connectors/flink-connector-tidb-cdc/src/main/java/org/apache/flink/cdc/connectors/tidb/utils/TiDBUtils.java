@@ -414,7 +414,7 @@ public class TiDBUtils {
         TiDBDatabaseSchema schema =
                 new TiDBDatabaseSchema(
                         config,valueConverters,topicSelector, isTableIdCaseSensitive);
-        schema.refresh(connection, false);
+        schema.refresh(connection,config,false);
         return schema;
     }
 

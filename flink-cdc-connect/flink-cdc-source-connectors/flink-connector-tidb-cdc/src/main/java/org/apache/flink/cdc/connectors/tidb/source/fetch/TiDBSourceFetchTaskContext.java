@@ -88,7 +88,7 @@ public class TiDBSourceFetchTaskContext extends JdbcSourceFetchTaskContext {
             throw new RuntimeException("Failed to initialize TiDBschema", e);
         }
 
-//        this.tiDBPartition = new TiDBPartition(connectorConfig.getLogicalName());
+        this.tiDBPartition = new TiDBPartition(connectorConfig.getLogicalName());
         this.tidbTaskContext = new TidbTaskContext(connectorConfig, tiDBDatabaseSchema);
         this.offsetContext =
                 loadStartingOffsetState(
