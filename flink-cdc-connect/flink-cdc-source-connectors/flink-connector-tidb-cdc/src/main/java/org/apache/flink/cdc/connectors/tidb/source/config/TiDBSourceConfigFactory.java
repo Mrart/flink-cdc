@@ -78,7 +78,7 @@ public class TiDBSourceConfigFactory extends JdbcSourceConfigFactory {
             props.putAll(jdbcProperties);
         }
 
-        if (tikvProperties != null){
+        if (tikvProperties != null) {
             props.putAll(tikvProperties);
         }
 

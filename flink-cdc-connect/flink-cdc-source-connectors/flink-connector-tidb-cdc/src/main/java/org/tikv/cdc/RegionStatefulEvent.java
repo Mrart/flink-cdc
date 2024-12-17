@@ -9,6 +9,11 @@ public class RegionStatefulEvent {
     private RegionStateManager.RegionFeedState regionFeedState;
     private ResolvedTsEvent resolvedTsEvent;
     private long regionId;
+
+    public RegionStatefulEvent() {
+        this.resolvedTsEvent = new RegionStatefulEvent.ResolvedTsEvent();
+    }
+
     // Private constructor to enforce the use of the builder
     private RegionStatefulEvent(Builder builder) {
         this.event = builder.event;

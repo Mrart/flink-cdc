@@ -223,7 +223,7 @@ public class IncrementalSourceEnumerator
                     this.streamSplitTaskId = nextAwaiting;
                 }
                 awaitingReader.remove();
-                 LOG.info("Assign split {} to subtask {}", sourceSplit, nextAwaiting);
+                LOG.info("Assign split {} to subtask {}", sourceSplit, nextAwaiting);
             } else {
                 // there is no available splits by now, skip assigning
                 requestStreamSplitUpdateIfNeed();

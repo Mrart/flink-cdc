@@ -1,9 +1,12 @@
 package org.tikv.cdc;
 
 public enum OpType {
-    OpTypePut(1),
-    OpTypeDelete(2),
-    OpTypeResolved(3);
+    Ddl(0),
+    Put(1),
+    Delete(2),
+    Heatbeat(3),
+    Resolved(4);
+
     private int type;
 
     OpType(int type) {

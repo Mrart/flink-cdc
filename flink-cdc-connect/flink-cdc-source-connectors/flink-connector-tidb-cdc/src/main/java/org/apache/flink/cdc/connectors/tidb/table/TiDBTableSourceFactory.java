@@ -66,8 +66,8 @@ public class TiDBTableSourceFactory implements DynamicTableSourceFactory {
         options.add(SCAN_INCREMENTAL_SNAPSHOT_CHUNK_KEY_COLUMN);
         options.add(SPLIT_KEY_EVEN_DISTRIBUTION_FACTOR_UPPER_BOUND);
         options.add(SPLIT_KEY_EVEN_DISTRIBUTION_FACTOR_LOWER_BOUND);
-//                options.add(SCAN_NEWLY_ADDED_TABLE_ENABLED);
-//                options.add(SCAN_INCREMENTAL_CLOSE_IDLE_READER_ENABLED);
+        //                options.add(SCAN_NEWLY_ADDED_TABLE_ENABLED);
+        //                options.add(SCAN_INCREMENTAL_CLOSE_IDLE_READER_ENABLED);
         //        options.add(HEARTBEAT_INTERVAL);
 
         //        options.add(SCAN_INCREMENTAL_SNAPSHOT_BACKFILL_SKIP);
