@@ -4,7 +4,7 @@ import org.tikv.cdc.model.RegionFeedEvent;
 import org.tikv.common.meta.TiTableInfo;
 
 public interface ICDCClientV2 {
-  void execute(final long startTs, final String dbName, final String tableName);
+  void execute(final long startTs);
 
   long getResolvedTs();
 

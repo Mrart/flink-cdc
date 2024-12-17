@@ -7,11 +7,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tikv.cdc.CDCConfig;
 import org.tikv.cdc.IDAllocator;
-import org.tikv.cdc.RegionStatefulEvent;
 import org.tikv.cdc.TableStoreStat;
 import org.tikv.cdc.TableStoreStats;
 import org.tikv.cdc.model.EventFeedStream;
 import org.tikv.cdc.model.RegionFeedEvent;
+import org.tikv.cdc.model.RegionStatefulEvent;
 import org.tikv.common.TiConfiguration;
 import org.tikv.common.TiSession;
 import org.tikv.common.meta.TiTableInfo;
@@ -57,17 +57,19 @@ public class CDCClientV2 implements ICDCClientV2 {
   private final TableStoreStats tableStoreStats = new TableStoreStats();
   private final AtomicLong resolvedTs = new AtomicLong(0);
   private final Consumer<RegionFeedEvent> eventConsumer;
-  private String dbName;
-  private String tableName;
+  private final String dbName;
+  private final String tableName;
 
-  public CDCClientV2(TiConfiguration tiConf) {
-    this(tiConf, new CDCConfig());
+  public CDCClientV2(TiConfiguration tiConf, String dbName, String tableName) {
+    this(tiConf, new CDCConfig(), dbName, tableName);
   }
 
-  public CDCClientV2(TiConfiguration tiConf, CDCConfig cdcConfig) {
+  public CDCClientV2(TiConfiguration tiConf, CDCConfig cdcConfig, String dbName, String tableName) {
     this.tiConf = tiConf;
     this.cdcConfig = cdcConfig;
     this.tiSession = new TiSession(tiConf);
+    this.dbName = dbName;
+    this.tableName = tableName;
     resolveTsPool.add(
         new RegionStatefulEvent.Builder()
             .setResolvedTsEvent(new RegionStatefulEvent.ResolvedTsEvent())
@@ -92,9 +94,7 @@ public class CDCClientV2 implements ICDCClientV2 {
   }
 
   @Override
-  public void execute(final long startTs, final String dbName, final String tableName) {
-    this.dbName = dbName;
-    this.tableName = tableName;
+  public void execute(final long startTs) {
     TiTableInfo tableInfo = getTableInfo(dbName, tableName);
     if (tableInfo == null) {
       LOGGER.error("Get tableInfo failed.DatabaseName:{}, TableName: {}", dbName, tableName);
@@ -125,8 +125,10 @@ public class CDCClientV2 implements ICDCClientV2 {
     try {
       RegionFeedEvent rfe = eventsBuffer.take();
       if (rfe != null) {
-        rfe.setDbName(this.dbName);
-        rfe.setTableName(this.tableName);
+        rfe.setDbName(dbName);
+        rfe.setTableName(tableName);
+        rfe.setResolvedTs(this.getResolvedTs());
+        rfe.setTableInfo(this.getTableInfo(this.dbName, this.tableName));
         if (rfe.getResolved() != null) {
           resolvedTs.getAndSet(rfe.getResolved().getResolvedTs());
         }

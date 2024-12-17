@@ -32,13 +32,14 @@ public class CDCClientV2Test extends TiDBTestBase {
         PD.getContainerIpAddress() + ":" + PD.getMappedPort(PD_PORT_ORIGIN));
     TiDBSourceConfig tiDBSourceConfig = configFactoryOfCustomDatabase.create(0);
     //    tiDBSourceConfig.
-    ICDCClientV2 icdcClientV2 = new CDCClientV2(getTiConfig(tiDBSourceConfig));
+    ICDCClientV2 icdcClientV2 =
+        new CDCClientV2(getTiConfig(tiDBSourceConfig), databaseName, tableName);
     try (Connection connection = getJdbcConnection("customer");
         Statement statement = connection.createStatement()) {
       // update tidb.
       statement.execute("UPDATE customers SET address='hangzhou' WHERE id=103;");
     }
-    icdcClientV2.execute(Instant.now().getEpochSecond(), databaseName, tableName);
+    icdcClientV2.execute(Instant.now().getEpochSecond());
     while (true) {
       RegionFeedEvent regionFeedEvent = icdcClientV2.get();
       if (regionFeedEvent == null) {

@@ -19,13 +19,11 @@ import org.apache.flink.util.function.SerializableFunction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tikv.cdc.kv.CDCClientV2;
-import org.tikv.cdc.kv.ICDCClientV2;
 import org.tikv.cdc.model.OpType;
 import org.tikv.cdc.model.RawKVEntry;
 import org.tikv.cdc.model.RegionFeedEvent;
 import org.tikv.common.TiConfiguration;
 import org.tikv.common.key.RowKey;
-import org.tikv.common.meta.TiTableInfo;
 
 import java.io.Serializable;
 import java.time.Instant;
@@ -51,7 +49,6 @@ public class CDCEventSource
   private final TiDBSourceFetchTaskContext taskContext;
   private final SerializableFunction<RegionFeedEvent, TableId> tableIdProvider;
   private final Map<TableSchema, Map<String, Integer>> fieldIndexMap = new HashMap<>();
-  private final ICDCClientV2 cdcClientV2;
 
   public CDCEventSource(
       TiDBConnectorConfig connectorConfig,
@@ -65,7 +62,6 @@ public class CDCEventSource
     this.taskContext = taskContext;
     this.split = split;
     this.tableIdProvider = this::getTableId;
-    this.cdcClientV2 = new CDCClientV2(getTiConfig(connectorConfig.getSourceConfig()));
   }
 
   private TableId getTableId(RegionFeedEvent event) {
@@ -97,46 +93,51 @@ public class CDCEventSource
     if (!skippedOperations.contains(Envelope.Operation.CREATE)) {
       eventHandlers.put(
           OpType.Put,
-          event ->
+          (event) ->
               handleChange(partition, effectiveOffsetContext, Envelope.Operation.CREATE, event));
     }
     if (!skippedOperations.contains(Envelope.Operation.UPDATE)) {
       eventHandlers.put(
           OpType.Delete,
-          event ->
+          (event) ->
               handleChange(partition, effectiveOffsetContext, Envelope.Operation.UPDATE, event));
     }
     if (!skippedOperations.contains(Envelope.Operation.DELETE)) {
       eventHandlers.put(
           OpType.Delete,
-          event ->
+          (event) ->
               handleChange(partition, effectiveOffsetContext, Envelope.Operation.DELETE, event));
     }
-    eventHandlers.put(OpType.Resolved, event -> LOG.trace("HEARTBEAT message: {}", event));
+    eventHandlers.put(
+        OpType.Resolved, (event) -> LOG.trace("HEARTBEAT message: {},resolvedTs:{}", event));
 
     this.split
         .getTableSchemas()
         .forEach(
             (tableId, tableChange) -> {
-              this.cdcClientV2.execute(
-                  Long.parseLong(this.split.getStartingOffset().getOffset().get(TIMESTAMP_KEY)),
-                  tableId.catalog(),
-                  tableId.table());
+              CDCClientV2 cdcClientV2 =
+                  new CDCClientV2(
+                      getTiConfig(connectorConfig.getSourceConfig()),
+                      tableId.catalog(),
+                      tableId.table());
+              cdcClientV2.execute(
+                  Long.parseLong(this.split.getStartingOffset().getOffset().get(TIMESTAMP_KEY)));
+              while (true) {
+                RegionFeedEvent raw = cdcClientV2.get();
+                if (raw != null) {
+                  LOG.debug("receive message.{}", raw);
+                  try {
+                    eventHandlers
+                        .getOrDefault(
+                            raw.getRawKVEntry().getOpType(),
+                            skipRaw -> LOG.trace("Skip raw message {}", skipRaw))
+                        .accept(raw);
+                  } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                  }
+                }
+              }
             });
-    while (true) {
-      RegionFeedEvent raw = null;
-      for (int i = 0; i < 2000; i++) {
-        raw = this.cdcClientV2.get();
-        if (raw != null) {
-          LOG.debug("receive message.{}", raw);
-          eventHandlers
-              .getOrDefault(
-                  raw.getRawKVEntry().getOpType(),
-                  skipRaw -> LOG.trace("Skip raw message {}", skipRaw))
-              .accept(raw);
-        }
-      }
-    }
   }
 
   @Override
@@ -169,7 +170,7 @@ public class CDCEventSource
       LOG.warn("No table schema found, skipping log message: {}", event);
       return;
     }
-    offsetContext.event(tableId, Instant.ofEpochMilli(this.cdcClientV2.getResolvedTs()));
+    offsetContext.event(tableId, Instant.ofEpochMilli(event.getResolvedTs()));
 
     Map<String, Integer> fieldIndex =
         fieldIndexMap.computeIfAbsent(
@@ -184,12 +185,12 @@ public class CDCEventSource
     Serializable[] after = null;
     final RowKey rowKey = RowKey.decode(event.getRawKVEntry().getKey().toByteArray());
     final long handle = rowKey.getHandle();
-    TiTableInfo tableInfo = this.cdcClientV2.getTableInfo(event.getDbName(), event.getTableName());
     switch (event.getRawKVEntry().getOpType()) {
       case Delete:
         before = new Serializable[fieldIndex.size()];
         Object[] tikvValue =
-            decodeObjects(event.getRawKVEntry().getOldValue().toByteArray(), handle, tableInfo);
+            decodeObjects(
+                event.getRawKVEntry().getOldValue().toByteArray(), handle, event.getTableInfo());
         for (int i = 0; i < tikvValue.length; i++) {
           before[i] = (Serializable) tikvValue[i];
         }
@@ -200,14 +201,15 @@ public class CDCEventSource
           RawKVEntry deleteRawKVEntry = rawKVEntries[0];
           before = new Serializable[fieldIndex.size()];
           Object[] tiKVValueBefore =
-              decodeObjects(deleteRawKVEntry.getOldValue().toByteArray(), handle, tableInfo);
+              decodeObjects(
+                  deleteRawKVEntry.getOldValue().toByteArray(), handle, event.getTableInfo());
           for (int i = 0; i < tiKVValueBefore.length; i++) {
             before[i] = (Serializable) tiKVValueBefore[i];
           }
           RawKVEntry insertKVEntry = rawKVEntries[1];
           after = new Serializable[fieldIndex.size()];
           Object[] tiKVValueAfter =
-              decodeObjects(insertKVEntry.getValue().toByteArray(), handle, tableInfo);
+              decodeObjects(insertKVEntry.getValue().toByteArray(), handle, event.getTableInfo());
           for (int i = 0; i < tiKVValueBefore.length; i++) {
             after[i] = (Serializable) tiKVValueAfter[i];
           }
@@ -215,7 +217,8 @@ public class CDCEventSource
           // insert
           after = new Serializable[fieldIndex.size()];
           Object[] tiKVValueAfter =
-              decodeObjects(event.getRawKVEntry().getValue().toByteArray(), handle, tableInfo);
+              decodeObjects(
+                  event.getRawKVEntry().getValue().toByteArray(), handle, event.getTableInfo());
           for (int i = 0; i < tiKVValueAfter.length; i++) {
             after[i] = (Serializable) tiKVValueAfter[i];
           }

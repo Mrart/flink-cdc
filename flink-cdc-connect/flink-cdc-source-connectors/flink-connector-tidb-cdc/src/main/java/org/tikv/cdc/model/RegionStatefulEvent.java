@@ -1,4 +1,4 @@
-package org.tikv.cdc;
+package org.tikv.cdc.model;
 
 import org.tikv.cdc.kv.RegionStateManager;
 import org.tikv.kvproto.Cdcpb;
