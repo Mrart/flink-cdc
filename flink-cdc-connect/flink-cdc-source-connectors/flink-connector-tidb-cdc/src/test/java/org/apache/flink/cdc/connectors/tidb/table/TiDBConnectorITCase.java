@@ -92,7 +92,7 @@ public class TiDBConnectorITCase extends TiDBTestBase {
                         TIDB_USER,
                         "inventory",
                         "products",
-                        "snapshot",
+                        "latest-offset",
                         "id");
 
         String sinkDDL =
@@ -235,19 +235,25 @@ public class TiDBConnectorITCase extends TiDBTestBase {
         waitForSinkSize("sink", 9);
 
         try (Connection connection = getJdbcConnection("inventory");
-             Statement statement = connection.createStatement()) {
+                Statement statement = connection.createStatement()) {
 
-//            statement.execute(
-//                    "UPDATE products SET description='18oz carpenter hammer' WHERE id=106;");
-//            statement.execute("UPDATE products SET weight='5.1' WHERE id=107;");
-//            statement.execute(
-//                    "INSERT INTO products VALUES (default,'jacket','water resistent white wind breaker',0.2);"); // 110
-//            statement.execute(
-//                    "INSERT INTO products VALUES (default,'scooter','Big 2-wheel scooter ',5.18);");
-//            statement.execute(
-//                    "UPDATE products SET description='new water resistent white wind breaker', weight='0.5' WHERE id=110;");
-//            statement.execute("UPDATE products SET weight='5.17' WHERE id=111;");
-//            statement.execute("DELETE FROM products WHERE id=111;");
+            //            statement.execute(
+            //                    "UPDATE products SET description='18oz carpenter hammer' WHERE
+            // id=106;");
+            //            statement.execute("UPDATE products SET weight='5.1' WHERE id=107;");
+            //            statement.execute(
+            //                    "INSERT INTO products VALUES (default,'jacket','water resistent
+            // white
+            // wind breaker',0.2);"); // 110
+            //            statement.execute(
+            //                    "INSERT INTO products VALUES (default,'scooter','Big 2-wheel
+            // scooter
+            // ',5.18);");
+            //            statement.execute(
+            //                    "UPDATE products SET description='new water resistent white wind
+            // breaker', weight='0.5' WHERE id=110;");
+            //            statement.execute("UPDATE products SET weight='5.17' WHERE id=111;");
+            //            statement.execute("DELETE FROM products WHERE id=111;");
         }
 
         waitForSinkSize("sink", 16);
@@ -350,7 +356,7 @@ public class TiDBConnectorITCase extends TiDBTestBase {
         waitForSinkSize("sink", 9);
 
         try (Connection connection = getJdbcConnection("inventory");
-             Statement statement = connection.createStatement()) {
+                Statement statement = connection.createStatement()) {
 
             statement.execute(
                     "UPDATE products SET description='18oz carpenter hammer' WHERE id=106;");

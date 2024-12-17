@@ -4,7 +4,6 @@ import org.apache.flink.cdc.connectors.tidb.TiDBTestBase;
 import org.apache.flink.cdc.connectors.tidb.source.config.TiDBSourceConfig;
 import org.apache.flink.cdc.connectors.tidb.source.config.TiDBSourceConfigFactory;
 
-import io.debezium.relational.TableId;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,8 +36,7 @@ public class CDCClientV2Test extends TiDBTestBase {
             // update tidb.
             statement.execute("UPDATE customers SET address='hangzhou' WHERE id=103;");
         }
-        icdcClientV2.execute(
-                Instant.now().getEpochSecond(), new TableId(databaseName, null, tableName));
+        icdcClientV2.execute(Instant.now().getEpochSecond(), databaseName, tableName);
         while (true) {
             RegionFeedEvent regionFeedEvent = icdcClientV2.get();
             if (regionFeedEvent == null) {

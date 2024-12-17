@@ -1,17 +1,11 @@
 package org.apache.flink.cdc.connectors.tidb.source.schema;
 
-import io.debezium.connector.mysql.MySqlOffsetContext;
-import io.debezium.connector.mysql.MySqlPartition;
-import io.debezium.connector.mysql.MySqlValueConverters;
-import io.debezium.util.SchemaNameAdjuster;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.flink.cdc.connectors.tidb.source.config.TiDBConnectorConfig;
 import org.apache.flink.cdc.connectors.tidb.source.config.TiDBSourceConfig;
 import org.apache.flink.cdc.connectors.tidb.source.connection.TiDBConnection;
 import org.apache.flink.cdc.connectors.tidb.source.converter.TiDBValueConverters;
 import org.apache.flink.cdc.connectors.tidb.source.offset.CDCEventOffsetContext;
 import org.apache.flink.cdc.connectors.tidb.utils.TiDBUtils;
-import org.apache.flink.util.CollectionUtil;
 import org.apache.flink.util.FlinkRuntimeException;
 
 import io.debezium.connector.tidb.TiDBPartition;
@@ -24,6 +18,7 @@ import io.debezium.relational.history.TableChanges;
 import io.debezium.relational.history.TableChanges.TableChange;
 import io.debezium.schema.SchemaChangeEvent;
 import io.debezium.schema.TopicSelector;
+import org.apache.commons.lang3.StringUtils;
 
 import java.sql.SQLException;
 import java.time.Instant;
@@ -65,13 +60,10 @@ public class TiDBSchema {
         TiDBValueConverters valueConverters = getValueConverters(dbzTiDBConfig);
         //        Key.KeyMapper customKeysMapper = new CustomeKeyMapper();
         return new TiDBDatabaseSchema(
-                dbzTiDBConfig,
-                valueConverters,
-                topicSelector,
-                isTableIdCaseSensitive);
+                dbzTiDBConfig, valueConverters, topicSelector, isTableIdCaseSensitive);
     }
 
-    private TableChange readTableSchema(JdbcConnection jdbc, TableId tableId){
+    private TableChange readTableSchema(JdbcConnection jdbc, TableId tableId) {
         final Map<TableId, TableChange> tableChangeMap = new HashMap<>();
         String showCreateTable = SHOW_CREATE_TABLE + TiDBUtils.quote(tableId);
         final TiDBPartition partition = new TiDBPartition(connectorConfig.getLogicalName());
@@ -249,5 +241,4 @@ public class TiDBSchema {
 
         return tableChangeMap.get(tableId);
     }
-
 }

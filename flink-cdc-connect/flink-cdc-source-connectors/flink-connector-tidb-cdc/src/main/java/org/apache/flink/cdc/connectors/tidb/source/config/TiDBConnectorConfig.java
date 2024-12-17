@@ -1,14 +1,13 @@
 package org.apache.flink.cdc.connectors.tidb.source.config;
 
-import io.debezium.config.EnumeratedValue;
-import io.debezium.connector.mysql.MySqlConnectorConfig;
-import io.debezium.jdbc.JdbcValueConverters;
 import org.apache.flink.cdc.connectors.tidb.source.offset.TiDBSourceInfoStructMaker;
 
 import io.debezium.config.CommonConnectorConfig;
 import io.debezium.config.Configuration;
+import io.debezium.config.EnumeratedValue;
 import io.debezium.config.Field;
 import io.debezium.connector.SourceInfoStructMaker;
+import io.debezium.jdbc.JdbcValueConverters;
 import io.debezium.relational.ColumnFilterMode;
 import io.debezium.relational.RelationalDatabaseConnectorConfig;
 import io.debezium.relational.TableId;
@@ -39,27 +38,32 @@ public class TiDBConnectorConfig extends RelationalDatabaseConnectorConfig {
                     .withDescription(
                             "Switched connector to use alternative methods to deliver signals to Debezium instead of writing to signaling table");
 
-    public static final Field BIGINT_UNSIGNED_HANDLING_MODE = Field.create("bigint.unsigned.handling.mode")
-            .withDisplayName("BIGINT UNSIGNED Handling")
-            .withEnum(TiDBConnectorConfig.BigIntUnsignedHandlingMode.class, TiDBConnectorConfig.BigIntUnsignedHandlingMode.LONG)
-            .withGroup(Field.createGroupEntry(Field.Group.CONNECTOR, 27))
-            .withWidth(ConfigDef.Width.SHORT)
-            .withImportance(ConfigDef.Importance.MEDIUM)
-            .withDescription("Specify how BIGINT UNSIGNED columns should be represented in change events, including:"
-                    + "'precise' uses java.math.BigDecimal to represent values, which are encoded in the change events using a binary representation and Kafka Connect's 'org.apache.kafka.connect.data.Decimal' type; "
-                    + "'long' (the default) represents values using Java's 'long', which may not offer the precision but will be far easier to use in consumers.");
+    public static final Field BIGINT_UNSIGNED_HANDLING_MODE =
+            Field.create("bigint.unsigned.handling.mode")
+                    .withDisplayName("BIGINT UNSIGNED Handling")
+                    .withEnum(
+                            TiDBConnectorConfig.BigIntUnsignedHandlingMode.class,
+                            TiDBConnectorConfig.BigIntUnsignedHandlingMode.LONG)
+                    .withGroup(Field.createGroupEntry(Field.Group.CONNECTOR, 27))
+                    .withWidth(ConfigDef.Width.SHORT)
+                    .withImportance(ConfigDef.Importance.MEDIUM)
+                    .withDescription(
+                            "Specify how BIGINT UNSIGNED columns should be represented in change events, including:"
+                                    + "'precise' uses java.math.BigDecimal to represent values, which are encoded in the change events using a binary representation and Kafka Connect's 'org.apache.kafka.connect.data.Decimal' type; "
+                                    + "'long' (the default) represents values using Java's 'long', which may not offer the precision but will be far easier to use in consumers.");
 
-    public static final Field ENABLE_TIME_ADJUSTER = Field.create("enable.time.adjuster")
-            .withDisplayName("Enable Time Adjuster")
-            .withType(ConfigDef.Type.BOOLEAN)
-            .withGroup(Field.createGroupEntry(Field.Group.CONNECTOR, 22))
-            .withDefault(true)
-            .withWidth(ConfigDef.Width.SHORT)
-            .withImportance(ConfigDef.Importance.LOW)
-            .withDescription(
-                    "MySQL allows user to insert year value as either 2-digit or 4-digit. In case of two digit the value is automatically mapped into 1970 - 2069." +
-                            "false - delegates the implicit conversion to the database" +
-                            "true - (the default) Debezium makes the conversion");
+    public static final Field ENABLE_TIME_ADJUSTER =
+            Field.create("enable.time.adjuster")
+                    .withDisplayName("Enable Time Adjuster")
+                    .withType(ConfigDef.Type.BOOLEAN)
+                    .withGroup(Field.createGroupEntry(Field.Group.CONNECTOR, 22))
+                    .withDefault(true)
+                    .withWidth(ConfigDef.Width.SHORT)
+                    .withImportance(ConfigDef.Importance.LOW)
+                    .withDescription(
+                            "MySQL allows user to insert year value as either 2-digit or 4-digit. In case of two digit the value is automatically mapped into 1970 - 2069."
+                                    + "false - delegates the implicit conversion to the database"
+                                    + "true - (the default) Debezium makes the conversion");
 
     public static enum BigIntUnsignedHandlingMode implements EnumeratedValue {
         /**
@@ -69,8 +73,8 @@ public class TiDBConnectorConfig extends RelationalDatabaseConnectorConfig {
         PRECISE("precise"),
 
         /**
-         * Represent {@code BIGINT UNSIGNED} values as precise {@code long} values. This may be less precise
-         * but is far easier to use.
+         * Represent {@code BIGINT UNSIGNED} values as precise {@code long} values. This may be less
+         * precise but is far easier to use.
          */
         LONG("long");
 
@@ -106,7 +110,8 @@ public class TiDBConnectorConfig extends RelationalDatabaseConnectorConfig {
                 return null;
             }
             value = value.trim();
-            for (TiDBConnectorConfig.BigIntUnsignedHandlingMode option : TiDBConnectorConfig.BigIntUnsignedHandlingMode.values()) {
+            for (TiDBConnectorConfig.BigIntUnsignedHandlingMode option :
+                    TiDBConnectorConfig.BigIntUnsignedHandlingMode.values()) {
                 if (option.getValue().equalsIgnoreCase(value)) {
                     return option;
                 }
@@ -119,9 +124,11 @@ public class TiDBConnectorConfig extends RelationalDatabaseConnectorConfig {
          *
          * @param value the configuration property value; may not be null
          * @param defaultValue the default value; may be null
-         * @return the matching option, or null if no match is found and the non-null default is invalid
+         * @return the matching option, or null if no match is found and the non-null default is
+         *     invalid
          */
-        public static TiDBConnectorConfig.BigIntUnsignedHandlingMode parse(String value, String defaultValue) {
+        public static TiDBConnectorConfig.BigIntUnsignedHandlingMode parse(
+                String value, String defaultValue) {
             TiDBConnectorConfig.BigIntUnsignedHandlingMode mode = parse(value);
             if (mode == null && defaultValue != null) {
                 mode = parse(defaultValue);
