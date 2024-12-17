@@ -75,8 +75,9 @@ public class TiDBDatabaseSchema extends RelationalDatabaseSchema {
     public TiDBDatabaseSchema refresh(TiDBConnection connection,TiDBConnectorConfig config,boolean printReplicaIdentityInfo)
             throws SQLException {
         // read all the information from the DB
-        // connection.readSchema(tables(), null, null, getTableFilter(), null, true);
-        connection.readSchema(config,this,tables(), null, null, getTableFilter(), null, true);
+//        connection.readSchema(tables(), null, null, getTableFilter(), null, true);
+//        LOGGER.info("TiDBDatabaseSchema refresh **********");
+        connection.readTiDBSchema(config,this,tables(), null, null, getTableFilter(), null, true);
 
         //    if (printReplicaIdentityInfo) {
         //      // print out all the replica identity info

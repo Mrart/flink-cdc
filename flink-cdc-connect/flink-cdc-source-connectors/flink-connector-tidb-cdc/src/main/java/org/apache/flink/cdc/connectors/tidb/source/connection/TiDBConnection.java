@@ -38,6 +38,7 @@ import java.util.regex.Pattern;
 
 public class TiDBConnection extends JdbcConnection {
     private static final Logger LOG = LoggerFactory.getLogger(TiDBConnection.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(TiDBConnection.class);
 
     private static final Properties DEFAULT_JDBC_PROPERTIES = initializeDefaultJdbcProperties();
     private static final String MYSQL_URL_PATTERN =
@@ -316,9 +317,10 @@ public class TiDBConnection extends JdbcConnection {
     }
 
     //新的readSchema
-    public void readSchema(TiDBConnectorConfig config,TiDBDatabaseSchema databaseSchema, Tables tables, String databaseCatalog, String schemaNamePattern,
+    public void readTiDBSchema(TiDBConnectorConfig config,TiDBDatabaseSchema databaseSchema, Tables tables, String databaseCatalog, String schemaNamePattern,
                            Tables.TableFilter tableFilter, Tables.ColumnNameFilter columnFilter, boolean removeTablesNotFoundInJdbc)
             throws SQLException {
+//        LOGGER.info("tidbconnection readschema **********");
         // Before we make any changes, get the copy of the set of table IDs ...
         Set<TableId> tableIdsBefore = new HashSet<>(tables.tableIds());
 
@@ -353,14 +355,12 @@ public class TiDBConnection extends JdbcConnection {
         Map<TableId, List<Column>> columnsByTable = new HashMap<>();
         if (totalTables == tableIds.size() ) {
             columnsByTable = getColumnsDetailsWithTableChange(config,databaseSchema,databaseCatalog, schemaNamePattern, null, tableFilter, columnFilter, metadata, viewIds);
-            System.out.println(columnsByTable);
+//            LOGGER.info("connection readSchema:", columnsByTable);
         }
         else {
             for (TableId includeTable : tableIds) {
-//                LOGGER.debug("Retrieving columns of table {}", includeTable);
-
-                Map<TableId, List<Column>> cols = getColumnsDetails(databaseCatalog, schemaNamePattern, includeTable.table(), tableFilter,
-                        columnFilter, metadata, viewIds);
+                LOGGER.debug("Retrieving columns of table {}", includeTable);
+                Map<TableId, List<Column>> cols = getColumnsDetailsWithTableChange(config,databaseSchema,databaseCatalog, schemaNamePattern, null, tableFilter, columnFilter, metadata, viewIds);
                 columnsByTable.putAll(cols);
             }
         }
