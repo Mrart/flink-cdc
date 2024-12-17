@@ -352,7 +352,6 @@ public class TiDBConnection extends JdbcConnection {
 
         Map<TableId, List<Column>> columnsByTable = new HashMap<>();
         if (totalTables == tableIds.size() ) {
-
             columnsByTable = getColumnsDetailsWithTableChange(config,databaseSchema,databaseCatalog, schemaNamePattern, null, tableFilter, columnFilter, metadata, viewIds);
             System.out.println(columnsByTable);
         }
