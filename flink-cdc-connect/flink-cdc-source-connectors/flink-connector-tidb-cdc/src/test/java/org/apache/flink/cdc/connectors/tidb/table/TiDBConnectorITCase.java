@@ -17,7 +17,6 @@
 
 package org.apache.flink.cdc.connectors.tidb.table;
 
-import org.apache.flink.api.common.restartstrategy.RestartStrategies;
 import org.apache.flink.cdc.connectors.tidb.TiDBTestBase;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.table.api.EnvironmentSettings;
@@ -58,7 +57,7 @@ public class TiDBConnectorITCase extends TiDBTestBase {
     @Before
     public void before() {
         TestValuesTableFactory.clearAllData();
-//        env.setRestartStrategy(RestartStrategies.noRestart());
+        //        env.setRestartStrategy(RestartStrategies.noRestart());
         env.setParallelism(2);
     }
 

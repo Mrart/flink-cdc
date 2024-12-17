@@ -66,7 +66,6 @@ public class TiDBTableSource implements ScanTableSource, SupportsReadingMetadata
     private final Map<String, String> options;
     private final boolean enableParallelRead;
 
-
     /** Data type that describes the final output of the source. */
     protected DataType producedDataType;
 

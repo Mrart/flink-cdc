@@ -121,7 +121,7 @@ public class TiDBTableSourceFactoryTest {
         properties.put("port", "4111");
         properties.put("scan.startup.mode", "initial");
         properties.put("heartbeat.interval.ms", "15213ms");
-//        properties.put("server-time-zone", "Asia/Shanghai");
+        //        properties.put("server-time-zone", "Asia/Shanghai");
 
         Properties dbzProperties = new Properties();
         dbzProperties.put("snapshot.mode", "never");
