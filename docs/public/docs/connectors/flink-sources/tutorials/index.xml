@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Tutorials on Apache Flink CDC</title>
+    <link>//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/flink-sources/tutorials/</link>
+    <description>Recent content in Tutorials on Apache Flink CDC</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en</language>
+    <atom:link href="//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/flink-sources/tutorials/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>MongoDB Tutorial</title>
+      <link>//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/flink-sources/tutorials/mongodb-tutorial/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/flink-sources/tutorials/mongodb-tutorial/</guid>
+      <description>Demo: MongoDB CDC to Elasticsearch # Create docker-compose.yml file using following contents: version: &amp;#39;2.1&amp;#39; services: mongo: image: &amp;#34;mongo:4.0-xenial&amp;#34; command: --replSet rs0 --smallfiles --oplogSize 128 ports: - &amp;#34;27017:27017&amp;#34; environment: - MONGO_INITDB_ROOT_USERNAME=mongouser - MONGO_INITDB_ROOT_PASSWORD=mongopw elasticsearch: image: elastic/elasticsearch:7.6.0 environment: - cluster.name=docker-cluster - bootstrap.memory_lock=true - &amp;#34;ES_JAVA_OPTS=-Xms512m -Xmx512m&amp;#34; - discovery.type=single-node ports: - &amp;#34;9200:9200&amp;#34; - &amp;#34;9300:9300&amp;#34; ulimits: memlock: soft: -1 hard: -1 nofile: soft: 65536 hard: 65536 kibana: image: elastic/kibana:7.6.0 ports: - &amp;#34;5601:5601&amp;#34; Enter Mongodb&amp;rsquo;s container and initialize replica set and data: docker-compose exec mongo /usr/bin/mongo -u mongouser -p mongopw // 1.</description>
+    </item>
+    <item>
+      <title>Db2 Tutorial</title>
+      <link>//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/flink-sources/tutorials/db2-tutorial/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/flink-sources/tutorials/db2-tutorial/</guid>
+      <description>Demo: Db2 CDC to Elasticsearch # 1. Create docker-compose.yml file using following contents:&#xA;version: &amp;#39;2.1&amp;#39; services: db2: image: ruanhang/db2-cdc-demo:v1 privileged: true ports: - 50000:50000 environment: - LICENSE=accept - DB2INSTANCE=db2inst1 - DB2INST1_PASSWORD=admin - DBNAME=testdb - ARCHIVE_LOGS=true elasticsearch: image: elastic/elasticsearch:7.6.0 environment: - cluster.name=docker-cluster - bootstrap.memory_lock=true - &amp;#34;ES_JAVA_OPTS=-Xms512m -Xmx512m&amp;#34; - discovery.type=single-node ports: - &amp;#34;9200:9200&amp;#34; - &amp;#34;9300:9300&amp;#34; ulimits: memlock: soft: -1 hard: -1 nofile: soft: 65536 hard: 65536 kibana: image: elastic/kibana:7.6.0 ports: - &amp;#34;5601:5601&amp;#34; volumes: - /var/run/docker.</description>
+    </item>
+    <item>
+      <title>OceanBase Tutorial</title>
+      <link>//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/flink-sources/tutorials/oceanbase-tutorial/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/flink-sources/tutorials/oceanbase-tutorial/</guid>
+      <description>Demo: OceanBase CDC to ElasticSearch # Video tutorial # YouTube Bilibili Preparation # Configure and start the components # Create docker-compose.yml.&#xA;Note: host network mode is required in this demo, so it can only work on Linux, see network-tutorial-host.&#xA;version: &amp;#39;2.1&amp;#39; services: observer: image: oceanbase/oceanbase-ce:4.2.0.0 container_name: observer environment: - &amp;#39;MODE=slim&amp;#39; - &amp;#39;OB_ROOT_PASSWORD=pswd&amp;#39; network_mode: &amp;#34;host&amp;#34; oblogproxy: image: whhe/oblogproxy:1.1.3_4x container_name: oblogproxy environment: - &amp;#39;OB_SYS_USERNAME=root&amp;#39; - &amp;#39;OB_SYS_PASSWORD=pswd&amp;#39; network_mode: &amp;#34;host&amp;#34; elasticsearch: image: &amp;#39;elastic/elasticsearch:7.6.0&amp;#39; container_name: elasticsearch environment: - cluster.</description>
+    </item>
+    <item>
+      <title>Oracle Tutorial</title>
+      <link>//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/flink-sources/tutorials/oracle-tutorial/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/flink-sources/tutorials/oracle-tutorial/</guid>
+      <description>Demo: Oracle CDC to Elasticsearch # Create docker-compose.yml file using following contents:&#xA;version: &amp;#39;2.1&amp;#39; services: oracle: image: goodboy008/oracle-19.3.0-ee:non-cdb ports: - &amp;#34;1521:1521&amp;#34; elasticsearch: image: elastic/elasticsearch:7.6.0 environment: - cluster.name=docker-cluster - bootstrap.memory_lock=true - &amp;#34;ES_JAVA_OPTS=-Xms512m -Xmx512m&amp;#34; - discovery.type=single-node ports: - &amp;#34;9200:9200&amp;#34; - &amp;#34;9300:9300&amp;#34; ulimits: memlock: soft: -1 hard: -1 nofile: soft: 65536 hard: 65536 kibana: image: elastic/kibana:7.6.0 ports: - &amp;#34;5601:5601&amp;#34; volumes: - /var/run/docker.sock:/var/run/docker.sock The Docker Compose environment consists of the following containers:&#xA;Oracle: Oracle 19c database.</description>
+    </item>
+    <item>
+      <title>PolarDB-X Tutorial</title>
+      <link>//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/flink-sources/tutorials/polardbx-tutorial/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/flink-sources/tutorials/polardbx-tutorial/</guid>
+      <description>Demo: PolarDB-X CDC to Elasticsearch # This tutorial is to show how to quickly build streaming ETL for PolarDB-X with Flink CDC.&#xA;Assuming we are running an e-commerce business. The product and order data stored in PolarDB-X. We want to enrich the orders using the product table, and then load the enriched orders to ElasticSearch in real time.&#xA;In the following sections, we will describe how to use Flink PolarDB-X CDC to implement it.</description>
+    </item>
+    <item>
+      <title>SqlServer Tutorial</title>
+      <link>//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/flink-sources/tutorials/sqlserver-tutorial/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/flink-sources/tutorials/sqlserver-tutorial/</guid>
+      <description>Demo: SqlServer CDC to Elasticsearch # Create docker-compose.yml file using following contents:&#xA;version: &amp;#39;2.1&amp;#39; services: sqlserver: image: mcr.microsoft.com/mssql/server:2019-latest container_name: sqlserver ports: - &amp;#34;1433:1433&amp;#34; environment: - &amp;#34;MSSQL_AGENT_ENABLED=true&amp;#34; - &amp;#34;MSSQL_PID=Standard&amp;#34; - &amp;#34;ACCEPT_EULA=Y&amp;#34; - &amp;#34;SA_PASSWORD=Password!&amp;#34; elasticsearch: image: elastic/elasticsearch:7.6.0 container_name: elasticsearch environment: - cluster.name=docker-cluster - bootstrap.memory_lock=true - &amp;#34;ES_JAVA_OPTS=-Xms512m -Xmx512m&amp;#34; - discovery.type=single-node ports: - &amp;#34;9200:9200&amp;#34; - &amp;#34;9300:9300&amp;#34; ulimits: memlock: soft: -1 hard: -1 nofile: soft: 65536 hard: 65536 kibana: image: elastic/kibana:7.6.0 container_name: kibana ports: - &amp;#34;5601:5601&amp;#34; volumes: - /var/run/docker.</description>
+    </item>
+    <item>
+      <title>TiDB Tutorial</title>
+      <link>//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/flink-sources/tutorials/tidb-tutorial/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/flink-sources/tutorials/tidb-tutorial/</guid>
+      <description>Demo: TiDB CDC to Elasticsearch # First,we will start TiDB cluster with docker.&#xA;$ git clone https://github.com/pingcap/tidb-docker-compose.git Next,replace docker-compose.yml file using following contents in directory tidb-docker-compose:&#xA;version: &amp;#34;2.1&amp;#34; services: pd: image: pingcap/pd:v5.3.1 ports: - &amp;#34;2379:2379&amp;#34; volumes: - ./config/pd.toml:/pd.toml - ./logs:/logs command: - --client-urls=http://0.0.0.0:2379 - --peer-urls=http://0.0.0.0:2380 - --advertise-client-urls=http://pd:2379 - --advertise-peer-urls=http://pd:2380 - --initial-cluster=pd=http://pd:2380 - --data-dir=/data/pd - --config=/pd.toml - --log-file=/logs/pd.log restart: on-failure tikv: image: pingcap/tikv:v5.3.1 ports: - &amp;#34;20160:20160&amp;#34; volumes: - ./config/tikv.toml:/tikv.toml - .</description>
+    </item>
+    <item>
+      <title>Building a Real-time Data Lake with Flink CDC</title>
+      <link>//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/flink-sources/tutorials/build-real-time-data-lake-tutorial/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/flink-sources/tutorials/build-real-time-data-lake-tutorial/</guid>
+      <description>Building a Real-time Data Lake with Flink CDC # For OLTP databases, to deal with a huge number of data in a single table, we usually do database and table sharding to get better throughput. But sometimes, for convenient analysis, we need to merge them into one table when loading them to data warehouse or data lake.&#xA;This tutorial will show how to use Flink CDC to build a real-time data lake for such a scenario.</description>
+    </item>
+    <item>
+      <title>Building a Streaming ETL with Flink CDC</title>
+      <link>//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/flink-sources/tutorials/build-streaming-etl-tutorial/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/flink-sources/tutorials/build-streaming-etl-tutorial/</guid>
+      <description>Building a Streaming ETL with Flink CDC # This tutorial is to show how to quickly build streaming ETL for MySQL and Postgres with Flink CDC.&#xA;Assuming we are running an e-commerce business. The product and order data stored in MySQL, the shipment data related to the order is stored in Postgres. We want to enrich the orders using the product and shipment table, and then load the enriched orders to ElasticSearch in real time.</description>
+    </item>
+  </channel>
+</rss>

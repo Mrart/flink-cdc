@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>核心概念 on Apache Flink CDC</title>
+    <link>//localhost:1313/flink/flink-cdc-docs-master/zh/docs/core-concept/</link>
+    <description>Recent content in 核心概念 on Apache Flink CDC</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>zh</language>
+    <atom:link href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/core-concept/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Data Pipeline</title>
+      <link>//localhost:1313/flink/flink-cdc-docs-master/zh/docs/core-concept/data-pipeline/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>//localhost:1313/flink/flink-cdc-docs-master/zh/docs/core-concept/data-pipeline/</guid>
+      <description>Definition # Since events in Flink CDC flow from the upstream to the downstream in a pipeline manner, the whole ETL task is referred as a Data Pipeline.&#xA;Parameters # A pipeline corresponds to a chain of operators in Flink.&#xA;To describe a Data Pipeline, the following parts are required:&#xA;source sink pipeline the following parts are optional:&#xA;route transform Example # Only required # We could use following yaml file to define a concise Data Pipeline describing synchronize all tables under MySQL app_db database to Doris :</description>
+    </item>
+    <item>
+      <title>Data Source</title>
+      <link>//localhost:1313/flink/flink-cdc-docs-master/zh/docs/core-concept/data-source/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>//localhost:1313/flink/flink-cdc-docs-master/zh/docs/core-concept/data-source/</guid>
+      <description>Definition # Data Source is used to access metadata and read the changed data from external systems.&#xA;A Data Source can read data from multiple tables simultaneously.&#xA;Parameters # To describe a data source, the follows are required:&#xA;parameter meaning optional/required type The type of the source, such as mysql. required name The name of the source, which is user-defined (a default value provided). optional configurations of Data Source Configurations to build the Data Source e.</description>
+    </item>
+    <item>
+      <title>Data Sink</title>
+      <link>//localhost:1313/flink/flink-cdc-docs-master/zh/docs/core-concept/data-sink/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>//localhost:1313/flink/flink-cdc-docs-master/zh/docs/core-concept/data-sink/</guid>
+      <description>Definition # Data Sink is used to apply schema changes and write change data to external systems. A Data Sink can write to multiple tables simultaneously.&#xA;Parameters # To describe a data sink, the follows are required:&#xA;parameter meaning optional/required type The type of the sink, such as doris or starrocks. required name The name of the sink, which is user-defined (a default value provided). optional configurations of Data Sink Configurations to build the Data Sink e.</description>
+    </item>
+    <item>
+      <title>Table ID</title>
+      <link>//localhost:1313/flink/flink-cdc-docs-master/zh/docs/core-concept/table-id/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>//localhost:1313/flink/flink-cdc-docs-master/zh/docs/core-concept/table-id/</guid>
+      <description>Definition # When connecting to external systems, it is necessary to establish a mapping relationship with the storage objects of the external system. This is what Table Id refers to.&#xA;Example # To be compatible with most external systems, the Table Id is represented by a 3-tuple : (namespace, schemaName, tableName).&#xA;Connectors should establish the mapping between Table Id and storage objects in external systems.&#xA;The following table lists the parts in table Id of different data systems:</description>
+    </item>
+    <item>
+      <title>Transform</title>
+      <link>//localhost:1313/flink/flink-cdc-docs-master/zh/docs/core-concept/transform/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>//localhost:1313/flink/flink-cdc-docs-master/zh/docs/core-concept/transform/</guid>
+      <description>Definition # Transform module helps users delete and expand data columns based on the data columns in the table. What&amp;rsquo;s more, it also helps users filter some unnecessary data during the synchronization process.&#xA;Parameters # To describe a transform rule, the following parameters can be used:&#xA;Parameter Meaning Optional/Required source-table Source table id, supports regular expressions required projection Projection rule, supports syntax similar to the select clause in SQL optional filter Filter rule, supports syntax similar to the where clause in SQL optional primary-keys Sink table primary keys, separated by commas optional partition-keys Sink table partition keys, separated by commas optional table-options used to the configure table creation statement when automatically creating tables optional description Transform rule description optional Multiple rules can be declared in one single pipeline YAML file.</description>
+    </item>
+    <item>
+      <title>Route</title>
+      <link>//localhost:1313/flink/flink-cdc-docs-master/zh/docs/core-concept/route/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>//localhost:1313/flink/flink-cdc-docs-master/zh/docs/core-concept/route/</guid>
+      <description>Definition # Route specifies the rule of matching a list of source-table and mapping to sink-table. The most typical scenario is the merge of sub-databases and sub-tables, routing multiple upstream source tables to the same sink table.&#xA;Parameters # To describe a route, the follows are required:&#xA;parameter meaning optional/required source-table Source table id, supports regular expressions required sink-table Sink table id, supports regular expressions required description Routing rule description(a default value provided) optional A route module can contain a list of source-table/sink-table rules.</description>
+    </item>
+  </channel>
+</rss>

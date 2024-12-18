@@ -1,0 +1,1442 @@
+
+<!DOCTYPE html>
+<html lang="zh" dir=ZgotmplZ>
+
+<head><script src="/flink/flink-cdc-docs-master/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=flink/flink-cdc-docs-master/livereload" data-no-instant defer></script>
+  <meta name="generator" content="Hugo 0.124.1">
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Streaming ELT 同步 MySQL 到 StarRocks # 这篇教程将展示如何基于 Flink CDC 快速构建 MySQL 到 StarRocks 的 Streaming ELT 作业，包含整库同步、表结构变更同步和分库分表同步的功能。
+本教程的演示都将在 Flink CDC CLI 中进行，无需一行 Java/Scala 代码，也无需安装 IDE。
+准备阶段 # 准备一台已经安装了 Docker 的 Linux 或者 MacOS 电脑。
+准备 Flink Standalone 集群 # 下载 Flink 1.18.0 ，解压后得到 flink-1.18.0 目录。
+使用下面的命令跳转至 Flink 目录下，并且设置 FLINK_HOME 为 flink-1.18.0 所在目录。
+cd flink-1.18.0 通过在 conf/flink-conf.yaml 配置文件追加下列参数开启 checkpoint，每隔 3 秒做一次 checkpoint。
+execution.checkpointing.interval: 3000 使用下面的命令启动 Flink 集群。
+./bin/start-cluster.sh 启动成功的话，可以在 http://localhost:8081/ 访问到 Flink Web UI，如下所示：">
+<meta name="theme-color" content="#FFFFFF"><meta property="og:title" content="MySQL 同步到 StarRocks" />
+<meta property="og:description" content="Streaming ELT 同步 MySQL 到 StarRocks # 这篇教程将展示如何基于 Flink CDC 快速构建 MySQL 到 StarRocks 的 Streaming ELT 作业，包含整库同步、表结构变更同步和分库分表同步的功能。
+本教程的演示都将在 Flink CDC CLI 中进行，无需一行 Java/Scala 代码，也无需安装 IDE。
+准备阶段 # 准备一台已经安装了 Docker 的 Linux 或者 MacOS 电脑。
+准备 Flink Standalone 集群 # 下载 Flink 1.18.0 ，解压后得到 flink-1.18.0 目录。
+使用下面的命令跳转至 Flink 目录下，并且设置 FLINK_HOME 为 flink-1.18.0 所在目录。
+cd flink-1.18.0 通过在 conf/flink-conf.yaml 配置文件追加下列参数开启 checkpoint，每隔 3 秒做一次 checkpoint。
+execution.checkpointing.interval: 3000 使用下面的命令启动 Flink 集群。
+./bin/start-cluster.sh 启动成功的话，可以在 http://localhost:8081/ 访问到 Flink Web UI，如下所示：" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/get-started/quickstart/mysql-to-starrocks/" /><meta property="article:section" content="docs" />
+
+
+<title>MySQL 同步到 StarRocks | Apache Flink CDC</title>
+<link rel="manifest" href="/flink/flink-cdc-docs-master/manifest.json">
+<link rel="icon" href="/flink/flink-cdc-docs-master/favicon.png" type="image/x-icon">
+<link rel="alternate" hreflang="en" href="//localhost:1313/flink/flink-cdc-docs-master/docs/get-started/quickstart/mysql-to-starrocks/" title="MySQL to StarRocks">
+
+<link rel="stylesheet" href="/flink/flink-cdc-docs-master/book.min.59471f109f689a198d44e845028ea35c1b638516a64e46df5101f6f6537d611e.css" integrity="sha256-WUcfEJ9omhmNROhFAo6jXBtjhRamTkbfUQH29lN9YR4=">
+<script defer src="/flink/flink-cdc-docs-master/zh.search.min.f05f9a91a4965726eddeeef36688c3cc1be81e20847d75375191fa5968377892.js" integrity="sha256-8F&#43;akaSWVybt3u7zZojDzBvoHiCEfXU3UZH6WWg3eJI="></script>
+<!--
+Made with Book Theme
+https://github.com/alex-shpak/hugo-book
+-->
+
+  
+
+<link rel="stylesheet" type="text/css" href="//localhost:1313/flink/flink-cdc-docs-master//font-awesome/css/font-awesome.min.css">
+<script src="//localhost:1313/flink/flink-cdc-docs-master//js/anchor.min.js"></script>
+<script src="//localhost:1313/flink/flink-cdc-docs-master//js/flink.js"></script>
+
+
+  
+  <script>
+    var _paq = window._paq = window._paq || [];
+     
+     
+    _paq.push(['disableCookies']);
+     
+    _paq.push(["setDomains", ["*.flink.apache.org","*.nightlies.apache.org/flink"]]);
+    _paq.push(['trackPageView']);
+    _paq.push(['enableLinkTracking']);
+    (function() {
+      var u="//matomo.privacy.apache.org/";
+      _paq.push(['setTrackerUrl', u+'matomo.php']);
+      _paq.push(['setSiteId', '1']);
+      var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
+      g.async=true; g.src=u+'matomo.js'; s.parentNode.insertBefore(g,s);
+    })();
+  </script>
+  
+</head>
+
+<body dir=ZgotmplZ>
+  <input type="checkbox" class="hidden toggle" id="menu-control" />
+  <input type="checkbox" class="hidden toggle" id="toc-control" />
+  <main class="container flex">
+    <aside class="book-menu">
+      
+  
+
+<nav>
+
+
+<a id="logo" href="//localhost:1313/flink/flink-cdc-docs-master//zh">
+    <img width="70%" src="//localhost:1313/flink/flink-cdc-docs-master//navbar-brand-logo.jpg">
+</a>
+<p style="text-align:right">v3.2-SNAPSHOT</p>
+
+<div class="book-search">
+  <input type="text" id="book-search-input" placeholder="搜索" aria-label="搜索" maxlength="64" data-hotkeys="s/" />
+  <div class="book-search-spinner hidden"></div>
+  <ul id="book-search-results"></ul>
+</div>
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+  <ul>
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <input type="checkbox" id="section-6200e334011b863c650806533c1e934d" class="toggle" checked />
+    <label for="section-6200e334011b863c650806533c1e934d" class="flex justify-between"><div style="font-weight:450;margin-bottom:0.5em">入门指南</div><span>▾</span>
+    </label>
+  
+
+          
+  <ul>
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/get-started/introduction/" class="">项目介绍</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <input type="checkbox" id="section-65126ba91b4ad451d64ae3bb634a3d69" class="toggle" checked />
+    <label for="section-65126ba91b4ad451d64ae3bb634a3d69" class="flex justify-between">快速开始<span>▾</span>
+    </label>
+  
+
+          
+  <ul>
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/get-started/quickstart/mysql-to-doris/" class="">MySQL 同步到 Doris</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/get-started/quickstart/mysql-to-starrocks/" class=" active">MySQL 同步到 StarRocks</a>
+  
+
+        </li>
+      
+    
+  </ul>
+
+        </li>
+      
+    
+  </ul>
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <input type="checkbox" id="section-9368478381278f3e55d1d748555c70f6" class="toggle"  />
+    <label for="section-9368478381278f3e55d1d748555c70f6" class="flex justify-between"><div style="font-weight:450;margin-bottom:0.5em">核心概念</div><span>▾</span>
+    </label>
+  
+
+          
+  <ul>
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/core-concept/data-pipeline/" class="">Data Pipeline</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/core-concept/data-source/" class="">Data Source</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/core-concept/data-sink/" class="">Data Sink</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/core-concept/table-id/" class="">Table ID</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/core-concept/transform/" class="">Transform</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/core-concept/route/" class="">Route</a>
+  
+
+        </li>
+      
+    
+  </ul>
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <input type="checkbox" id="section-cca35f842c08f0e2b4a94e3d03b79c9b" class="toggle"  />
+    <label for="section-cca35f842c08f0e2b4a94e3d03b79c9b" class="flex justify-between"><div style="font-weight:450;margin-bottom:0.5em">连接器</div><span>▾</span>
+    </label>
+  
+
+          
+  <ul>
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <input type="checkbox" id="section-4436a0c8f6839ca41c460c9dd3348724" class="toggle"  />
+    <label for="section-4436a0c8f6839ca41c460c9dd3348724" class="flex justify-between">Pipeline 连接器<span>▾</span>
+    </label>
+  
+
+          
+  <ul>
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/pipeline-connectors/overview/" class="">概览</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/pipeline-connectors/mysql/" class="">MySQL</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/pipeline-connectors/paimon/" class="">Paimon</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/pipeline-connectors/kafka/" class="">Kafka</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/pipeline-connectors/doris/" class="">Doris</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/pipeline-connectors/starrocks/" class="">StarRocks</a>
+  
+
+        </li>
+      
+    
+  </ul>
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <input type="checkbox" id="section-c0a0971d8f495dc42589f86cef138818" class="toggle"  />
+    <label for="section-c0a0971d8f495dc42589f86cef138818" class="flex justify-between">Flink Source 连接器<span>▾</span>
+    </label>
+  
+
+          
+  <ul>
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/flink-sources/overview/" class="">概览</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/flink-sources/mysql-cdc/" class="">MySQL</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/flink-sources/oracle-cdc/" class="">Oracle</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/flink-sources/sqlserver-cdc/" class="">SQL Server</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/flink-sources/postgres-cdc/" class="">Postgres</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/flink-sources/mongodb-cdc/" class="">MongoDB</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/flink-sources/db2-cdc/" class="">Db2</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/flink-sources/tidb-cdc/" class="">TiDB</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/flink-sources/oceanbase-cdc/" class="">OceanBase</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/flink-sources/vitess-cdc/" class="">Vitess</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/flink-sources/datastream-api-package-guidance/" class="">DataStream API 打包指南</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <input type="checkbox" id="section-c23e2f7ee1f6d87942cc0f2b79648372" class="toggle"  />
+    <label for="section-c23e2f7ee1f6d87942cc0f2b79648372" class="flex justify-between">Flink CDC Sources 教程<span>▾</span>
+    </label>
+  
+
+          
+  <ul>
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/flink-sources/tutorials/mongodb-tutorial/" class="">MongoDB 教程</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/flink-sources/tutorials/db2-tutorial/" class="">Db2 教程</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/flink-sources/tutorials/oceanbase-tutorial/" class="">OceanBase 教程</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/flink-sources/tutorials/oracle-tutorial/" class="">Oracle 教程</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/flink-sources/tutorials/polardbx-tutorial/" class="">PolarDB-X 教程</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/flink-sources/tutorials/sqlserver-tutorial/" class="">SqlServer 教程</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/flink-sources/tutorials/tidb-tutorial/" class="">TiDB 教程</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/flink-sources/tutorials/build-real-time-data-lake-tutorial/" class="">使用 Flink CDC 构建实时数据湖</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/flink-sources/tutorials/build-streaming-etl-tutorial/" class="">使用 Flink CDC 构建 Streaming ETL</a>
+  
+
+        </li>
+      
+    
+  </ul>
+
+        </li>
+      
+    
+  </ul>
+
+        </li>
+      
+    
+  </ul>
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <input type="checkbox" id="section-988c4238198a24c7eac9b0f056d01246" class="toggle"  />
+    <label for="section-988c4238198a24c7eac9b0f056d01246" class="flex justify-between"><div style="font-weight:450;margin-bottom:0.5em">部署模式</div><span>▾</span>
+    </label>
+  
+
+          
+  <ul>
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/deployment/standalone/" class="">Standalone</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/deployment/yarn/" class="">YARN</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/deployment/kubernetes/" class="">Kubernetes</a>
+  
+
+        </li>
+      
+    
+  </ul>
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <input type="checkbox" id="section-fc36b619eabb0ca9cb7b253e0eba8a7a" class="toggle"  />
+    <label for="section-fc36b619eabb0ca9cb7b253e0eba8a7a" class="flex justify-between"><div style="font-weight:450;margin-bottom:0.5em">开发者指南</div><span>▾</span>
+    </label>
+  
+
+          
+  <ul>
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/developer-guide/understand-flink-cdc-api/" class="">理解 Flink CDC API</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/developer-guide/contribute-to-flink-cdc/" class="">向 Flink CDC 提交贡献</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/developer-guide/licenses/" class="">许可证</a>
+  
+
+        </li>
+      
+    
+  </ul>
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <input type="checkbox" id="section-fb051daccb64de13ff5dc1ae657b01b6" class="toggle"  />
+    <label for="section-fb051daccb64de13ff5dc1ae657b01b6" class="flex justify-between">常见问题<span>▾</span>
+    </label>
+  
+
+          
+  <ul>
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/faq/faq/" class="">通用FAQ</a>
+  
+
+        </li>
+      
+    
+  </ul>
+
+        </li>
+      
+    
+  </ul>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<br/>
+<hr class="menu-break">
+
+<a href="//flink.apache.org" style="color:black;margin-bottom:0.5em"><i class="link fa fa-external-link title" aria-hidden="true"></i> Project Homepage</a>
+<br/>
+
+<a href="//nightlies.apache.org/flink/flink-cdc-docs-master/api/java/" style="color:black;margin-bottom:0.5em"><i class="link fa fa-external-link title" aria-hidden="true"></i> JavaDocs</a>
+<br/>
+
+<hr class="menu-break">
+<li style="list-style-type: none">
+  <br>
+  <input type="checkbox" id="section-version-picker" class="toggle">
+  <label for="section-version-picker" class="flex justify-between">
+     <div style="font-weight:450;margin-bottom:0.5em">Pick Docs Version</div>
+     <span>▾</span>
+  </label>
+  <ul>
+    <a href="//localhost:1313/flink/flink-cdc-docs-master//zh">
+      3.2-SNAPSHOT (✓)
+    </a>
+    <hr class="menu-break">
+    
+      <li>
+        <a href="https://nightlies.apache.org/flink/flink-cdc-docs-release-3.0">
+          v3.0
+        </a>
+      </li>
+    
+    <hr class="menu-break">
+    <li>
+      <a href="//localhost:1313/flink/flink-cdc-docs-master//zh/versions">
+          All Versions
+      </a>
+    </li>
+  </ul>
+</li>
+
+
+
+
+  
+
+  
+
+
+  
+
+
+
+
+
+<a  href="//localhost:1313/flink/flink-cdc-docs-master/docs/get-started/quickstart/mysql-to-starrocks/" class="flex align-center">
+  <i class="fa fa-globe" aria-hidden="true"></i>&nbsp;&nbsp;
+  English
+</a>
+
+
+
+</nav>
+
+
+
+
+  <script>(function(){var e=document.querySelector("aside.book-menu nav");addEventListener("beforeunload",function(){localStorage.setItem("menu.scrollTop",e.scrollTop)}),e.scrollTop=localStorage.getItem("menu.scrollTop")})()</script>
+
+
+ 
+    </aside>
+
+    <div class="book-page">
+      <header class="book-header">
+        
+  <div class="flex align-center justify-between">
+  <label for="menu-control">
+    <img src="/flink/flink-cdc-docs-master/svg/menu.svg" class="book-icon" alt="Menu" />
+  </label>
+
+  <strong>MySQL 同步到 StarRocks</strong>
+
+  <label for="toc-control">
+    
+    <img src="/flink/flink-cdc-docs-master/svg/toc.svg" class="book-icon" alt="Table of Contents" />
+    
+  </label>
+</div>
+
+
+  
+  <aside class="hidden clearfix">
+    
+  
+
+<nav id="TableOfContents"><h3>On This Page <button class="toc" onclick="collapseToc()"><i class="fa fa-compress" aria-hidden="true"></i></button></h3>
+  <ul>
+    <li><a href="#准备阶段">准备阶段</a>
+      <ul>
+        <li><a href="#准备-flink-standalone-集群">准备 Flink Standalone 集群</a></li>
+        <li><a href="#准备-docker-环境">准备 Docker 环境</a></li>
+      </ul>
+    </li>
+    <li><a href="#通过-flinkcdc-cli-提交任务">通过 FlinkCDC cli 提交任务</a>
+      <ul>
+        <li><a href="#同步变更">同步变更</a></li>
+        <li><a href="#路由变更">路由变更</a></li>
+      </ul>
+    </li>
+    <li><a href="#环境清理">环境清理</a></li>
+  </ul>
+</nav>
+
+
+  </aside>
+  
+ 
+      </header>
+
+      
+
+
+
+
+<article class="markdown">
+    <blockquote style="border-color:#f66">
+        This documentation is for an unreleased version of Apache Flink CDC. We recommend you use the latest <a href="https://ci.apache.org/projects/flink/flink-cdc-docs-stable/">stable version</a>.
+    </blockquote>
+</article>
+
+
+
+      
+  <article class="markdown"><!--
+Licensed to the Apache Software Foundation (ASF) under one
+or more contributor license agreements.  See the NOTICE file
+distributed with this work for additional information
+regarding copyright ownership.  The ASF licenses this file
+to you under the Apache License, Version 2.0 (the
+"License"); you may not use this file except in compliance
+with the License.  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing,
+software distributed under the License is distributed on an
+"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, either express or implied.  See the License for the
+specific language governing permissions and limitations
+under the License.
+-->
+<h1 id="streaming-elt-同步-mysql-到-starrocks">
+  Streaming ELT 同步 MySQL 到 StarRocks
+  <a class="anchor" href="#streaming-elt-%e5%90%8c%e6%ad%a5-mysql-%e5%88%b0-starrocks">#</a>
+</h1>
+<p>这篇教程将展示如何基于 Flink CDC 快速构建 MySQL 到 StarRocks 的 Streaming ELT 作业，包含整库同步、表结构变更同步和分库分表同步的功能。<br>
+本教程的演示都将在 Flink CDC CLI 中进行，无需一行 Java/Scala 代码，也无需安装 IDE。</p>
+<h2 id="准备阶段">
+  准备阶段
+  <a class="anchor" href="#%e5%87%86%e5%a4%87%e9%98%b6%e6%ae%b5">#</a>
+</h2>
+<p>准备一台已经安装了 Docker 的 Linux 或者 MacOS 电脑。</p>
+<h3 id="准备-flink-standalone-集群">
+  准备 Flink Standalone 集群
+  <a class="anchor" href="#%e5%87%86%e5%a4%87-flink-standalone-%e9%9b%86%e7%be%a4">#</a>
+</h3>
+<ol>
+<li>
+<p>下载 <a href="https://archive.apache.org/dist/flink/flink-1.18.0/flink-1.18.0-bin-scala_2.12.tgz">Flink 1.18.0</a> ，解压后得到 flink-1.18.0 目录。<br>
+使用下面的命令跳转至 Flink 目录下，并且设置 FLINK_HOME 为 flink-1.18.0 所在目录。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl"><span class="nb">cd</span> flink-1.18.0
+</span></span></code></pre></div></li>
+<li>
+<p>通过在 conf/flink-conf.yaml 配置文件追加下列参数开启 checkpoint，每隔 3 秒做一次 checkpoint。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-yaml" data-lang="yaml"><span class="line"><span class="cl"><span class="nt">execution.checkpointing.interval</span><span class="p">:</span><span class="w"> </span><span class="m">3000</span><span class="w">
+</span></span></span></code></pre></div></li>
+<li>
+<p>使用下面的命令启动 Flink 集群。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">./bin/start-cluster.sh
+</span></span></code></pre></div></li>
+</ol>
+<p>启动成功的话，可以在 <a href="http://localhost:8081/">http://localhost:8081/</a> 访问到 Flink Web UI，如下所示：</p>
+
+<img 
+  src="//localhost:1313/flink/flink-cdc-docs-master//fig/mysql-starrocks-tutorial/flink-ui.png"
+  alt="Flink UI"
+  width=""
+  style="display:block;margin-left:auto;margin-right:auto"
+>
+<p>多次执行 start-cluster.sh 可以拉起多个 TaskManager。</p>
+<h3 id="准备-docker-环境">
+  准备 Docker 环境
+  <a class="anchor" href="#%e5%87%86%e5%a4%87-docker-%e7%8e%af%e5%a2%83">#</a>
+</h3>
+<p>使用下面的内容创建一个 <code>docker-compose.yml</code> 文件：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-yaml" data-lang="yaml"><span class="line"><span class="cl"><span class="nt">version</span><span class="p">:</span><span class="w"> </span><span class="s1">&#39;2.1&#39;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="nt">services</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">StarRocks</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l">starrocks/allin1-ubuntu:3.2.6</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">ports</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="s2">&#34;8080:8080&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="s2">&#34;9030:9030&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">MySQL</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l">debezium/example-mysql:1.1</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">ports</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="s2">&#34;3306:3306&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">environment</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="l">MYSQL_ROOT_PASSWORD=123456</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="l">MYSQL_USER=mysqluser</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="l">MYSQL_PASSWORD=mysqlpw</span><span class="w">
+</span></span></span></code></pre></div><p>该 Docker Compose 中包含的容器有：</p>
+<ul>
+<li>MySQL: 包含商品信息的数据库 <code>app_db</code></li>
+<li>StarRocks: 存储从 MySQL 中根据规则映射过来的结果表</li>
+</ul>
+<p>在 <code>docker-compose.yml</code> 所在目录下执行下面的命令来启动本教程需要的组件：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">docker-compose up -d
+</span></span></code></pre></div><p>该命令将以 detached 模式自动启动 Docker Compose 配置中定义的所有容器。你可以通过 docker ps 来观察上述的容器是否正常启动了，也可以通过访问 <a href="http://localhost:8030/">http://localhost:8030/</a> 来查看 StarRocks 是否运行正常。</p>
+<h4 id="在-mysql-数据库中准备数据">
+  在 MySQL 数据库中准备数据
+  <a class="anchor" href="#%e5%9c%a8-mysql-%e6%95%b0%e6%8d%ae%e5%ba%93%e4%b8%ad%e5%87%86%e5%a4%87%e6%95%b0%e6%8d%ae">#</a>
+</h4>
+<ol>
+<li>
+<p>进入 MySQL 容器</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">docker-compose <span class="nb">exec</span> MySQL mysql -uroot -p123456
+</span></span></code></pre></div></li>
+<li>
+<p>创建数据库 <code>app_db</code> 和表 <code>orders</code>,<code>products</code>,<code>shipments</code>，并插入数据</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="cl"><span class="c1">-- 创建数据库
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="k">CREATE</span><span class="w"> </span><span class="k">DATABASE</span><span class="w"> </span><span class="n">app_db</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">USE</span><span class="w"> </span><span class="n">app_db</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="c1">-- 创建 orders 表
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="k">CREATE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="o">`</span><span class="n">orders</span><span class="o">`</span><span class="w"> </span><span class="p">(</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="o">`</span><span class="n">id</span><span class="o">`</span><span class="w"> </span><span class="nb">INT</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="o">`</span><span class="n">price</span><span class="o">`</span><span class="w"> </span><span class="nb">DECIMAL</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">PRIMARY</span><span class="w"> </span><span class="k">KEY</span><span class="w"> </span><span class="p">(</span><span class="o">`</span><span class="n">id</span><span class="o">`</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="c1">-- 插入数据
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="k">INSERT</span><span class="w"> </span><span class="k">INTO</span><span class="w"> </span><span class="o">`</span><span class="n">orders</span><span class="o">`</span><span class="w"> </span><span class="p">(</span><span class="o">`</span><span class="n">id</span><span class="o">`</span><span class="p">,</span><span class="w"> </span><span class="o">`</span><span class="n">price</span><span class="o">`</span><span class="p">)</span><span class="w"> </span><span class="k">VALUES</span><span class="w"> </span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">4</span><span class="p">.</span><span class="mi">00</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">INSERT</span><span class="w"> </span><span class="k">INTO</span><span class="w"> </span><span class="o">`</span><span class="n">orders</span><span class="o">`</span><span class="w"> </span><span class="p">(</span><span class="o">`</span><span class="n">id</span><span class="o">`</span><span class="p">,</span><span class="w"> </span><span class="o">`</span><span class="n">price</span><span class="o">`</span><span class="p">)</span><span class="w"> </span><span class="k">VALUES</span><span class="w"> </span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="mi">100</span><span class="p">.</span><span class="mi">00</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="c1">-- 创建 shipments 表
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="k">CREATE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="o">`</span><span class="n">shipments</span><span class="o">`</span><span class="w"> </span><span class="p">(</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="o">`</span><span class="n">id</span><span class="o">`</span><span class="w"> </span><span class="nb">INT</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="o">`</span><span class="n">city</span><span class="o">`</span><span class="w"> </span><span class="nb">VARCHAR</span><span class="p">(</span><span class="mi">255</span><span class="p">)</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">PRIMARY</span><span class="w"> </span><span class="k">KEY</span><span class="w"> </span><span class="p">(</span><span class="o">`</span><span class="n">id</span><span class="o">`</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="c1">-- 插入数据
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="k">INSERT</span><span class="w"> </span><span class="k">INTO</span><span class="w"> </span><span class="o">`</span><span class="n">shipments</span><span class="o">`</span><span class="w"> </span><span class="p">(</span><span class="o">`</span><span class="n">id</span><span class="o">`</span><span class="p">,</span><span class="w"> </span><span class="o">`</span><span class="n">city</span><span class="o">`</span><span class="p">)</span><span class="w"> </span><span class="k">VALUES</span><span class="w"> </span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;beijing&#39;</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">INSERT</span><span class="w"> </span><span class="k">INTO</span><span class="w"> </span><span class="o">`</span><span class="n">shipments</span><span class="o">`</span><span class="w"> </span><span class="p">(</span><span class="o">`</span><span class="n">id</span><span class="o">`</span><span class="p">,</span><span class="w"> </span><span class="o">`</span><span class="n">city</span><span class="o">`</span><span class="p">)</span><span class="w"> </span><span class="k">VALUES</span><span class="w"> </span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;xian&#39;</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="c1">-- 创建 products 表
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="k">CREATE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="o">`</span><span class="n">products</span><span class="o">`</span><span class="w"> </span><span class="p">(</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="o">`</span><span class="n">id</span><span class="o">`</span><span class="w"> </span><span class="nb">INT</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="o">`</span><span class="n">product</span><span class="o">`</span><span class="w"> </span><span class="nb">VARCHAR</span><span class="p">(</span><span class="mi">255</span><span class="p">)</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">PRIMARY</span><span class="w"> </span><span class="k">KEY</span><span class="w"> </span><span class="p">(</span><span class="o">`</span><span class="n">id</span><span class="o">`</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="c1">-- 插入数据
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="k">INSERT</span><span class="w"> </span><span class="k">INTO</span><span class="w"> </span><span class="o">`</span><span class="n">products</span><span class="o">`</span><span class="w"> </span><span class="p">(</span><span class="o">`</span><span class="n">id</span><span class="o">`</span><span class="p">,</span><span class="w"> </span><span class="o">`</span><span class="n">product</span><span class="o">`</span><span class="p">)</span><span class="w"> </span><span class="k">VALUES</span><span class="w"> </span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;Beer&#39;</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">INSERT</span><span class="w"> </span><span class="k">INTO</span><span class="w"> </span><span class="o">`</span><span class="n">products</span><span class="o">`</span><span class="w"> </span><span class="p">(</span><span class="o">`</span><span class="n">id</span><span class="o">`</span><span class="p">,</span><span class="w"> </span><span class="o">`</span><span class="n">product</span><span class="o">`</span><span class="p">)</span><span class="w"> </span><span class="k">VALUES</span><span class="w"> </span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;Cap&#39;</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">INSERT</span><span class="w"> </span><span class="k">INTO</span><span class="w"> </span><span class="o">`</span><span class="n">products</span><span class="o">`</span><span class="w"> </span><span class="p">(</span><span class="o">`</span><span class="n">id</span><span class="o">`</span><span class="p">,</span><span class="w"> </span><span class="o">`</span><span class="n">product</span><span class="o">`</span><span class="p">)</span><span class="w"> </span><span class="k">VALUES</span><span class="w"> </span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;Peanut&#39;</span><span class="p">);</span><span class="w">
+</span></span></span></code></pre></div></li>
+</ol>
+<h2 id="通过-flinkcdc-cli-提交任务">
+  通过 FlinkCDC cli 提交任务
+  <a class="anchor" href="#%e9%80%9a%e8%bf%87-flinkcdc-cli-%e6%8f%90%e4%ba%a4%e4%bb%bb%e5%8a%a1">#</a>
+</h2>
+<ol>
+<li>
+<p>下载下面列出的二进制压缩包，并解压得到目录 <code>flink-cdc-3.0.0</code>： <br>
+<a href="https://github.com/ververica/flink-cdc-connectors/releases/download/release-3.0.0/flink-cdc-3.0.0-bin.tar.gz">flink-cdc-3.0.0-bin.tar.gz</a>
+flink-cdc-3.0.0 下会包含 bin、lib、log、conf 四个目录。</p>
+</li>
+<li>
+<p>下载下面列出的 connector 包，并且移动到 lib 目录下<br>
+<strong>下载链接只对已发布的版本有效, SNAPSHOT 版本需要本地基于 master 或 release- 分支编译</strong></p>
+<ul>
+<li><a href="https://repo1.maven.org/maven2/com/ververica/flink-cdc-pipeline-connector-mysql/3.0.0/flink-cdc-pipeline-connector-mysql-3.0.0.jar">MySQL pipeline connector 3.0.0</a></li>
+<li><a href="https://repo1.maven.org/maven2/com/ververica/flink-cdc-pipeline-connector-starrocks/3.0.0/flink-cdc-pipeline-connector-starrocks-3.0.0.jar">StarRocks pipeline connector 3.0.0</a></li>
+<li><a href="https://repo1.maven.org/maven2/mysql/mysql-connector-java/8.0.27/mysql-connector-java-8.0.27.jar">MySQL Connector Java</a></li>
+</ul>
+</li>
+<li>
+<p>编写任务配置 yaml 文件<br>
+下面给出了一个整库同步的示例文件 mysql-to-starrocks.yaml：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-yaml" data-lang="yaml"><span class="line"><span class="cl"><span class="c">################################################################################</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="c"># Description: Sync MySQL all tables to StarRocks</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="c">################################################################################</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="nt">source</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l">mysql</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">hostname</span><span class="p">:</span><span class="w"> </span><span class="l">localhost</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">port</span><span class="p">:</span><span class="w"> </span><span class="m">3306</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">username</span><span class="p">:</span><span class="w"> </span><span class="l">root</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">password</span><span class="p">:</span><span class="w"> </span><span class="m">123456</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">tables</span><span class="p">:</span><span class="w"> </span><span class="l">app_db.\.*</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">server-id</span><span class="p">:</span><span class="w"> </span><span class="m">5400-5404</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">server-time-zone</span><span class="p">:</span><span class="w"> </span><span class="l">UTC</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="nt">sink</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l">starrocks</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l">StarRocks Sink</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">jdbc-url</span><span class="p">:</span><span class="w"> </span><span class="l">jdbc:mysql://127.0.0.1:9030</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">load-url</span><span class="p">:</span><span class="w"> </span><span class="m">127.0.0.1</span><span class="p">:</span><span class="m">8080</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">username</span><span class="p">:</span><span class="w"> </span><span class="l">root</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">password</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">table.create.properties.replication_num</span><span class="p">:</span><span class="w"> </span><span class="m">1</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="nt">pipeline</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l">Sync MySQL Database to StarRocks</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">parallelism</span><span class="p">:</span><span class="w"> </span><span class="m">2</span><span class="w">
+</span></span></span></code></pre></div></li>
+</ol>
+<p>其中：</p>
+<ul>
+<li>source 中的 <code>tables: app_db.\.*</code> 通过正则匹配同步 <code>app_db</code> 下的所有表。</li>
+<li>sink 添加 <code>table.create.properties.replication_num</code> 参数是由于 Docker 镜像中只有一个 StarRocks BE 节点。</li>
+</ul>
+<ol start="4">
+<li>
+<p>最后，通过命令行提交任务到 Flink Standalone cluster</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">bash bin/flink-cdc.sh mysql-to-starrocks.yaml --jar lib/mysql-connector-java-8.0.27.jar
+</span></span></code></pre></div></li>
+</ol>
+<p>提交成功后，返回信息如：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">Pipeline has been submitted to cluster.
+</span></span><span class="line"><span class="cl">Job ID: 02a31c92f0e7bc9a1f4c0051980088a0
+</span></span><span class="line"><span class="cl">Job Description: Sync MySQL Database to StarRocks
+</span></span></code></pre></div><p>在 Flink Web UI，可以看到一个名为 <code>Sync MySQL Database to StarRocks</code> 的任务正在运行。</p>
+
+<img 
+  src="//localhost:1313/flink/flink-cdc-docs-master//fig/mysql-starrocks-tutorial/mysql-to-starrocks.png"
+  alt="MySQL-to-StarRocks"
+  width=""
+  style="display:block;margin-left:auto;margin-right:auto"
+>
+<p>通过数据库连接工具例如 Dbeaver 等连接到 jdbc:mysql://127.0.0.1:9030， 可以查看 StarRocks 中写入了三张表的数据。</p>
+
+<img 
+  src="//localhost:1313/flink/flink-cdc-docs-master//fig/mysql-starrocks-tutorial/starrocks-display-data.png"
+  alt="StarRocks-display-data"
+  width=""
+  style="display:block;margin-left:auto;margin-right:auto"
+>
+<h3 id="同步变更">
+  同步变更
+  <a class="anchor" href="#%e5%90%8c%e6%ad%a5%e5%8f%98%e6%9b%b4">#</a>
+</h3>
+<p>进入 MySQL 容器:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl"> docker-compose <span class="nb">exec</span> mysql mysql -uroot -p123456
+</span></span></code></pre></div><p>接下来，修改 MySQL 数据库中表的数据，StarRocks 中显示的订单数据也将实时更新：</p>
+<ol>
+<li>
+<p>在 MySQL 的 <code>orders</code> 表中插入一条数据</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="cl"><span class="k">INSERT</span><span class="w"> </span><span class="k">INTO</span><span class="w"> </span><span class="n">app_db</span><span class="p">.</span><span class="n">orders</span><span class="w"> </span><span class="p">(</span><span class="n">id</span><span class="p">,</span><span class="w"> </span><span class="n">price</span><span class="p">)</span><span class="w"> </span><span class="k">VALUES</span><span class="w"> </span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="mi">100</span><span class="p">.</span><span class="mi">00</span><span class="p">);</span><span class="w">
+</span></span></span></code></pre></div></li>
+<li>
+<p>在 MySQL 的 <code>orders</code> 表中增加一个字段</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="cl"><span class="k">ALTER</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">app_db</span><span class="p">.</span><span class="n">orders</span><span class="w"> </span><span class="k">ADD</span><span class="w"> </span><span class="n">amount</span><span class="w"> </span><span class="nb">varchar</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span><span class="w"> </span><span class="k">NULL</span><span class="p">;</span><span class="w">
+</span></span></span></code></pre></div></li>
+<li>
+<p>在 MySQL 的 <code>orders</code> 表中更新一条数据</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="cl"><span class="k">UPDATE</span><span class="w"> </span><span class="n">app_db</span><span class="p">.</span><span class="n">orders</span><span class="w"> </span><span class="k">SET</span><span class="w"> </span><span class="n">price</span><span class="o">=</span><span class="mi">100</span><span class="p">.</span><span class="mi">00</span><span class="p">,</span><span class="w"> </span><span class="n">amount</span><span class="o">=</span><span class="mi">100</span><span class="p">.</span><span class="mi">00</span><span class="w"> </span><span class="k">WHERE</span><span class="w"> </span><span class="n">id</span><span class="o">=</span><span class="mi">1</span><span class="p">;</span><span class="w">
+</span></span></span></code></pre></div></li>
+<li>
+<p>在 MySQL 的 <code>orders</code> 表中删除一条数据</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="cl"><span class="k">DELETE</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="n">app_db</span><span class="p">.</span><span class="n">orders</span><span class="w"> </span><span class="k">WHERE</span><span class="w"> </span><span class="n">id</span><span class="o">=</span><span class="mi">2</span><span class="p">;</span><span class="w">
+</span></span></span></code></pre></div></li>
+</ol>
+<p>通过连接工具，我们可以看到 StarRocks 上也在实时发生着这些变更：
+
+<img 
+  src="//localhost:1313/flink/flink-cdc-docs-master//fig/mysql-starrocks-tutorial/starrocks-display-result.png"
+  alt="StarRocks-display-result"
+  width=""
+  style="display:block;margin-left:auto;margin-right:auto"
+></p>
+<p>同样的，去修改 <code>shipments</code>, <code>products</code> 表，也能在 StarRocks 中实时看到同步变更的结果。</p>
+<h3 id="路由变更">
+  路由变更
+  <a class="anchor" href="#%e8%b7%af%e7%94%b1%e5%8f%98%e6%9b%b4">#</a>
+</h3>
+<p>Flink CDC 提供了将源表的表结构/数据路由到其他表名的配置，借助这种能力，我们能够实现表名库名替换，整库同步等功能。<br>
+下面提供一个配置文件说明：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-yaml" data-lang="yaml"><span class="line"><span class="cl"><span class="c">################################################################################</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="c"># Description: Sync MySQL all tables to StarRocks</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="c">################################################################################</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="nt">source</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l">mysql</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">hostname</span><span class="p">:</span><span class="w"> </span><span class="l">localhost</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">port</span><span class="p">:</span><span class="w"> </span><span class="m">3306</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">username</span><span class="p">:</span><span class="w"> </span><span class="l">root</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">password</span><span class="p">:</span><span class="w"> </span><span class="m">123456</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">tables</span><span class="p">:</span><span class="w"> </span><span class="l">app_db.\.*</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">server-id</span><span class="p">:</span><span class="w"> </span><span class="m">5400-5404</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">server-time-zone</span><span class="p">:</span><span class="w"> </span><span class="l">UTC</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="nt">sink</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">   </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l">starrocks</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">   </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l">StarRocks Sink</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">   </span><span class="nt">jdbc-url</span><span class="p">:</span><span class="w"> </span><span class="l">jdbc:mysql://127.0.0.1:9030</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">   </span><span class="nt">load-url</span><span class="p">:</span><span class="w"> </span><span class="m">127.0.0.1</span><span class="p">:</span><span class="m">8030</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">   </span><span class="nt">username</span><span class="p">:</span><span class="w"> </span><span class="l">root</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">   </span><span class="nt">password</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">   </span><span class="nt">table.create.properties.replication_num</span><span class="p">:</span><span class="w"> </span><span class="m">1</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="nt">route</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span>- <span class="nt">source-table</span><span class="p">:</span><span class="w"> </span><span class="l">app_db.orders</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">sink-table</span><span class="p">:</span><span class="w"> </span><span class="l">ods_db.ods_orders</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span>- <span class="nt">source-table</span><span class="p">:</span><span class="w"> </span><span class="l">app_db.shipments</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">sink-table</span><span class="p">:</span><span class="w"> </span><span class="l">ods_db.ods_shipments</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span>- <span class="nt">source-table</span><span class="p">:</span><span class="w"> </span><span class="l">app_db.products</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">sink-table</span><span class="p">:</span><span class="w"> </span><span class="l">ods_db.ods_products</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="nt">pipeline</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l">Sync MySQL Database to StarRocks</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">parallelism</span><span class="p">:</span><span class="w"> </span><span class="m">2</span><span class="w">
+</span></span></span></code></pre></div><p>通过上面的 <code>route</code> 配置，会将 <code>app_db.orders</code> 表的结构和数据同步到 <code>ods_db.ods_orders</code> 中。从而实现数据库迁移的功能。<br>
+特别地，source-table 支持正则表达式匹配多表，从而实现分库分表同步的功能，例如下面的配置：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-yaml" data-lang="yaml"><span class="line"><span class="cl"><span class="w">   </span><span class="nt">route</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">     </span>- <span class="nt">source-table</span><span class="p">:</span><span class="w"> </span><span class="l">app_db.order\.*</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">       </span><span class="nt">sink-table</span><span class="p">:</span><span class="w"> </span><span class="l">ods_db.ods_orders</span><span class="w">
+</span></span></span></code></pre></div><p>这样，就可以将诸如 <code>app_db.order01</code>、<code>app_db.order02</code>、<code>app_db.order03</code> 的表汇总到 ods_db.ods_orders 中。注意，目前还不支持多表中存在相同主键数据的场景，将在后续版本支持。</p>
+<h2 id="环境清理">
+  环境清理
+  <a class="anchor" href="#%e7%8e%af%e5%a2%83%e6%b8%85%e7%90%86">#</a>
+</h2>
+<p>本教程结束后，在 <code>docker-compose.yml</code> 文件所在的目录下执行如下命令停止所有容器：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">docker-compose down
+</span></span></code></pre></div><p>在 Flink 所在目录 <code>flink-1.18.0</code> 下执行如下命令停止 Flink 集群：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">./bin/stop-cluster.sh
+</span></span></code></pre></div>
+<p><a href="#top" class="top pull-right"><i class="fas fa-triangle"></i> Back to top</a></p>
+
+
+</article>
+ 
+      
+
+      <footer class="book-footer">
+        
+  
+
+
+
+
+	
+
+<a href="//github.com/apache/flink-cdc/edit/master/docs/content.zh/docs/get-started/quickstart/mysql-to-starrocks.md" style="color:black"><i class="fa fa-edit fa-fw"></i>Edit This Page</a>
+
+
+ 
+        
+      </footer>
+
+      
+  
+  <div class="book-comments">
+
+</div>
+  
+ 
+
+      <label for="menu-control" class="hidden book-menu-overlay"></label>
+    </div>
+
+    
+    <aside class="book-toc">
+      
+  
+
+<nav id="TableOfContents"><h3>On This Page <button class="toc" onclick="collapseToc()"><i class="fa fa-compress" aria-hidden="true"></i></button></h3>
+  <ul>
+    <li><a href="#准备阶段">准备阶段</a>
+      <ul>
+        <li><a href="#准备-flink-standalone-集群">准备 Flink Standalone 集群</a></li>
+        <li><a href="#准备-docker-环境">准备 Docker 环境</a></li>
+      </ul>
+    </li>
+    <li><a href="#通过-flinkcdc-cli-提交任务">通过 FlinkCDC cli 提交任务</a>
+      <ul>
+        <li><a href="#同步变更">同步变更</a></li>
+        <li><a href="#路由变更">路由变更</a></li>
+      </ul>
+    </li>
+    <li><a href="#环境清理">环境清理</a></li>
+  </ul>
+</nav>
+
+ 
+    </aside>
+    <aside class="expand-toc">
+      <button class="toc" onclick="expandToc()">
+        <i class="fa fa-expand" aria-hidden="true"></i>
+      </button>
+    </aside>
+    
+  </main>
+
+  
+</body>
+
+</html>
+
+
+
+
+
+
+
+
+
+
+
+

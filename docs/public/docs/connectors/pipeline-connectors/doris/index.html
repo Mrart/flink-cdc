@@ -1,0 +1,1380 @@
+
+<!DOCTYPE html>
+<html lang="en" dir=ZgotmplZ>
+
+<head><script src="/flink/flink-cdc-docs-master/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=flink/flink-cdc-docs-master/livereload" data-no-instant defer></script>
+  <meta name="generator" content="Hugo 0.124.1">
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Doris Connector # This article introduces of Doris Connector
+Example # source: type: values name: ValuesSource sink: type: doris name: Doris Sink fenodes: 127.0.0.1:8030 username: root password: &#34;&#34; table.create.properties.replication_num: 1 pipeline: parallelism: 1 Connector Options # Option Required Default Type Description type required (none) String Specify the Sink to use, here is &#39;doris&#39;. name optional (none) String Name of PipeLine fenodes required (none) String Http address of Doris cluster FE, such as 127.">
+<meta name="theme-color" content="#FFFFFF"><meta property="og:title" content="Doris" />
+<meta property="og:description" content="Doris Connector # This article introduces of Doris Connector
+Example # source: type: values name: ValuesSource sink: type: doris name: Doris Sink fenodes: 127.0.0.1:8030 username: root password: &#34;&#34; table.create.properties.replication_num: 1 pipeline: parallelism: 1 Connector Options # Option Required Default Type Description type required (none) String Specify the Sink to use, here is &#39;doris&#39;. name optional (none) String Name of PipeLine fenodes required (none) String Http address of Doris cluster FE, such as 127." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/pipeline-connectors/doris/" /><meta property="article:section" content="docs" />
+
+
+<title>Doris | Apache Flink CDC</title>
+<link rel="manifest" href="/flink/flink-cdc-docs-master/manifest.json">
+<link rel="icon" href="/flink/flink-cdc-docs-master/favicon.png" type="image/x-icon">
+<link rel="alternate" hreflang="zh" href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/pipeline-connectors/doris/" title="Doris">
+
+<link rel="stylesheet" href="/flink/flink-cdc-docs-master/book.min.59471f109f689a198d44e845028ea35c1b638516a64e46df5101f6f6537d611e.css" integrity="sha256-WUcfEJ9omhmNROhFAo6jXBtjhRamTkbfUQH29lN9YR4=">
+<script defer src="/flink/flink-cdc-docs-master/en.search.min.60d7dc9e723d3271101320a889b96a35e0c8d94bb858e65d4cc723e8e6ec1674.js" integrity="sha256-YNfcnnI9MnEQEyCoiblqNeDI2Uu4WOZdTMcj6ObsFnQ="></script>
+<!--
+Made with Book Theme
+https://github.com/alex-shpak/hugo-book
+-->
+
+  
+
+<link rel="stylesheet" type="text/css" href="//localhost:1313/flink/flink-cdc-docs-master//font-awesome/css/font-awesome.min.css">
+<script src="//localhost:1313/flink/flink-cdc-docs-master//js/anchor.min.js"></script>
+<script src="//localhost:1313/flink/flink-cdc-docs-master//js/flink.js"></script>
+
+
+  
+  <script>
+    var _paq = window._paq = window._paq || [];
+     
+     
+    _paq.push(['disableCookies']);
+     
+    _paq.push(["setDomains", ["*.flink.apache.org","*.nightlies.apache.org/flink"]]);
+    _paq.push(['trackPageView']);
+    _paq.push(['enableLinkTracking']);
+    (function() {
+      var u="//matomo.privacy.apache.org/";
+      _paq.push(['setTrackerUrl', u+'matomo.php']);
+      _paq.push(['setSiteId', '1']);
+      var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
+      g.async=true; g.src=u+'matomo.js'; s.parentNode.insertBefore(g,s);
+    })();
+  </script>
+  
+</head>
+
+<body dir=ZgotmplZ>
+  <input type="checkbox" class="hidden toggle" id="menu-control" />
+  <input type="checkbox" class="hidden toggle" id="toc-control" />
+  <main class="container flex">
+    <aside class="book-menu">
+      
+  
+
+<nav>
+
+
+<a id="logo" href="//localhost:1313/flink/flink-cdc-docs-master/">
+    <img width="70%" src="//localhost:1313/flink/flink-cdc-docs-master//navbar-brand-logo.jpg">
+</a>
+<p style="text-align:right">v3.2-SNAPSHOT</p>
+
+<div class="book-search">
+  <input type="text" id="book-search-input" placeholder="Search" aria-label="Search" maxlength="64" data-hotkeys="s/" />
+  <div class="book-search-spinner hidden"></div>
+  <ul id="book-search-results"></ul>
+</div>
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+  <ul>
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <input type="checkbox" id="section-6200e334011b863c650806533c1e934d" class="toggle"  />
+    <label for="section-6200e334011b863c650806533c1e934d" class="flex justify-between"><div style="font-weight:450;margin-bottom:0.5em">Get Started</div><span>▾</span>
+    </label>
+  
+
+          
+  <ul>
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/get-started/introduction/" class="">Introduction</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <input type="checkbox" id="section-65126ba91b4ad451d64ae3bb634a3d69" class="toggle"  />
+    <label for="section-65126ba91b4ad451d64ae3bb634a3d69" class="flex justify-between">Quickstart<span>▾</span>
+    </label>
+  
+
+          
+  <ul>
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/get-started/quickstart/mysql-to-doris/" class="">MySQL to Doris</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/get-started/quickstart/mysql-to-starrocks/" class="">MySQL to StarRocks</a>
+  
+
+        </li>
+      
+    
+  </ul>
+
+        </li>
+      
+    
+  </ul>
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <input type="checkbox" id="section-9368478381278f3e55d1d748555c70f6" class="toggle"  />
+    <label for="section-9368478381278f3e55d1d748555c70f6" class="flex justify-between"><div style="font-weight:450;margin-bottom:0.5em">Core Concept</div><span>▾</span>
+    </label>
+  
+
+          
+  <ul>
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/core-concept/data-pipeline/" class="">Data Pipeline</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/core-concept/data-source/" class="">Data Source</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/core-concept/data-sink/" class="">Data Sink</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/core-concept/table-id/" class="">Table ID</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/core-concept/transform/" class="">Transform</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/core-concept/route/" class="">Route</a>
+  
+
+        </li>
+      
+    
+  </ul>
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <input type="checkbox" id="section-cca35f842c08f0e2b4a94e3d03b79c9b" class="toggle" checked />
+    <label for="section-cca35f842c08f0e2b4a94e3d03b79c9b" class="flex justify-between"><div style="font-weight:450;margin-bottom:0.5em">Connectors</div><span>▾</span>
+    </label>
+  
+
+          
+  <ul>
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <input type="checkbox" id="section-4436a0c8f6839ca41c460c9dd3348724" class="toggle" checked />
+    <label for="section-4436a0c8f6839ca41c460c9dd3348724" class="flex justify-between">Pipeline Connectors<span>▾</span>
+    </label>
+  
+
+          
+  <ul>
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/pipeline-connectors/overview/" class="">Overview</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/pipeline-connectors/mysql/" class="">MySQL</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/pipeline-connectors/paimon/" class="">Paimon</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/pipeline-connectors/kafka/" class="">Kafka</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/pipeline-connectors/doris/" class=" active">Doris</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/pipeline-connectors/starrocks/" class="">StarRocks</a>
+  
+
+        </li>
+      
+    
+  </ul>
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <input type="checkbox" id="section-c0a0971d8f495dc42589f86cef138818" class="toggle"  />
+    <label for="section-c0a0971d8f495dc42589f86cef138818" class="flex justify-between">Flink Sources<span>▾</span>
+    </label>
+  
+
+          
+  <ul>
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/flink-sources/overview/" class="">Overview</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/flink-sources/mysql-cdc/" class="">MySQL</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/flink-sources/oracle-cdc/" class="">Oracle</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/flink-sources/sqlserver-cdc/" class="">SQL Server</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/flink-sources/postgres-cdc/" class="">Postgres</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/flink-sources/mongodb-cdc/" class="">MongoDB</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/flink-sources/db2-cdc/" class="">Db2</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/flink-sources/tidb-cdc/" class="">TiDB</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/flink-sources/oceanbase-cdc/" class="">OceanBase</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/flink-sources/vitess-cdc/" class="">Vitess</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/flink-sources/datastream-api-package-guidance/" class="">DataStream API Package Guidance</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <input type="checkbox" id="section-c23e2f7ee1f6d87942cc0f2b79648372" class="toggle"  />
+    <label for="section-c23e2f7ee1f6d87942cc0f2b79648372" class="flex justify-between">Tutorials<span>▾</span>
+    </label>
+  
+
+          
+  <ul>
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/flink-sources/tutorials/mongodb-tutorial/" class="">MongoDB Tutorial</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/flink-sources/tutorials/db2-tutorial/" class="">Db2 Tutorial</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/flink-sources/tutorials/oceanbase-tutorial/" class="">OceanBase Tutorial</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/flink-sources/tutorials/oracle-tutorial/" class="">Oracle Tutorial</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/flink-sources/tutorials/polardbx-tutorial/" class="">PolarDB-X Tutorial</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/flink-sources/tutorials/sqlserver-tutorial/" class="">SqlServer Tutorial</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/flink-sources/tutorials/tidb-tutorial/" class="">TiDB Tutorial</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/flink-sources/tutorials/build-real-time-data-lake-tutorial/" class="">Building a Real-time Data Lake with Flink CDC</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/flink-sources/tutorials/build-streaming-etl-tutorial/" class="">Building a Streaming ETL with Flink CDC</a>
+  
+
+        </li>
+      
+    
+  </ul>
+
+        </li>
+      
+    
+  </ul>
+
+        </li>
+      
+    
+  </ul>
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <input type="checkbox" id="section-988c4238198a24c7eac9b0f056d01246" class="toggle"  />
+    <label for="section-988c4238198a24c7eac9b0f056d01246" class="flex justify-between"><div style="font-weight:450;margin-bottom:0.5em">Deployment</div><span>▾</span>
+    </label>
+  
+
+          
+  <ul>
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/deployment/standalone/" class="">Standalone</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/deployment/yarn/" class="">YARN</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/deployment/kubernetes/" class="">Kubernetes</a>
+  
+
+        </li>
+      
+    
+  </ul>
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <input type="checkbox" id="section-fc36b619eabb0ca9cb7b253e0eba8a7a" class="toggle"  />
+    <label for="section-fc36b619eabb0ca9cb7b253e0eba8a7a" class="flex justify-between"><div style="font-weight:450;margin-bottom:0.5em">Developer Guide</div><span>▾</span>
+    </label>
+  
+
+          
+  <ul>
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/developer-guide/understand-flink-cdc-api/" class="">Understand Flink CDC API</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/developer-guide/contribute-to-flink-cdc/" class="">Contribute to Flink CDC</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/developer-guide/licenses/" class="">Licenses</a>
+  
+
+        </li>
+      
+    
+  </ul>
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <input type="checkbox" id="section-fb051daccb64de13ff5dc1ae657b01b6" class="toggle"  />
+    <label for="section-fb051daccb64de13ff5dc1ae657b01b6" class="flex justify-between">FAQ<span>▾</span>
+    </label>
+  
+
+          
+  <ul>
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/faq/faq/" class="">Frequently Asked Questions</a>
+  
+
+        </li>
+      
+    
+  </ul>
+
+        </li>
+      
+    
+  </ul>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<br/>
+<hr class="menu-break">
+
+<a href="//flink.apache.org" style="color:black;margin-bottom:0.5em"><i class="link fa fa-external-link title" aria-hidden="true"></i> Project Homepage</a>
+<br/>
+
+<a href="//nightlies.apache.org/flink/flink-cdc-docs-master/api/java/" style="color:black;margin-bottom:0.5em"><i class="link fa fa-external-link title" aria-hidden="true"></i> JavaDocs</a>
+<br/>
+
+<hr class="menu-break">
+<li style="list-style-type: none">
+  <br>
+  <input type="checkbox" id="section-version-picker" class="toggle">
+  <label for="section-version-picker" class="flex justify-between">
+     <div style="font-weight:450;margin-bottom:0.5em">Pick Docs Version</div>
+     <span>▾</span>
+  </label>
+  <ul>
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/">
+      3.2-SNAPSHOT (✓)
+    </a>
+    <hr class="menu-break">
+    
+      <li>
+        <a href="https://nightlies.apache.org/flink/flink-cdc-docs-release-3.0">
+          v3.0
+        </a>
+      </li>
+    
+    <hr class="menu-break">
+    <li>
+      <a href="//localhost:1313/flink/flink-cdc-docs-master//versions">
+          All Versions
+      </a>
+    </li>
+  </ul>
+</li>
+
+
+
+
+  
+
+  
+
+
+  
+
+
+
+
+
+
+<a  href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/pipeline-connectors/doris/" class="flex align-center">
+  <i class="fa fa-globe" aria-hidden="true"></i>&nbsp;&nbsp;
+  中文版
+</a>
+
+
+</nav>
+
+
+
+
+  <script>(function(){var e=document.querySelector("aside.book-menu nav");addEventListener("beforeunload",function(){localStorage.setItem("menu.scrollTop",e.scrollTop)}),e.scrollTop=localStorage.getItem("menu.scrollTop")})()</script>
+
+
+ 
+    </aside>
+
+    <div class="book-page">
+      <header class="book-header">
+        
+  <div class="flex align-center justify-between">
+  <label for="menu-control">
+    <img src="/flink/flink-cdc-docs-master/svg/menu.svg" class="book-icon" alt="Menu" />
+  </label>
+
+  <strong>Doris</strong>
+
+  <label for="toc-control">
+    
+    <img src="/flink/flink-cdc-docs-master/svg/toc.svg" class="book-icon" alt="Table of Contents" />
+    
+  </label>
+</div>
+
+
+  
+  <aside class="hidden clearfix">
+    
+  
+
+<nav id="TableOfContents"><h3>On This Page <button class="toc" onclick="collapseToc()"><i class="fa fa-compress" aria-hidden="true"></i></button></h3>
+  <ul>
+    <li><a href="#example">Example</a></li>
+    <li><a href="#connector-options">Connector Options</a></li>
+    <li><a href="#data-type-mapping">Data Type Mapping</a></li>
+  </ul>
+</nav>
+
+
+  </aside>
+  
+ 
+      </header>
+
+      
+
+
+
+
+<article class="markdown">
+    <blockquote style="border-color:#f66">
+        This documentation is for an unreleased version of Apache Flink CDC. We recommend you use the latest <a href="https://ci.apache.org/projects/flink/flink-cdc-docs-stable/">stable version</a>.
+    </blockquote>
+</article>
+
+
+
+      
+  <article class="markdown"><!--
+Licensed to the Apache Software Foundation (ASF) under one
+or more contributor license agreements.  See the NOTICE file
+distributed with this work for additional information
+regarding copyright ownership.  The ASF licenses this file
+to you under the Apache License, Version 2.0 (the
+"License"); you may not use this file except in compliance
+with the License.  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing,
+software distributed under the License is distributed on an
+"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, either express or implied.  See the License for the
+specific language governing permissions and limitations
+under the License.
+-->
+<h1 id="doris-connector">
+  Doris Connector
+  <a class="anchor" href="#doris-connector">#</a>
+</h1>
+<p>This article introduces of Doris Connector</p>
+<h2 id="example">
+  Example
+  <a class="anchor" href="#example">#</a>
+</h2>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-yaml" data-lang="yaml"><span class="line"><span class="cl"><span class="nt">source</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">   </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l">values</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">   </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l">ValuesSource</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="nt">sink</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">   </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l">doris</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">   </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l">Doris Sink</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">   </span><span class="nt">fenodes</span><span class="p">:</span><span class="w"> </span><span class="m">127.0.0.1</span><span class="p">:</span><span class="m">8030</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">   </span><span class="nt">username</span><span class="p">:</span><span class="w"> </span><span class="l">root</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">   </span><span class="nt">password</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">   </span><span class="nt">table.create.properties.replication_num</span><span class="p">:</span><span class="w"> </span><span class="m">1</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="nt">pipeline</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">   </span><span class="nt">parallelism</span><span class="p">:</span><span class="w"> </span><span class="m">1</span><span class="w">
+</span></span></span></code></pre></div><h2 id="connector-options">
+  Connector Options
+  <a class="anchor" href="#connector-options">#</a>
+</h2>
+<div class="highlight">
+<table class="colwidths-auto docutils">
+     <thead>
+       <tr>
+         <th class="text-left" style="width: 10%">Option</th>
+         <th class="text-left" style="width: 8%">Required</th>
+         <th class="text-left" style="width: 7%">Default</th>
+         <th class="text-left" style="width: 10%">Type</th>
+         <th class="text-left" style="width: 65%">Description</th>
+       </tr>
+     </thead>
+     <tbody>
+     <tr>
+       <td>type</td>
+       <td>required</td>
+       <td style="word-wrap: break-word;">(none)</td>
+       <td>String</td>
+       <td>Specify the Sink to use, here is <code>'doris'</code>.</td>
+     </tr>
+     <tr>
+       <td>name</td>
+       <td>optional</td>
+       <td style="word-wrap: break-word;">(none)</td>
+       <td>String</td>
+       <td> Name of PipeLine </td>
+     </tr>
+      <tr>
+       <td>fenodes</td>
+       <td>required</td>
+       <td style="word-wrap: break-word;">(none)</td>
+       <td>String</td>
+       <td>Http address of Doris cluster FE, such as 127.0.0.1:8030 </td>
+     </tr>
+      <tr>
+       <td>benodes</td>
+       <td>optional</td>
+       <td style="word-wrap: break-word;">(none)</td>
+       <td>String</td>
+       <td>Http address of Doris cluster BE, such as 127.0.0.1:8040 </td>
+     </tr>
+     <tr>
+       <td>jdbc-url</td>
+       <td>optional</td>
+       <td style="word-wrap: break-word;">(none)</td>
+       <td>String</td>
+       <td>JDBC address of Doris cluster, for example: jdbc:mysql://127.0.0.1:9030/db</td>
+     </tr>
+     <tr>
+       <td>username</td>
+       <td>required</td>
+       <td style="word-wrap: break-word;">(none)</td>
+       <td>String</td>
+       <td>Username of Doris cluster</td>
+     </tr>
+     <tr>
+       <td>password</td>
+       <td>optional</td>
+       <td style="word-wrap: break-word;">(none)</td>
+       <td>String</td>
+       <td>Password for Doris cluster</td>
+     </tr>
+     <tr>
+       <td>auto-redirect</td>
+       <td>optional</td>
+       <td style="word-wrap: break-word;">false</td>
+       <td>String</td>
+       <td> Whether to write through FE redirection and directly connect to BE to write </td>
+     </tr>
+     <tr>
+       <td>sink.enable.batch-mode</td>
+       <td>optional</td>
+       <td style="word-wrap: break-word;">true</td>
+       <td>Boolean</td>
+       <td> Whether to use the batch method to write to Doris </td>
+     </tr>
+     <tr>
+       <td>sink.flush.queue-size</td>
+       <td>optional</td>
+       <td style="word-wrap: break-word;">2</td>
+       <td>Integer</td>
+       <td> Queue size for batch writing
+       </td>
+     </tr>
+     <tr>
+       <td>sink.buffer-flush.max-rows</td>
+       <td>optional</td>
+       <td style="word-wrap: break-word;">50000</td>
+       <td>Integer</td>
+       <td>Maximum number of Flush records in a single batch</td>
+     </tr>
+     <tr>
+       <td>sink.buffer-flush.max-bytes</td>
+       <td>optional</td>
+       <td style="word-wrap: break-word;">10485760(10MB)</td>
+       <td>Integer</td>
+       <td>Maximum number of bytes flushed in a single batch</td>
+     </tr>
+     <tr>
+       <td>sink.buffer-flush.interval</td>
+       <td>optional</td>
+       <td style="word-wrap: break-word;">10s</td>
+       <td>String</td>
+       <td>Flush interval duration. If this time is exceeded, the data will be flushed asynchronously</td>
+     </tr>
+     <tr>
+       <td>sink.properties.</td>
+       <td>optional</td>
+       <td style="word-wrap: break-word;">(none)</td>
+       <td>String</td>
+       <td> Parameters of StreamLoad.
+         For example: <code> sink.properties.strict_mode: true</code>.
+         See more about <a href="https://doris.apache.org/docs/dev/sql-manual/sql-statements/Data-Manipulation-Statements/Load/STREAM-LOAD/"> StreamLoad Properties properties</a></td>
+       </td>
+     </tr>
+     <tr>
+       <td>table.create.properties.*</td>
+       <td>optional</td>
+       <td style="word-wrap: break-word;">(none)</td>
+       <td>String</td>
+       <td>Create the Properties configuration of the table.
+         For example: <code> table.create.properties.replication_num: 1</code>.
+         See more about <a href="https://doris.apache.org/docs/dev/sql-manual/sql-statements/Data-Definition-Statements/Create/CREATE-TABLE/"> Doris Table Properties properties</a></td>
+       </td>
+     </tr>
+     </tbody>
+</table>
+</div>
+<h2 id="data-type-mapping">
+  Data Type Mapping
+  <a class="anchor" href="#data-type-mapping">#</a>
+</h2>
+<div class="wy-table-responsive">
+<table class="colwidths-auto docutils">
+    <thead>
+      <tr>
+        <th class="text-left" style="width:10%;">Flink CDC Type</th>
+        <th class="text-left" style="width:30%;"><a href="https://doris.apache.org/docs/dev/sql-manual/sql-types/Data-Types/BOOLEAN/">Doris Type</a></th>
+        <th class="text-left" style="width:60%;">Note</th>
+      </tr>
+    </thead>
+    <tbody>
+    <tr>
+      <td>TINYINT</td>
+      <td>TINYINT</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>SMALLINT</td>
+      <td>SMALLINT</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>INT</td>
+      <td>INT</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>BIGINT</td>
+      <td>BIGINT</td>
+      <td></td>
+    </tr>
+   <tr>
+      <td>DECIMAL</td>
+      <td>DECIMAL</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>FLOAT</td>
+      <td>FLOAT</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>DOUBLE</td>
+      <td>DOUBLE</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>BOOLEAN</td>
+      <td>BOOLEAN</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>DATE</td>
+      <td>DATE</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>TIMESTAMP [(p)]</td>
+      <td>DATETIME [(p)]</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>TIMESTAMP_LTZ [(p)]
+      </td>
+      <td>DATETIME [(p)]
+      </td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>CHAR(n)</td>
+      <td>CHAR(n*3)</td>
+      <td>In Doris, strings are stored in UTF-8 encoding, so English characters occupy 1 byte and Chinese characters occupy 3 bytes. The length here is multiplied by 3. The maximum length of CHAR is 255. Once exceeded, it will automatically be converted to VARCHAR type.</td>
+    </tr>
+    <tr>
+      <td>VARCHAR(n)</td>
+      <td>VARCHAR(n*3)</td>
+      <td>Same as above. The length here is multiplied by 3. The maximum length of VARCHAR is 65533. Once exceeded, it will automatically be converted to STRING type.</td>
+    </tr>
+    <tr>
+      <td>
+        BINARY(n)
+      </td>
+      <td>STRING</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>
+        VARBINARY(N)
+      </td>
+      <td>STRING</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>STRING</td>
+      <td>STRING</td>
+      <td></td>
+    </tr>
+    </tbody>
+</table>
+</div>
+
+<p><a href="#top" class="top pull-right"><i class="fas fa-triangle"></i> Back to top</a></p>
+
+
+</article>
+ 
+      
+
+      <footer class="book-footer">
+        
+  
+
+
+
+
+<a href="//github.com/apache/flink-cdc/edit/master/docs/content/docs/connectors/pipeline-connectors/doris.md" style="color:black"><i class="fa fa-edit fa-fw"></i>Edit This Page</a>
+
+
+ 
+        
+      </footer>
+
+      
+  
+  <div class="book-comments">
+
+</div>
+  
+ 
+
+      <label for="menu-control" class="hidden book-menu-overlay"></label>
+    </div>
+
+    
+    <aside class="book-toc">
+      
+  
+
+<nav id="TableOfContents"><h3>On This Page <button class="toc" onclick="collapseToc()"><i class="fa fa-compress" aria-hidden="true"></i></button></h3>
+  <ul>
+    <li><a href="#example">Example</a></li>
+    <li><a href="#connector-options">Connector Options</a></li>
+    <li><a href="#data-type-mapping">Data Type Mapping</a></li>
+  </ul>
+</nav>
+
+ 
+    </aside>
+    <aside class="expand-toc">
+      <button class="toc" onclick="expandToc()">
+        <i class="fa fa-expand" aria-hidden="true"></i>
+      </button>
+    </aside>
+    
+  </main>
+
+  
+</body>
+
+</html>
+
+
+
+
+
+
+
+
+
+
+
+

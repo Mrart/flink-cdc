@@ -1,0 +1,1658 @@
+
+<!DOCTYPE html>
+<html lang="zh" dir=ZgotmplZ>
+
+<head><script src="/flink/flink-cdc-docs-master/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=flink/flink-cdc-docs-master/livereload" data-no-instant defer></script>
+  <meta name="generator" content="Hugo 0.124.1">
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="TiDB CDC Connector # The TiDB CDC connector allows for reading snapshot data and incremental data from TiDB database. This document describes how to setup the TiDB CDC connector to run SQL queries against TiDB databases.
+Dependencies # In order to setup the TiDB CDC connector, the following table provides dependency information for both projects using a build automation tool (such as Maven or SBT) and SQL Client with SQL JAR bundles.">
+<meta name="theme-color" content="#FFFFFF"><meta property="og:title" content="TiDB" />
+<meta property="og:description" content="TiDB CDC Connector # The TiDB CDC connector allows for reading snapshot data and incremental data from TiDB database. This document describes how to setup the TiDB CDC connector to run SQL queries against TiDB databases.
+Dependencies # In order to setup the TiDB CDC connector, the following table provides dependency information for both projects using a build automation tool (such as Maven or SBT) and SQL Client with SQL JAR bundles." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/flink-sources/tidb-cdc/" /><meta property="article:section" content="docs" />
+
+
+<title>TiDB | Apache Flink CDC</title>
+<link rel="manifest" href="/flink/flink-cdc-docs-master/manifest.json">
+<link rel="icon" href="/flink/flink-cdc-docs-master/favicon.png" type="image/x-icon">
+<link rel="alternate" hreflang="en" href="//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/flink-sources/tidb-cdc/" title="TiDB">
+
+<link rel="stylesheet" href="/flink/flink-cdc-docs-master/book.min.59471f109f689a198d44e845028ea35c1b638516a64e46df5101f6f6537d611e.css" integrity="sha256-WUcfEJ9omhmNROhFAo6jXBtjhRamTkbfUQH29lN9YR4=">
+<script defer src="/flink/flink-cdc-docs-master/zh.search.min.f05f9a91a4965726eddeeef36688c3cc1be81e20847d75375191fa5968377892.js" integrity="sha256-8F&#43;akaSWVybt3u7zZojDzBvoHiCEfXU3UZH6WWg3eJI="></script>
+<!--
+Made with Book Theme
+https://github.com/alex-shpak/hugo-book
+-->
+
+  
+
+<link rel="stylesheet" type="text/css" href="//localhost:1313/flink/flink-cdc-docs-master//font-awesome/css/font-awesome.min.css">
+<script src="//localhost:1313/flink/flink-cdc-docs-master//js/anchor.min.js"></script>
+<script src="//localhost:1313/flink/flink-cdc-docs-master//js/flink.js"></script>
+
+
+  
+  <script>
+    var _paq = window._paq = window._paq || [];
+     
+     
+    _paq.push(['disableCookies']);
+     
+    _paq.push(["setDomains", ["*.flink.apache.org","*.nightlies.apache.org/flink"]]);
+    _paq.push(['trackPageView']);
+    _paq.push(['enableLinkTracking']);
+    (function() {
+      var u="//matomo.privacy.apache.org/";
+      _paq.push(['setTrackerUrl', u+'matomo.php']);
+      _paq.push(['setSiteId', '1']);
+      var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
+      g.async=true; g.src=u+'matomo.js'; s.parentNode.insertBefore(g,s);
+    })();
+  </script>
+  
+</head>
+
+<body dir=ZgotmplZ>
+  <input type="checkbox" class="hidden toggle" id="menu-control" />
+  <input type="checkbox" class="hidden toggle" id="toc-control" />
+  <main class="container flex">
+    <aside class="book-menu">
+      
+  
+
+<nav>
+
+
+<a id="logo" href="//localhost:1313/flink/flink-cdc-docs-master//zh">
+    <img width="70%" src="//localhost:1313/flink/flink-cdc-docs-master//navbar-brand-logo.jpg">
+</a>
+<p style="text-align:right">v3.2-SNAPSHOT</p>
+
+<div class="book-search">
+  <input type="text" id="book-search-input" placeholder="搜索" aria-label="搜索" maxlength="64" data-hotkeys="s/" />
+  <div class="book-search-spinner hidden"></div>
+  <ul id="book-search-results"></ul>
+</div>
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+  <ul>
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <input type="checkbox" id="section-6200e334011b863c650806533c1e934d" class="toggle"  />
+    <label for="section-6200e334011b863c650806533c1e934d" class="flex justify-between"><div style="font-weight:450;margin-bottom:0.5em">入门指南</div><span>▾</span>
+    </label>
+  
+
+          
+  <ul>
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/get-started/introduction/" class="">项目介绍</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <input type="checkbox" id="section-65126ba91b4ad451d64ae3bb634a3d69" class="toggle"  />
+    <label for="section-65126ba91b4ad451d64ae3bb634a3d69" class="flex justify-between">快速开始<span>▾</span>
+    </label>
+  
+
+          
+  <ul>
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/get-started/quickstart/mysql-to-doris/" class="">MySQL 同步到 Doris</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/get-started/quickstart/mysql-to-starrocks/" class="">MySQL 同步到 StarRocks</a>
+  
+
+        </li>
+      
+    
+  </ul>
+
+        </li>
+      
+    
+  </ul>
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <input type="checkbox" id="section-9368478381278f3e55d1d748555c70f6" class="toggle"  />
+    <label for="section-9368478381278f3e55d1d748555c70f6" class="flex justify-between"><div style="font-weight:450;margin-bottom:0.5em">核心概念</div><span>▾</span>
+    </label>
+  
+
+          
+  <ul>
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/core-concept/data-pipeline/" class="">Data Pipeline</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/core-concept/data-source/" class="">Data Source</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/core-concept/data-sink/" class="">Data Sink</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/core-concept/table-id/" class="">Table ID</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/core-concept/transform/" class="">Transform</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/core-concept/route/" class="">Route</a>
+  
+
+        </li>
+      
+    
+  </ul>
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <input type="checkbox" id="section-cca35f842c08f0e2b4a94e3d03b79c9b" class="toggle" checked />
+    <label for="section-cca35f842c08f0e2b4a94e3d03b79c9b" class="flex justify-between"><div style="font-weight:450;margin-bottom:0.5em">连接器</div><span>▾</span>
+    </label>
+  
+
+          
+  <ul>
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <input type="checkbox" id="section-4436a0c8f6839ca41c460c9dd3348724" class="toggle"  />
+    <label for="section-4436a0c8f6839ca41c460c9dd3348724" class="flex justify-between">Pipeline 连接器<span>▾</span>
+    </label>
+  
+
+          
+  <ul>
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/pipeline-connectors/overview/" class="">概览</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/pipeline-connectors/mysql/" class="">MySQL</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/pipeline-connectors/paimon/" class="">Paimon</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/pipeline-connectors/kafka/" class="">Kafka</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/pipeline-connectors/doris/" class="">Doris</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/pipeline-connectors/starrocks/" class="">StarRocks</a>
+  
+
+        </li>
+      
+    
+  </ul>
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <input type="checkbox" id="section-c0a0971d8f495dc42589f86cef138818" class="toggle" checked />
+    <label for="section-c0a0971d8f495dc42589f86cef138818" class="flex justify-between">Flink Source 连接器<span>▾</span>
+    </label>
+  
+
+          
+  <ul>
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/flink-sources/overview/" class="">概览</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/flink-sources/mysql-cdc/" class="">MySQL</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/flink-sources/oracle-cdc/" class="">Oracle</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/flink-sources/sqlserver-cdc/" class="">SQL Server</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/flink-sources/postgres-cdc/" class="">Postgres</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/flink-sources/mongodb-cdc/" class="">MongoDB</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/flink-sources/db2-cdc/" class="">Db2</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/flink-sources/tidb-cdc/" class=" active">TiDB</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/flink-sources/oceanbase-cdc/" class="">OceanBase</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/flink-sources/vitess-cdc/" class="">Vitess</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/flink-sources/datastream-api-package-guidance/" class="">DataStream API 打包指南</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <input type="checkbox" id="section-c23e2f7ee1f6d87942cc0f2b79648372" class="toggle"  />
+    <label for="section-c23e2f7ee1f6d87942cc0f2b79648372" class="flex justify-between">Flink CDC Sources 教程<span>▾</span>
+    </label>
+  
+
+          
+  <ul>
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/flink-sources/tutorials/mongodb-tutorial/" class="">MongoDB 教程</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/flink-sources/tutorials/db2-tutorial/" class="">Db2 教程</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/flink-sources/tutorials/oceanbase-tutorial/" class="">OceanBase 教程</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/flink-sources/tutorials/oracle-tutorial/" class="">Oracle 教程</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/flink-sources/tutorials/polardbx-tutorial/" class="">PolarDB-X 教程</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/flink-sources/tutorials/sqlserver-tutorial/" class="">SqlServer 教程</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/flink-sources/tutorials/tidb-tutorial/" class="">TiDB 教程</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/flink-sources/tutorials/build-real-time-data-lake-tutorial/" class="">使用 Flink CDC 构建实时数据湖</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/flink-sources/tutorials/build-streaming-etl-tutorial/" class="">使用 Flink CDC 构建 Streaming ETL</a>
+  
+
+        </li>
+      
+    
+  </ul>
+
+        </li>
+      
+    
+  </ul>
+
+        </li>
+      
+    
+  </ul>
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <input type="checkbox" id="section-988c4238198a24c7eac9b0f056d01246" class="toggle"  />
+    <label for="section-988c4238198a24c7eac9b0f056d01246" class="flex justify-between"><div style="font-weight:450;margin-bottom:0.5em">部署模式</div><span>▾</span>
+    </label>
+  
+
+          
+  <ul>
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/deployment/standalone/" class="">Standalone</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/deployment/yarn/" class="">YARN</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/deployment/kubernetes/" class="">Kubernetes</a>
+  
+
+        </li>
+      
+    
+  </ul>
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <input type="checkbox" id="section-fc36b619eabb0ca9cb7b253e0eba8a7a" class="toggle"  />
+    <label for="section-fc36b619eabb0ca9cb7b253e0eba8a7a" class="flex justify-between"><div style="font-weight:450;margin-bottom:0.5em">开发者指南</div><span>▾</span>
+    </label>
+  
+
+          
+  <ul>
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/developer-guide/understand-flink-cdc-api/" class="">理解 Flink CDC API</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/developer-guide/contribute-to-flink-cdc/" class="">向 Flink CDC 提交贡献</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/developer-guide/licenses/" class="">许可证</a>
+  
+
+        </li>
+      
+    
+  </ul>
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <input type="checkbox" id="section-fb051daccb64de13ff5dc1ae657b01b6" class="toggle"  />
+    <label for="section-fb051daccb64de13ff5dc1ae657b01b6" class="flex justify-between">常见问题<span>▾</span>
+    </label>
+  
+
+          
+  <ul>
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/faq/faq/" class="">通用FAQ</a>
+  
+
+        </li>
+      
+    
+  </ul>
+
+        </li>
+      
+    
+  </ul>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<br/>
+<hr class="menu-break">
+
+<a href="//flink.apache.org" style="color:black;margin-bottom:0.5em"><i class="link fa fa-external-link title" aria-hidden="true"></i> Project Homepage</a>
+<br/>
+
+<a href="//nightlies.apache.org/flink/flink-cdc-docs-master/api/java/" style="color:black;margin-bottom:0.5em"><i class="link fa fa-external-link title" aria-hidden="true"></i> JavaDocs</a>
+<br/>
+
+<hr class="menu-break">
+<li style="list-style-type: none">
+  <br>
+  <input type="checkbox" id="section-version-picker" class="toggle">
+  <label for="section-version-picker" class="flex justify-between">
+     <div style="font-weight:450;margin-bottom:0.5em">Pick Docs Version</div>
+     <span>▾</span>
+  </label>
+  <ul>
+    <a href="//localhost:1313/flink/flink-cdc-docs-master//zh">
+      3.2-SNAPSHOT (✓)
+    </a>
+    <hr class="menu-break">
+    
+      <li>
+        <a href="https://nightlies.apache.org/flink/flink-cdc-docs-release-3.0">
+          v3.0
+        </a>
+      </li>
+    
+    <hr class="menu-break">
+    <li>
+      <a href="//localhost:1313/flink/flink-cdc-docs-master//zh/versions">
+          All Versions
+      </a>
+    </li>
+  </ul>
+</li>
+
+
+
+
+  
+
+  
+
+
+  
+
+
+
+
+
+<a  href="//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/flink-sources/tidb-cdc/" class="flex align-center">
+  <i class="fa fa-globe" aria-hidden="true"></i>&nbsp;&nbsp;
+  English
+</a>
+
+
+
+</nav>
+
+
+
+
+  <script>(function(){var e=document.querySelector("aside.book-menu nav");addEventListener("beforeunload",function(){localStorage.setItem("menu.scrollTop",e.scrollTop)}),e.scrollTop=localStorage.getItem("menu.scrollTop")})()</script>
+
+
+ 
+    </aside>
+
+    <div class="book-page">
+      <header class="book-header">
+        
+  <div class="flex align-center justify-between">
+  <label for="menu-control">
+    <img src="/flink/flink-cdc-docs-master/svg/menu.svg" class="book-icon" alt="Menu" />
+  </label>
+
+  <strong>TiDB</strong>
+
+  <label for="toc-control">
+    
+    <img src="/flink/flink-cdc-docs-master/svg/toc.svg" class="book-icon" alt="Table of Contents" />
+    
+  </label>
+</div>
+
+
+  
+  <aside class="hidden clearfix">
+    
+  
+
+<nav id="TableOfContents"><h3>On This Page <button class="toc" onclick="collapseToc()"><i class="fa fa-compress" aria-hidden="true"></i></button></h3>
+  <ul>
+    <li><a href="#dependencies">Dependencies</a>
+      <ul>
+        <li><a href="#maven-dependency">Maven dependency</a></li>
+        <li><a href="#sql-client-jar">SQL Client JAR</a></li>
+      </ul>
+    </li>
+    <li><a href="#how-to-create-a-tidb-cdc-table">How to create a TiDB CDC table</a></li>
+    <li><a href="#connector-options">Connector Options</a></li>
+    <li><a href="#available-metadata">Available Metadata</a></li>
+    <li><a href="#features">Features</a>
+      <ul>
+        <li><a href="#exactly-once-processing">Exactly-Once Processing</a></li>
+        <li><a href="#startup-reading-position">Startup Reading Position</a></li>
+        <li><a href="#multi-thread-reading">Multi Thread Reading</a></li>
+        <li><a href="#datastream-source">DataStream Source</a></li>
+        <li><a href="#datastream-source-1">DataStream Source</a></li>
+      </ul>
+    </li>
+    <li><a href="#data-type-mapping">Data Type Mapping</a></li>
+  </ul>
+</nav>
+
+
+  </aside>
+  
+ 
+      </header>
+
+      
+
+
+
+
+<article class="markdown">
+    <blockquote style="border-color:#f66">
+        This documentation is for an unreleased version of Apache Flink CDC. We recommend you use the latest <a href="https://ci.apache.org/projects/flink/flink-cdc-docs-stable/">stable version</a>.
+    </blockquote>
+</article>
+
+
+
+      
+  <article class="markdown"><!--
+Licensed to the Apache Software Foundation (ASF) under one
+or more contributor license agreements.  See the NOTICE file
+distributed with this work for additional information
+regarding copyright ownership.  The ASF licenses this file
+to you under the Apache License, Version 2.0 (the
+"License"); you may not use this file except in compliance
+with the License.  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing,
+software distributed under the License is distributed on an
+"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, either express or implied.  See the License for the
+specific language governing permissions and limitations
+under the License.
+-->
+<h1 id="tidb-cdc-connector">
+  TiDB CDC Connector
+  <a class="anchor" href="#tidb-cdc-connector">#</a>
+</h1>
+<p>The TiDB CDC connector allows for reading snapshot data and incremental data from TiDB database. This document describes how to setup the TiDB CDC connector to run SQL queries against TiDB databases.</p>
+<h2 id="dependencies">
+  Dependencies
+  <a class="anchor" href="#dependencies">#</a>
+</h2>
+<p>In order to setup the TiDB CDC connector, the following table provides dependency information for both projects using a build automation tool (such as Maven or SBT) and SQL Client with SQL JAR bundles.</p>
+<h3 id="maven-dependency">
+  Maven dependency
+  <a class="anchor" href="#maven-dependency">#</a>
+</h3>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div id="6f0fe0459281791acd8f53c2719663bf" onclick="selectTextAndCopy('6f0fe0459281791acd8f53c2719663bf')"class="highlight"><pre class="chroma"><code class="language-xml" data-lang="xml"><span class="nt">&ltdependency&gt</span>
+    <span class="nt">&ltgroupId&gt</span>org.apache.flink<span class="nt">&lt/groupId&gt</span>
+    <span class="nt">&ltartifactId&gt</span>flink-connector-tidb-cdc<span class="nt">&lt/artifactId&gt</span>
+    <span class="nt">&ltversion&gt</span>3.2-SNAPSHOT<span class="nt">&lt/version&gt</span>
+<span class="nt">&lt/dependency&gt</span></code></pre></div>
+<div class="book-hint info" style="text-align:center;display:none" copyable="flink-module" copyattribute="6f0fe0459281791acd8f53c2719663bf">
+  Copied to clipboard!
+</div> 
+
+<h3 id="sql-client-jar">
+  SQL Client JAR
+  <a class="anchor" href="#sql-client-jar">#</a>
+</h3>
+<p><code>Download link is available only for stable releases.</code></p>
+<p>Download <a href="https://repo1.maven.org/maven2/com/ververica/flink-sql-connector-tidb-cdc/3.0.1/flink-sql-connector-tidb-cdc-3.0.1.jar">flink-sql-connector-tidb-cdc-3.0.1.jar</a> and put it under <code>&lt;FLINK_HOME&gt;/lib/</code>.</p>
+<p><strong>Note:</strong> Refer to <a href="https://mvnrepository.com/artifact/com.ververica/flink-sql-connector-tidb-cdc">flink-sql-connector-tidb-cdc</a>, more released versions will be available in the Maven central warehouse.</p>
+<h2 id="how-to-create-a-tidb-cdc-table">
+  How to create a TiDB CDC table
+  <a class="anchor" href="#how-to-create-a-tidb-cdc-table">#</a>
+</h2>
+<p>The TiDB CDC table can be defined as following:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="cl"><span class="c1">-- checkpoint every 3000 milliseconds                       
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="n">Flink</span><span class="w"> </span><span class="k">SQL</span><span class="o">&gt;</span><span class="w"> </span><span class="k">SET</span><span class="w"> </span><span class="s1">&#39;execution.checkpointing.interval&#39;</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;3s&#39;</span><span class="p">;</span><span class="w">   
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="c1">-- register a TiDB table &#39;orders&#39; in Flink SQL
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="n">Flink</span><span class="w"> </span><span class="k">SQL</span><span class="o">&gt;</span><span class="w"> </span><span class="k">CREATE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">orders</span><span class="w"> </span><span class="p">(</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">     </span><span class="n">order_id</span><span class="w"> </span><span class="nb">INT</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">     </span><span class="n">order_date</span><span class="w"> </span><span class="k">TIMESTAMP</span><span class="p">(</span><span class="mi">3</span><span class="p">),</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">     </span><span class="n">customer_name</span><span class="w"> </span><span class="n">STRING</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">     </span><span class="n">price</span><span class="w"> </span><span class="nb">DECIMAL</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="w"> </span><span class="mi">5</span><span class="p">),</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">     </span><span class="n">product_id</span><span class="w"> </span><span class="nb">INT</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">     </span><span class="n">order_status</span><span class="w"> </span><span class="nb">BOOLEAN</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">     </span><span class="k">PRIMARY</span><span class="w"> </span><span class="k">KEY</span><span class="p">(</span><span class="n">order_id</span><span class="p">)</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="n">ENFORCED</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">     </span><span class="p">)</span><span class="w"> </span><span class="k">WITH</span><span class="w"> </span><span class="p">(</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">     </span><span class="s1">&#39;connector&#39;</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;tidb-cdc&#39;</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">     </span><span class="s1">&#39;tikv.grpc.timeout_in_ms&#39;</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;20000&#39;</span><span class="p">,</span><span class="w"> 
+</span></span></span><span class="line"><span class="cl"><span class="w">     </span><span class="s1">&#39;pd-addresses&#39;</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;localhost:2379&#39;</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">     </span><span class="s1">&#39;database-name&#39;</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;mydb&#39;</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">     </span><span class="s1">&#39;table-name&#39;</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;orders&#39;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="c1">-- read snapshot and binlogs from orders table
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="n">Flink</span><span class="w"> </span><span class="k">SQL</span><span class="o">&gt;</span><span class="w"> </span><span class="k">SELECT</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="n">orders</span><span class="p">;</span><span class="w">
+</span></span></span></code></pre></div><h2 id="connector-options">
+  Connector Options
+  <a class="anchor" href="#connector-options">#</a>
+</h2>
+<div class="highlight">
+<table class="colwidths-auto docutils">
+    <thead>
+      <tr>
+        <th class="text-left" style="width: 10%">Option</th>
+        <th class="text-left" style="width: 8%">Required</th>
+        <th class="text-left" style="width: 7%">Default</th>
+        <th class="text-left" style="width: 10%">Type</th>
+        <th class="text-left" style="width: 65%">Description</th>
+      </tr>
+    </thead>
+    <tbody>
+    <tr>
+      <td>connector</td>
+      <td>required</td>
+      <td style="word-wrap: break-word;">(none)</td>
+      <td>String</td>
+      <td>Specify what connector to use, here should be <code>'tidb-cdc'</code>.</td>
+    </tr>
+    <tr>
+      <td>database-name</td>
+      <td>required</td>
+      <td style="word-wrap: break-word;">(none)</td>
+      <td>String</td>
+      <td>Database name of the TiDB server to monitor.</td>
+    </tr> 
+    <tr>
+      <td>table-name</td>
+      <td>required</td>
+      <td style="word-wrap: break-word;">(none)</td>
+      <td>String</td>
+      <td>Table name of the TiDB database to monitor.</td>
+    </tr>
+    <tr>
+      <td>scan.startup.mode</td>
+      <td>optional</td>
+      <td style="word-wrap: break-word;">initial</td>
+      <td>String</td>
+      <td>Optional startup mode for TiDB CDC consumer, valid enumerations are "initial" and "latest-offset".</td>
+    </tr>
+    <tr>
+      <td>pd-addresses</td>
+      <td>required</td>
+      <td style="word-wrap: break-word;">(none)</td>
+      <td>String</td>
+      <td>TiKV cluster's PD address.</td>
+    </tr>
+     <tr>
+      <td>host-mapping</td>
+      <td>optional</td>
+      <td style="word-wrap: break-word;">(none)</td>
+      <td>String</td>
+      <td>TiKV cluster's host-mapping used to configure public IP and intranet IP mapping. When the TiKV cluster is running on the intranet, you can map a set of intranet IPs to public IPs for an outside Flink cluster to access. The format is {Intranet IP1}:{Public IP1};{Intranet IP2}:{Public IP2}, e.g. 192.168.0.2:8.8.8.8;192.168.0.3:9.9.9.9.</td>
+    </tr>
+    <tr>
+      <td>tikv.grpc.timeout_in_ms</td>
+      <td>optional</td>
+      <td style="word-wrap: break-word;">(none)</td>
+      <td>Long</td>
+      <td>TiKV GRPC timeout in ms.</td>
+    </tr>
+    <tr>
+      <td>tikv.grpc.scan_timeout_in_ms</td>
+      <td>optional</td>
+      <td style="word-wrap: break-word;">(none)</td>
+      <td>Long</td>
+      <td>TiKV GRPC scan timeout in ms.</td>
+    </tr>
+    <tr>
+      <td>tikv.batch_get_concurrency</td>
+      <td>optional</td>
+      <td style="word-wrap: break-word;">20</td>
+      <td>Integer</td>
+      <td>TiKV GRPC batch get concurrency.</td>
+    </tr>
+    <tr>
+      <td>tikv.*</td>
+      <td>optional</td>
+      <td style="word-wrap: break-word;">(none)</td>
+      <td>String</td>
+      <td>Pass-through TiDB client's properties.</td> 
+    </tr>
+    </tbody>
+</table>
+</div>
+<h2 id="available-metadata">
+  Available Metadata
+  <a class="anchor" href="#available-metadata">#</a>
+</h2>
+<p>The following format metadata can be exposed as read-only (VIRTUAL) columns in a table definition.</p>
+<table class="colwidths-auto docutils">
+  <thead>
+     <tr>
+       <th class="text-left" style="width: 15%">Key</th>
+       <th class="text-left" style="width: 30%">DataType</th>
+       <th class="text-left" style="width: 55%">Description</th>
+     </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>table_name</td>
+      <td>STRING NOT NULL</td>
+      <td>Name of the table that contain the row.</td>
+    </tr>
+    <tr>
+      <td>database_name</td>
+      <td>STRING NOT NULL</td>
+      <td>Name of the database that contain the row.</td>
+    </tr>
+    <tr>
+      <td>op_ts</td>
+      <td>TIMESTAMP_LTZ(3) NOT NULL</td>
+      <td>It indicates the time that the change was made in the database. <br>If the record is read from snapshot of the table instead of the binlog, the value is always 0.</td>
+    </tr>
+  </tbody>
+</table>
+<p>The extended CREATE TABLE example demonstrates the syntax for exposing these metadata fields:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="cl"><span class="k">CREATE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">products</span><span class="w"> </span><span class="p">(</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">db_name</span><span class="w"> </span><span class="n">STRING</span><span class="w"> </span><span class="n">METADATA</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="s1">&#39;database_name&#39;</span><span class="w"> </span><span class="n">VIRTUAL</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">table_name</span><span class="w"> </span><span class="n">STRING</span><span class="w"> </span><span class="n">METADATA</span><span class="w">  </span><span class="k">FROM</span><span class="w"> </span><span class="s1">&#39;table_name&#39;</span><span class="w"> </span><span class="n">VIRTUAL</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">operation_ts</span><span class="w"> </span><span class="n">TIMESTAMP_LTZ</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="w"> </span><span class="n">METADATA</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="s1">&#39;op_ts&#39;</span><span class="w"> </span><span class="n">VIRTUAL</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">order_id</span><span class="w"> </span><span class="nb">INT</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">order_date</span><span class="w"> </span><span class="k">TIMESTAMP</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">customer_name</span><span class="w"> </span><span class="n">STRING</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">price</span><span class="w"> </span><span class="nb">DECIMAL</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="w"> </span><span class="mi">5</span><span class="p">),</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">product_id</span><span class="w"> </span><span class="nb">INT</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">order_status</span><span class="w"> </span><span class="nb">BOOLEAN</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">PRIMARY</span><span class="w"> </span><span class="k">KEY</span><span class="p">(</span><span class="n">order_id</span><span class="p">)</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="n">ENFORCED</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">)</span><span class="w"> </span><span class="k">WITH</span><span class="w"> </span><span class="p">(</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s1">&#39;connector&#39;</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;tidb-cdc&#39;</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s1">&#39;tikv.grpc.timeout_in_ms&#39;</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;20000&#39;</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s1">&#39;pd-addresses&#39;</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;localhost:2379&#39;</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s1">&#39;database-name&#39;</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;mydb&#39;</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s1">&#39;table-name&#39;</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;orders&#39;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">);</span><span class="w">
+</span></span></span></code></pre></div><h2 id="features">
+  Features
+  <a class="anchor" href="#features">#</a>
+</h2>
+<h3 id="exactly-once-processing">
+  Exactly-Once Processing
+  <a class="anchor" href="#exactly-once-processing">#</a>
+</h3>
+<p>The TiDB CDC connector is a Flink Source connector which will read database snapshot first and then continues to read change events with <strong>exactly-once processing</strong> even failures happen.</p>
+<h3 id="startup-reading-position">
+  Startup Reading Position
+  <a class="anchor" href="#startup-reading-position">#</a>
+</h3>
+<p>The config option <code>scan.startup.mode</code> specifies the startup mode for TiDB CDC consumer. The valid enumerations are:</p>
+<ul>
+<li><code>initial</code> (default): Takes a snapshot of structure and data of captured tables; useful if you want fetch a complete representation of the data from the captured tables.</li>
+<li><code>latest-offset</code>: Takes a snapshot of the structure of captured tables only; useful if only changes happening from now onwards should be fetched.</li>
+</ul>
+<h3 id="multi-thread-reading">
+  Multi Thread Reading
+  <a class="anchor" href="#multi-thread-reading">#</a>
+</h3>
+<p>The TiDB CDC source can work in parallel reading, because there is multiple tasks can receive change events.</p>
+<h3 id="datastream-source">
+  DataStream Source
+  <a class="anchor" href="#datastream-source">#</a>
+</h3>
+<p>The TiDB CDC connector can also be a DataStream source. You can create a SourceFunction as the following shows:</p>
+<h3 id="datastream-source-1">
+  DataStream Source
+  <a class="anchor" href="#datastream-source-1">#</a>
+</h3>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kn">import</span><span class="w"> </span><span class="nn">org.apache.flink.api.common.typeinfo.BasicTypeInfo</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kn">import</span><span class="w"> </span><span class="nn">org.apache.flink.api.common.typeinfo.TypeInformation</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kn">import</span><span class="w"> </span><span class="nn">org.apache.flink.streaming.api.environment.StreamExecutionEnvironment</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kn">import</span><span class="w"> </span><span class="nn">org.apache.flink.streaming.api.functions.source.SourceFunction</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kn">import</span><span class="w"> </span><span class="nn">org.apache.flink.util.Collector</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kn">import</span><span class="w"> </span><span class="nn">org.apache.flink.cdc.connectors.tidb.TDBSourceOptions</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kn">import</span><span class="w"> </span><span class="nn">org.apache.flink.cdc.connectors.tidb.TiDBSource</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kn">import</span><span class="w"> </span><span class="nn">org.apache.flink.cdc.connectors.tidb.TiKVChangeEventDeserializationSchema</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kn">import</span><span class="w"> </span><span class="nn">org.apache.flink.cdc.connectors.tidb.TiKVSnapshotEventDeserializationSchema</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kn">import</span><span class="w"> </span><span class="nn">org.tikv.kvproto.Cdcpb</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kn">import</span><span class="w"> </span><span class="nn">org.tikv.kvproto.Kvrpcpb</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kn">import</span><span class="w"> </span><span class="nn">java.util.HashMap</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kd">public</span><span class="w"> </span><span class="kd">class</span> <span class="nc">TiDBSourceExample</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="kd">static</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">main</span><span class="p">(</span><span class="n">String</span><span class="o">[]</span><span class="w"> </span><span class="n">args</span><span class="p">)</span><span class="w"> </span><span class="kd">throws</span><span class="w"> </span><span class="n">Exception</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">SourceFunction</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;</span><span class="w"> </span><span class="n">tidbSource</span><span class="w"> </span><span class="o">=</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">TiDBSource</span><span class="p">.</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;</span><span class="n">builder</span><span class="p">()</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="p">.</span><span class="na">database</span><span class="p">(</span><span class="s">&#34;mydb&#34;</span><span class="p">)</span><span class="w"> </span><span class="c1">// set captured database</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="p">.</span><span class="na">tableName</span><span class="p">(</span><span class="s">&#34;products&#34;</span><span class="p">)</span><span class="w"> </span><span class="c1">// set captured table</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="p">.</span><span class="na">tiConf</span><span class="p">(</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                    </span><span class="n">TDBSourceOptions</span><span class="p">.</span><span class="na">getTiConfiguration</span><span class="p">(</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                        </span><span class="s">&#34;localhost:2399&#34;</span><span class="p">,</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">HashMap</span><span class="o">&lt;&gt;</span><span class="p">()))</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="p">.</span><span class="na">snapshotEventDeserializer</span><span class="p">(</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                    </span><span class="k">new</span><span class="w"> </span><span class="n">TiKVSnapshotEventDeserializationSchema</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                        </span><span class="nd">@Override</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                        </span><span class="kd">public</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">deserialize</span><span class="p">(</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                            </span><span class="n">Kvrpcpb</span><span class="p">.</span><span class="na">KvPair</span><span class="w"> </span><span class="n">record</span><span class="p">,</span><span class="w"> </span><span class="n">Collector</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;</span><span class="w"> </span><span class="n">out</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                            </span><span class="kd">throws</span><span class="w"> </span><span class="n">Exception</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                            </span><span class="n">out</span><span class="p">.</span><span class="na">collect</span><span class="p">(</span><span class="n">record</span><span class="p">.</span><span class="na">toString</span><span class="p">());</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                        </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                        </span><span class="nd">@Override</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                        </span><span class="kd">public</span><span class="w"> </span><span class="n">TypeInformation</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;</span><span class="w"> </span><span class="nf">getProducedType</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                            </span><span class="k">return</span><span class="w"> </span><span class="n">BasicTypeInfo</span><span class="p">.</span><span class="na">STRING_TYPE_INFO</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                        </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                    </span><span class="p">})</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="p">.</span><span class="na">changeEventDeserializer</span><span class="p">(</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                    </span><span class="k">new</span><span class="w"> </span><span class="n">TiKVChangeEventDeserializationSchema</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                        </span><span class="nd">@Override</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                        </span><span class="kd">public</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">deserialize</span><span class="p">(</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                            </span><span class="n">Cdcpb</span><span class="p">.</span><span class="na">Event</span><span class="p">.</span><span class="na">Row</span><span class="w"> </span><span class="n">record</span><span class="p">,</span><span class="w"> </span><span class="n">Collector</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;</span><span class="w"> </span><span class="n">out</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                            </span><span class="kd">throws</span><span class="w"> </span><span class="n">Exception</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                            </span><span class="n">out</span><span class="p">.</span><span class="na">collect</span><span class="p">(</span><span class="n">record</span><span class="p">.</span><span class="na">toString</span><span class="p">());</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                        </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                        </span><span class="nd">@Override</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                        </span><span class="kd">public</span><span class="w"> </span><span class="n">TypeInformation</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;</span><span class="w"> </span><span class="nf">getProducedType</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                            </span><span class="k">return</span><span class="w"> </span><span class="n">BasicTypeInfo</span><span class="p">.</span><span class="na">STRING_TYPE_INFO</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                        </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                    </span><span class="p">})</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="p">.</span><span class="na">build</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">StreamExecutionEnvironment</span><span class="w"> </span><span class="n">env</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">StreamExecutionEnvironment</span><span class="p">.</span><span class="na">getExecutionEnvironment</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="c1">// enable checkpoint</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">env</span><span class="p">.</span><span class="na">enableCheckpointing</span><span class="p">(</span><span class="n">3000</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">env</span><span class="p">.</span><span class="na">addSource</span><span class="p">(</span><span class="n">tidbSource</span><span class="p">).</span><span class="na">print</span><span class="p">().</span><span class="na">setParallelism</span><span class="p">(</span><span class="n">1</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">env</span><span class="p">.</span><span class="na">execute</span><span class="p">(</span><span class="s">&#34;Print TiDB Snapshot + Binlog&#34;</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></div><h2 id="data-type-mapping">
+  Data Type Mapping
+  <a class="anchor" href="#data-type-mapping">#</a>
+</h2>
+<div class="wy-table-responsive">
+<table class="colwidths-auto docutils">
+    <thead>
+      <tr>
+        <th class="text-left">TiDB type<a href="https://dev.tidb.com/doc/man/8.0/en/data-types.html"></a></th>
+        <th class="text-left">Flink SQL type<a href="{% link dev/table/types.md %}"></a></th>
+        <th class="text-left">NOTE</th>
+      </tr>
+    </thead>
+    <tbody>
+    <tr>
+      <td>TINYINT</td>
+      <td>TINYINT</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>
+        SMALLINT<br>
+        TINYINT UNSIGNED</td>
+      <td>SMALLINT</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>
+        INT<br>
+        MEDIUMINT<br>
+        SMALLINT UNSIGNED</td>
+      <td>INT</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>
+        BIGINT<br>
+        INT UNSIGNED</td>
+      <td>BIGINT</td>
+      <td></td>
+    </tr>
+   <tr>
+      <td>BIGINT UNSIGNED</td>
+      <td>DECIMAL(20, 0)</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>
+        FLOAT<br>
+        </td>
+      <td>FLOAT</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>
+        REAL<br>
+        DOUBLE
+      </td>
+      <td>DOUBLE</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>
+        NUMERIC(p, s)<br>
+        DECIMAL(p, s)<br>
+        where p <= 38<br>
+      </td>
+      <td>DECIMAL(p, s)</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>
+        NUMERIC(p, s)<br>
+        DECIMAL(p, s)<br>
+        where 38 < p <= 65<br>
+      </td>
+      <td>STRING</td>
+      <td>The precision for DECIMAL data type is up to 65 in TiDB, but the precision for DECIMAL is limited to 38 in Flink.
+  So if you define a decimal column whose precision is greater than 38, you should map it to STRING to avoid precision loss.</td>
+    </tr>
+    <tr>
+      <td>
+        BOOLEAN<br>
+        TINYINT(1)<br>
+        BIT(1)
+        </td>
+      <td>BOOLEAN</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>DATE</td>
+      <td>DATE</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>TIME [(p)]</td>
+      <td>TIME [(p)]</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>TIMESTAMP [(p)]</td>
+      <td>TIMESTAMP_LTZ [(p)]</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>DATETIME [(p)]</td>
+      <td>TIMESTAMP [(p)]
+      </td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>
+        CHAR(n)
+      </td>
+      <td>CHAR(n)</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>
+        VARCHAR(n)
+      </td>
+      <td>VARCHAR(n)</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>
+        BIT(n)
+      </td>
+      <td>BINARY(⌈n/8⌉)</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>
+        BINARY(n)
+      </td>
+      <td>BINARY(n)</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>
+        TINYTEXT<br>
+        TEXT<br>
+        MEDIUMTEXT<br>
+        LONGTEXT<br>
+      </td>
+      <td>STRING</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>
+        TINYBLOB<br>
+        BLOB<br>
+        MEDIUMBLOB<br>
+        LONGBLOB<br>
+      </td>
+      <td>BYTES</td>
+      <td>Currently, for BLOB data type in TiDB, only the blob whose length isn't greater than 2,147,483,647(2 ** 31 - 1) is supported. </td>
+    </tr>
+    <tr>
+      <td>
+        YEAR
+      </td>
+      <td>INT</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>
+        ENUM
+      </td>
+      <td>STRING</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>
+        JSON
+      </td>
+      <td>STRING</td>
+      <td>The JSON data type  will be converted into STRING with JSON format in Flink.</td>
+    </tr>
+    <tr>
+      <td>
+        SET
+      </td>
+      <td>ARRAY&lt;STRING&gt;</td>
+      <td>As the SET data type in TiDB is a string object that can have zero or more values, 
+          it should always be mapped to an array of string
+      </td>
+    </tr>
+    </tbody>
+</table>
+</div>
+
+<p><a href="#top" class="top pull-right"><i class="fas fa-triangle"></i> Back to top</a></p>
+
+
+</article>
+ 
+      
+
+      <footer class="book-footer">
+        
+  
+
+
+
+
+	
+
+<a href="//github.com/apache/flink-cdc/edit/master/docs/content.zh/docs/connectors/flink-sources/tidb-cdc.md" style="color:black"><i class="fa fa-edit fa-fw"></i>Edit This Page</a>
+
+
+ 
+        
+      </footer>
+
+      
+  
+  <div class="book-comments">
+
+</div>
+  
+ 
+
+      <label for="menu-control" class="hidden book-menu-overlay"></label>
+    </div>
+
+    
+    <aside class="book-toc">
+      
+  
+
+<nav id="TableOfContents"><h3>On This Page <button class="toc" onclick="collapseToc()"><i class="fa fa-compress" aria-hidden="true"></i></button></h3>
+  <ul>
+    <li><a href="#dependencies">Dependencies</a>
+      <ul>
+        <li><a href="#maven-dependency">Maven dependency</a></li>
+        <li><a href="#sql-client-jar">SQL Client JAR</a></li>
+      </ul>
+    </li>
+    <li><a href="#how-to-create-a-tidb-cdc-table">How to create a TiDB CDC table</a></li>
+    <li><a href="#connector-options">Connector Options</a></li>
+    <li><a href="#available-metadata">Available Metadata</a></li>
+    <li><a href="#features">Features</a>
+      <ul>
+        <li><a href="#exactly-once-processing">Exactly-Once Processing</a></li>
+        <li><a href="#startup-reading-position">Startup Reading Position</a></li>
+        <li><a href="#multi-thread-reading">Multi Thread Reading</a></li>
+        <li><a href="#datastream-source">DataStream Source</a></li>
+        <li><a href="#datastream-source-1">DataStream Source</a></li>
+      </ul>
+    </li>
+    <li><a href="#data-type-mapping">Data Type Mapping</a></li>
+  </ul>
+</nav>
+
+ 
+    </aside>
+    <aside class="expand-toc">
+      <button class="toc" onclick="expandToc()">
+        <i class="fa fa-expand" aria-hidden="true"></i>
+      </button>
+    </aside>
+    
+  </main>
+
+  
+</body>
+
+</html>
+
+
+
+
+
+
+
+
+
+
+
+

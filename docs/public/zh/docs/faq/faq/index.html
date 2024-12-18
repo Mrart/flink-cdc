@@ -1,0 +1,1514 @@
+
+<!DOCTYPE html>
+<html lang="zh" dir=ZgotmplZ>
+
+<head><script src="/flink/flink-cdc-docs-master/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=flink/flink-cdc-docs-master/livereload" data-no-instant defer></script>
+  <meta name="generator" content="Hugo 0.124.1">
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="通用FAQ # Q1: 为啥没法下载 flink-sql-connector-mysql-cdc-2.2-SNAPSHOT.jar ，maven 仓库为啥没有 xxx-SNAPSHOT 依赖？ # 和主流的 maven 项目版本管理相同，xxx-SNAPSHOT 版本都是对应开发分支的代码，需要用户自己下载源码并编译对应的jar， 用户应该使用已经 release 过的版本，比如 flink-sql-connector-mysql-cdc-2.1.0.jar，release 过的版本maven中心仓库才会有。
+Q2: 什么时候使用 flink-sql-connector-xxx.jar，什么时候使用 flink-connector-xxx.jar，两者有啥区别? # Flink CDC 项目中各个connector的依赖管理和Flink 项目中 connector 保持一致。flink-sql-connector-xx 是胖包，除了connector的代码外，还把 connector 依赖的所有三方包 shade 后打入，提供给 SQL 作业使用，用户只需要在 lib目录下添加该胖包即可。flink-connector-xx 只有该 connector 的代码，不包含其所需的依赖，提供 datastream 作业使用，用户需要自己管理所需的三方包依赖，有冲突的依赖需要自己做 exclude, shade 处理。
+Q3: 为啥把包名从 com.alibaba.ververica 改成 org.apache.flink? 为啥 maven 仓库里找不到 2.x 版本？ # Flink CDC 项目 从 2.0.0 版本将 group id 从com.alibaba.ververica 改成 com.ververica, 自 3.">
+<meta name="theme-color" content="#FFFFFF"><meta property="og:title" content="通用FAQ" />
+<meta property="og:description" content="通用FAQ # Q1: 为啥没法下载 flink-sql-connector-mysql-cdc-2.2-SNAPSHOT.jar ，maven 仓库为啥没有 xxx-SNAPSHOT 依赖？ # 和主流的 maven 项目版本管理相同，xxx-SNAPSHOT 版本都是对应开发分支的代码，需要用户自己下载源码并编译对应的jar， 用户应该使用已经 release 过的版本，比如 flink-sql-connector-mysql-cdc-2.1.0.jar，release 过的版本maven中心仓库才会有。
+Q2: 什么时候使用 flink-sql-connector-xxx.jar，什么时候使用 flink-connector-xxx.jar，两者有啥区别? # Flink CDC 项目中各个connector的依赖管理和Flink 项目中 connector 保持一致。flink-sql-connector-xx 是胖包，除了connector的代码外，还把 connector 依赖的所有三方包 shade 后打入，提供给 SQL 作业使用，用户只需要在 lib目录下添加该胖包即可。flink-connector-xx 只有该 connector 的代码，不包含其所需的依赖，提供 datastream 作业使用，用户需要自己管理所需的三方包依赖，有冲突的依赖需要自己做 exclude, shade 处理。
+Q3: 为啥把包名从 com.alibaba.ververica 改成 org.apache.flink? 为啥 maven 仓库里找不到 2.x 版本？ # Flink CDC 项目 从 2.0.0 版本将 group id 从com.alibaba.ververica 改成 com.ververica, 自 3." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/faq/faq/" /><meta property="article:section" content="docs" />
+
+
+<title>通用FAQ | Apache Flink CDC</title>
+<link rel="manifest" href="/flink/flink-cdc-docs-master/manifest.json">
+<link rel="icon" href="/flink/flink-cdc-docs-master/favicon.png" type="image/x-icon">
+<link rel="alternate" hreflang="en" href="//localhost:1313/flink/flink-cdc-docs-master/docs/faq/faq/" title="Frequently Asked Questions">
+
+<link rel="stylesheet" href="/flink/flink-cdc-docs-master/book.min.59471f109f689a198d44e845028ea35c1b638516a64e46df5101f6f6537d611e.css" integrity="sha256-WUcfEJ9omhmNROhFAo6jXBtjhRamTkbfUQH29lN9YR4=">
+<script defer src="/flink/flink-cdc-docs-master/zh.search.min.f05f9a91a4965726eddeeef36688c3cc1be81e20847d75375191fa5968377892.js" integrity="sha256-8F&#43;akaSWVybt3u7zZojDzBvoHiCEfXU3UZH6WWg3eJI="></script>
+<!--
+Made with Book Theme
+https://github.com/alex-shpak/hugo-book
+-->
+
+  
+
+<link rel="stylesheet" type="text/css" href="//localhost:1313/flink/flink-cdc-docs-master//font-awesome/css/font-awesome.min.css">
+<script src="//localhost:1313/flink/flink-cdc-docs-master//js/anchor.min.js"></script>
+<script src="//localhost:1313/flink/flink-cdc-docs-master//js/flink.js"></script>
+
+
+  
+  <script>
+    var _paq = window._paq = window._paq || [];
+     
+     
+    _paq.push(['disableCookies']);
+     
+    _paq.push(["setDomains", ["*.flink.apache.org","*.nightlies.apache.org/flink"]]);
+    _paq.push(['trackPageView']);
+    _paq.push(['enableLinkTracking']);
+    (function() {
+      var u="//matomo.privacy.apache.org/";
+      _paq.push(['setTrackerUrl', u+'matomo.php']);
+      _paq.push(['setSiteId', '1']);
+      var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
+      g.async=true; g.src=u+'matomo.js'; s.parentNode.insertBefore(g,s);
+    })();
+  </script>
+  
+</head>
+
+<body dir=ZgotmplZ>
+  <input type="checkbox" class="hidden toggle" id="menu-control" />
+  <input type="checkbox" class="hidden toggle" id="toc-control" />
+  <main class="container flex">
+    <aside class="book-menu">
+      
+  
+
+<nav>
+
+
+<a id="logo" href="//localhost:1313/flink/flink-cdc-docs-master//zh">
+    <img width="70%" src="//localhost:1313/flink/flink-cdc-docs-master//navbar-brand-logo.jpg">
+</a>
+<p style="text-align:right">v3.2-SNAPSHOT</p>
+
+<div class="book-search">
+  <input type="text" id="book-search-input" placeholder="搜索" aria-label="搜索" maxlength="64" data-hotkeys="s/" />
+  <div class="book-search-spinner hidden"></div>
+  <ul id="book-search-results"></ul>
+</div>
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+  <ul>
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <input type="checkbox" id="section-6200e334011b863c650806533c1e934d" class="toggle"  />
+    <label for="section-6200e334011b863c650806533c1e934d" class="flex justify-between"><div style="font-weight:450;margin-bottom:0.5em">入门指南</div><span>▾</span>
+    </label>
+  
+
+          
+  <ul>
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/get-started/introduction/" class="">项目介绍</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <input type="checkbox" id="section-65126ba91b4ad451d64ae3bb634a3d69" class="toggle"  />
+    <label for="section-65126ba91b4ad451d64ae3bb634a3d69" class="flex justify-between">快速开始<span>▾</span>
+    </label>
+  
+
+          
+  <ul>
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/get-started/quickstart/mysql-to-doris/" class="">MySQL 同步到 Doris</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/get-started/quickstart/mysql-to-starrocks/" class="">MySQL 同步到 StarRocks</a>
+  
+
+        </li>
+      
+    
+  </ul>
+
+        </li>
+      
+    
+  </ul>
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <input type="checkbox" id="section-9368478381278f3e55d1d748555c70f6" class="toggle"  />
+    <label for="section-9368478381278f3e55d1d748555c70f6" class="flex justify-between"><div style="font-weight:450;margin-bottom:0.5em">核心概念</div><span>▾</span>
+    </label>
+  
+
+          
+  <ul>
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/core-concept/data-pipeline/" class="">Data Pipeline</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/core-concept/data-source/" class="">Data Source</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/core-concept/data-sink/" class="">Data Sink</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/core-concept/table-id/" class="">Table ID</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/core-concept/transform/" class="">Transform</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/core-concept/route/" class="">Route</a>
+  
+
+        </li>
+      
+    
+  </ul>
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <input type="checkbox" id="section-cca35f842c08f0e2b4a94e3d03b79c9b" class="toggle"  />
+    <label for="section-cca35f842c08f0e2b4a94e3d03b79c9b" class="flex justify-between"><div style="font-weight:450;margin-bottom:0.5em">连接器</div><span>▾</span>
+    </label>
+  
+
+          
+  <ul>
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <input type="checkbox" id="section-4436a0c8f6839ca41c460c9dd3348724" class="toggle"  />
+    <label for="section-4436a0c8f6839ca41c460c9dd3348724" class="flex justify-between">Pipeline 连接器<span>▾</span>
+    </label>
+  
+
+          
+  <ul>
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/pipeline-connectors/overview/" class="">概览</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/pipeline-connectors/mysql/" class="">MySQL</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/pipeline-connectors/paimon/" class="">Paimon</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/pipeline-connectors/kafka/" class="">Kafka</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/pipeline-connectors/doris/" class="">Doris</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/pipeline-connectors/starrocks/" class="">StarRocks</a>
+  
+
+        </li>
+      
+    
+  </ul>
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <input type="checkbox" id="section-c0a0971d8f495dc42589f86cef138818" class="toggle"  />
+    <label for="section-c0a0971d8f495dc42589f86cef138818" class="flex justify-between">Flink Source 连接器<span>▾</span>
+    </label>
+  
+
+          
+  <ul>
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/flink-sources/overview/" class="">概览</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/flink-sources/mysql-cdc/" class="">MySQL</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/flink-sources/oracle-cdc/" class="">Oracle</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/flink-sources/sqlserver-cdc/" class="">SQL Server</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/flink-sources/postgres-cdc/" class="">Postgres</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/flink-sources/mongodb-cdc/" class="">MongoDB</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/flink-sources/db2-cdc/" class="">Db2</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/flink-sources/tidb-cdc/" class="">TiDB</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/flink-sources/oceanbase-cdc/" class="">OceanBase</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/flink-sources/vitess-cdc/" class="">Vitess</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/flink-sources/datastream-api-package-guidance/" class="">DataStream API 打包指南</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <input type="checkbox" id="section-c23e2f7ee1f6d87942cc0f2b79648372" class="toggle"  />
+    <label for="section-c23e2f7ee1f6d87942cc0f2b79648372" class="flex justify-between">Flink CDC Sources 教程<span>▾</span>
+    </label>
+  
+
+          
+  <ul>
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/flink-sources/tutorials/mongodb-tutorial/" class="">MongoDB 教程</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/flink-sources/tutorials/db2-tutorial/" class="">Db2 教程</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/flink-sources/tutorials/oceanbase-tutorial/" class="">OceanBase 教程</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/flink-sources/tutorials/oracle-tutorial/" class="">Oracle 教程</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/flink-sources/tutorials/polardbx-tutorial/" class="">PolarDB-X 教程</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/flink-sources/tutorials/sqlserver-tutorial/" class="">SqlServer 教程</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/flink-sources/tutorials/tidb-tutorial/" class="">TiDB 教程</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/flink-sources/tutorials/build-real-time-data-lake-tutorial/" class="">使用 Flink CDC 构建实时数据湖</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/flink-sources/tutorials/build-streaming-etl-tutorial/" class="">使用 Flink CDC 构建 Streaming ETL</a>
+  
+
+        </li>
+      
+    
+  </ul>
+
+        </li>
+      
+    
+  </ul>
+
+        </li>
+      
+    
+  </ul>
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <input type="checkbox" id="section-988c4238198a24c7eac9b0f056d01246" class="toggle"  />
+    <label for="section-988c4238198a24c7eac9b0f056d01246" class="flex justify-between"><div style="font-weight:450;margin-bottom:0.5em">部署模式</div><span>▾</span>
+    </label>
+  
+
+          
+  <ul>
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/deployment/standalone/" class="">Standalone</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/deployment/yarn/" class="">YARN</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/deployment/kubernetes/" class="">Kubernetes</a>
+  
+
+        </li>
+      
+    
+  </ul>
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <input type="checkbox" id="section-fc36b619eabb0ca9cb7b253e0eba8a7a" class="toggle"  />
+    <label for="section-fc36b619eabb0ca9cb7b253e0eba8a7a" class="flex justify-between"><div style="font-weight:450;margin-bottom:0.5em">开发者指南</div><span>▾</span>
+    </label>
+  
+
+          
+  <ul>
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/developer-guide/understand-flink-cdc-api/" class="">理解 Flink CDC API</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/developer-guide/contribute-to-flink-cdc/" class="">向 Flink CDC 提交贡献</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/developer-guide/licenses/" class="">许可证</a>
+  
+
+        </li>
+      
+    
+  </ul>
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <input type="checkbox" id="section-fb051daccb64de13ff5dc1ae657b01b6" class="toggle" checked />
+    <label for="section-fb051daccb64de13ff5dc1ae657b01b6" class="flex justify-between">常见问题<span>▾</span>
+    </label>
+  
+
+          
+  <ul>
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/faq/faq/" class=" active">通用FAQ</a>
+  
+
+        </li>
+      
+    
+  </ul>
+
+        </li>
+      
+    
+  </ul>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<br/>
+<hr class="menu-break">
+
+<a href="//flink.apache.org" style="color:black;margin-bottom:0.5em"><i class="link fa fa-external-link title" aria-hidden="true"></i> Project Homepage</a>
+<br/>
+
+<a href="//nightlies.apache.org/flink/flink-cdc-docs-master/api/java/" style="color:black;margin-bottom:0.5em"><i class="link fa fa-external-link title" aria-hidden="true"></i> JavaDocs</a>
+<br/>
+
+<hr class="menu-break">
+<li style="list-style-type: none">
+  <br>
+  <input type="checkbox" id="section-version-picker" class="toggle">
+  <label for="section-version-picker" class="flex justify-between">
+     <div style="font-weight:450;margin-bottom:0.5em">Pick Docs Version</div>
+     <span>▾</span>
+  </label>
+  <ul>
+    <a href="//localhost:1313/flink/flink-cdc-docs-master//zh">
+      3.2-SNAPSHOT (✓)
+    </a>
+    <hr class="menu-break">
+    
+      <li>
+        <a href="https://nightlies.apache.org/flink/flink-cdc-docs-release-3.0">
+          v3.0
+        </a>
+      </li>
+    
+    <hr class="menu-break">
+    <li>
+      <a href="//localhost:1313/flink/flink-cdc-docs-master//zh/versions">
+          All Versions
+      </a>
+    </li>
+  </ul>
+</li>
+
+
+
+
+  
+
+  
+
+
+  
+
+
+
+
+
+<a  href="//localhost:1313/flink/flink-cdc-docs-master/docs/faq/faq/" class="flex align-center">
+  <i class="fa fa-globe" aria-hidden="true"></i>&nbsp;&nbsp;
+  English
+</a>
+
+
+
+</nav>
+
+
+
+
+  <script>(function(){var e=document.querySelector("aside.book-menu nav");addEventListener("beforeunload",function(){localStorage.setItem("menu.scrollTop",e.scrollTop)}),e.scrollTop=localStorage.getItem("menu.scrollTop")})()</script>
+
+
+ 
+    </aside>
+
+    <div class="book-page">
+      <header class="book-header">
+        
+  <div class="flex align-center justify-between">
+  <label for="menu-control">
+    <img src="/flink/flink-cdc-docs-master/svg/menu.svg" class="book-icon" alt="Menu" />
+  </label>
+
+  <strong>通用FAQ</strong>
+
+  <label for="toc-control">
+    
+    <img src="/flink/flink-cdc-docs-master/svg/toc.svg" class="book-icon" alt="Table of Contents" />
+    
+  </label>
+</div>
+
+
+  
+  <aside class="hidden clearfix">
+    
+  
+
+<nav id="TableOfContents"><h3>On This Page <button class="toc" onclick="collapseToc()"><i class="fa fa-compress" aria-hidden="true"></i></button></h3>
+  <ul>
+    <li><a href="#通用faq">通用FAQ</a>
+      <ul>
+        <li><a href="#q1-为啥没法下载-flink-sql-connector-mysql-cdc-22-snapshotjar-maven-仓库为啥没有-xxx-snapshot-依赖">Q1: 为啥没法下载 flink-sql-connector-mysql-cdc-2.2-SNAPSHOT.jar ，maven 仓库为啥没有 xxx-SNAPSHOT 依赖？</a></li>
+        <li><a href="#q2-什么时候使用-flink-sql-connector-xxxjar什么时候使用-flink-connector-xxxjar两者有啥区别">Q2: 什么时候使用 flink-sql-connector-xxx.jar，什么时候使用 flink-connector-xxx.jar，两者有啥区别?</a></li>
+        <li><a href="#q3-为啥把包名从-comalibabaververica-改成-orgapacheflink-为啥-maven-仓库里找不到-2x-版本">Q3: 为啥把包名从 com.alibaba.ververica 改成 org.apache.flink? 为啥 maven 仓库里找不到 2.x 版本？</a></li>
+      </ul>
+    </li>
+    <li><a href="#mysql-cdc-faq">MySQL CDC FAQ</a>
+      <ul>
+        <li><a href="#q1-使用cdc-2x版本只能读取全量数据无法读取增量binlog-数据怎么回事">Q1: 使用CDC 2.x版本，只能读取全量数据，无法读取增量（binlog） 数据，怎么回事？</a></li>
+        <li><a href="#q2-使用-mysql-cdc增量阶段读取出来的-timestamp-字段时区相差8小时怎么回事呢">Q2: 使用 MySQL CDC，增量阶段读取出来的 timestamp 字段时区相差8小时，怎么回事呢？</a></li>
+        <li><a href="#q3-mysql-cdc支持监听从库吗从库需要如何配置">Q3: mysql cdc支持监听从库吗？从库需要如何配置？</a></li>
+        <li><a href="#q4-我想同步分库分表应该如何配置">Q4: 我想同步分库分表，应该如何配置？</a></li>
+        <li><a href="#q5-我想跳过存量读取阶段只读取-binlog-数据怎么配置">Q5: 我想跳过存量读取阶段，只读取 binlog 数据，怎么配置？</a></li>
+        <li><a href="#q6-我想获取数据库中的-ddl事件怎么办有demo吗">Q6: 我想获取数据库中的 DDL事件，怎么办，有demo吗？</a></li>
+        <li><a href="#q7-mysql-整库同步怎么做-flink-cdc-支持吗">Q7: MySQL 整库同步怎么做, Flink CDC 支持吗？</a></li>
+        <li><a href="#q8-同一个实例下某个库的表无法同步增量数据其他库都可以这是为啥">Q8: 同一个实例下，某个库的表无法同步增量数据，其他库都可以，这是为啥？</a></li>
+        <li><a href="#q9-作业报错-the-connector-is-trying-to-read-binlog-starting-at-gtids-xxx-and-binlog-file-binlog000064-pos89887992-skipping-4-events-plus-1-rows-but-this-is-no-longer-available-on-the-server-reconfigure-the-connector-to-use-a-snapshot-when-needed怎么办呢">Q9: 作业报错 The connector is trying to read binlog starting at GTIDs xxx and binlog file &lsquo;binlog.000064&rsquo;, pos=89887992, skipping 4 events plus 1 rows, but this is no longer available on the server. Reconfigure the connector to use a snapshot when needed，怎么办呢？</a></li>
+        <li><a href="#q10-作业报错-connectexception-a-slave-with-the-same-server_uuidserver_id-as-this-slave-has-connected-to-the-master怎么办呢">Q10: 作业报错 ConnectException: A slave with the same server_uuid/server_id as this slave has connected to the master，怎么办呢？</a></li>
+        <li><a href="#q11-作业报错-connectexception-received-dml--for-processing-binlog-probably-contains-events-generated-with-statement-or-mixed-based-replication-format怎么办呢">Q11: 作业报错 ConnectException: Received DML ‘…’ for processing, binlog probably contains events generated with statement or mixed based replication format，怎么办呢？</a></li>
+        <li><a href="#q12-作业报错-mysql80-public-key-retrieval-is-not-allowed-怎么办呢">Q12: 作业报错 Mysql8.0 Public Key Retrieval is not allowed， 怎么办呢?</a></li>
+        <li><a href="#q13-作业报错-eventdatadeserializationexception-failed-to-deserialize-data-of-eventheaderv4--caused-by-javanetsocketexception-connection-reset-怎么办呢-">Q13: 作业报错 EventDataDeserializationException: Failed to deserialize data of EventHeaderV4 &hellip;. Caused by: java.net.SocketException: Connection reset， 怎么办呢 ?</a></li>
+        <li><a href="#q14-作业报错-the-slave-is-connecting-using-change-master-to-master_auto_position--1-but-the-master-has-purged-binary-logs-containing-gtids-that-the-slave-requires-怎么办呢-">Q14: 作业报错 The slave is connecting using CHANGE MASTER TO MASTER_AUTO_POSITION = 1, but the master has purged binary logs containing GTIDs that the slave requires. 怎么办呢 ?</a></li>
+        <li><a href="#q15-在-datastream-api中构建mysql-cdc源时如何配置tablelist选项">Q15: 在 DataStream API中构建MySQL CDC源时如何配置tableList选项？</a></li>
+      </ul>
+    </li>
+    <li><a href="#postgres-cdc-faq">Postgres CDC FAQ</a>
+      <ul>
+        <li><a href="#q1-发现-pg-服务器磁盘使用率高wal-不释放-是什么原因">Q1: 发现 PG 服务器磁盘使用率高，WAL 不释放 是什么原因？</a></li>
+        <li><a href="#q2-flink-postgres-cdc-同步-postgres-中将-超过最大精度3818的-decimal-类型返回-null">Q2: Flink Postgres CDC 同步 Postgres 中将 超过最大精度（38，18）的 DECIMAL 类型返回 NULL</a></li>
+        <li><a href="#q3-flink-postgres-cdc-提示未传输-toast-数据是什么原因">Q3: Flink Postgres CDC 提示未传输 TOAST 数据，是什么原因？</a></li>
+        <li><a href="#q4-作业报错-replication-slot-xxxx-is-active-怎么办">Q4: 作业报错 Replication slot &ldquo;xxxx&rdquo; is active， 怎么办？</a></li>
+        <li><a href="#q5-作业有脏数据比如非法的日期有参数可以配置可以过滤吗">Q5: 作业有脏数据，比如非法的日期，有参数可以配置可以过滤吗？</a></li>
+        <li><a href="#q6-在datastream-api中构建postgres-cdc源时如何配置tablelist选项">Q6: 在DataStream API中构建Postgres CDC源时如何配置tableList选项？</a></li>
+      </ul>
+    </li>
+    <li><a href="#mongodb-cdc-faq">MongoDB CDC FAQ</a>
+      <ul>
+        <li><a href="#q1-mongodb-cdc-支持-全量增量读-和-只读增量吗">Q1: MongoDB CDC 支持 全量+增量读 和 只读增量吗？</a></li>
+        <li><a href="#q2-mongodb-cdc-支持从-checkpoint-恢复吗-原理是怎么样的呢">Q2: MongoDB CDC 支持从 checkpoint 恢复吗? 原理是怎么样的呢？</a></li>
+        <li><a href="#q3-mongodb-cdc-支持输出--uupdate_before更新前镜像值消息吗">Q3: MongoDB CDC 支持输出 -U（update_before，更新前镜像值）消息吗？</a></li>
+        <li><a href="#q4-mongodb-cdc-支持订阅多个集合吗">Q4: MongoDB CDC 支持订阅多个集合吗？</a></li>
+        <li><a href="#q5-mongodb-cdc-支持-mongodb-的版本是哪些">Q5: MongoDB CDC 支持 MongoDB 的版本是哪些？</a></li>
+        <li><a href="#q6-mongodb-cdc-支持-mongodb-的运行模式是什么">Q6: MongoDB CDC 支持 MongoDB 的运行模式是什么？</a></li>
+        <li><a href="#q7-mongodb-cdc-报错用户名密码错误-但其他组件使用该用户名密码都能正常连接这是什么原因">Q7: MongoDB CDC 报错用户名密码错误, 但其他组件使用该用户名密码都能正常连接，这是什么原因？</a></li>
+        <li><a href="#q8--mongodb-cdc-是否支持-debezium-相关的参数">Q8:  MongoDB CDC 是否支持 debezium 相关的参数？</a></li>
+      </ul>
+    </li>
+    <li><a href="#oracle-cdc-faq">Oracle CDC FAQ</a>
+      <ul>
+        <li><a href="#q1-oracle-cdc-的归档日志增长很快且读取-log-慢">Q1: Oracle CDC 的归档日志增长很快，且读取 log 慢？</a></li>
+        <li><a href="#q2-作业报错-caused-by-iodebeziumdebeziumexception-supplemental-logging-not-configured-for-table-xxx-use-command-alter-table-xxx-add-supplemental-log-data-all-columns-怎么办呢">Q2: 作业报错 Caused by: io.debezium.DebeziumException: Supplemental logging not configured for table xxx. Use command: ALTER TABLE xxx ADD SUPPLEMENTAL LOG DATA (ALL) COLUMNS， 怎么办呢？</a></li>
+        <li><a href="#q3-oracle-cdc-如何切换成-xstream-的方式">Q3: Oracle CDC 如何切换成 XStream 的方式？</a></li>
+        <li><a href="#q4-oracle-cdc-的-database-name-和-schema-name-分别是什么">Q4: Oracle CDC 的 database-name 和 schema-name 分别是什么?</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+
+
+  </aside>
+  
+ 
+      </header>
+
+      
+
+
+
+
+<article class="markdown">
+    <blockquote style="border-color:#f66">
+        This documentation is for an unreleased version of Apache Flink CDC. We recommend you use the latest <a href="https://ci.apache.org/projects/flink/flink-cdc-docs-stable/">stable version</a>.
+    </blockquote>
+</article>
+
+
+
+      
+  <article class="markdown"><!--
+Licensed to the Apache Software Foundation (ASF) under one
+or more contributor license agreements.  See the NOTICE file
+distributed with this work for additional information
+regarding copyright ownership.  The ASF licenses this file
+to you under the Apache License, Version 2.0 (the
+"License"); you may not use this file except in compliance
+with the License.  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing,
+software distributed under the License is distributed on an
+"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, either express or implied.  See the License for the
+specific language governing permissions and limitations
+under the License.
+-->
+<h2 id="通用faq">
+  通用FAQ
+  <a class="anchor" href="#%e9%80%9a%e7%94%a8faq">#</a>
+</h2>
+<h3 id="q1-为啥没法下载-flink-sql-connector-mysql-cdc-22-snapshotjar-maven-仓库为啥没有-xxx-snapshot-依赖">
+  Q1: 为啥没法下载 flink-sql-connector-mysql-cdc-2.2-SNAPSHOT.jar ，maven 仓库为啥没有 xxx-SNAPSHOT 依赖？
+  <a class="anchor" href="#q1-%e4%b8%ba%e5%95%a5%e6%b2%a1%e6%b3%95%e4%b8%8b%e8%bd%bd-flink-sql-connector-mysql-cdc-22-snapshotjar-maven-%e4%bb%93%e5%ba%93%e4%b8%ba%e5%95%a5%e6%b2%a1%e6%9c%89-xxx-snapshot-%e4%be%9d%e8%b5%96">#</a>
+</h3>
+<p>和主流的 maven 项目版本管理相同，xxx-SNAPSHOT 版本都是对应开发分支的代码，需要用户自己下载源码并编译对应的jar， 用户应该使用已经 release 过的版本，比如 flink-sql-connector-mysql-cdc-2.1.0.jar，release 过的版本maven中心仓库才会有。</p>
+<h3 id="q2-什么时候使用-flink-sql-connector-xxxjar什么时候使用-flink-connector-xxxjar两者有啥区别">
+  Q2: 什么时候使用 flink-sql-connector-xxx.jar，什么时候使用 flink-connector-xxx.jar，两者有啥区别?
+  <a class="anchor" href="#q2-%e4%bb%80%e4%b9%88%e6%97%b6%e5%80%99%e4%bd%bf%e7%94%a8-flink-sql-connector-xxxjar%e4%bb%80%e4%b9%88%e6%97%b6%e5%80%99%e4%bd%bf%e7%94%a8-flink-connector-xxxjar%e4%b8%a4%e8%80%85%e6%9c%89%e5%95%a5%e5%8c%ba%e5%88%ab">#</a>
+</h3>
+<p>Flink CDC 项目中各个connector的依赖管理和Flink 项目中 connector 保持一致。flink-sql-connector-xx 是胖包，除了connector的代码外，还把 connector 依赖的所有三方包 shade 后打入，提供给 SQL 作业使用，用户只需要在 lib目录下添加该胖包即可。flink-connector-xx 只有该 connector 的代码，不包含其所需的依赖，提供 datastream 作业使用，用户需要自己管理所需的三方包依赖，有冲突的依赖需要自己做 exclude, shade 处理。</p>
+<h3 id="q3-为啥把包名从-comalibabaververica-改成-orgapacheflink-为啥-maven-仓库里找不到-2x-版本">
+  Q3: 为啥把包名从 com.alibaba.ververica 改成 org.apache.flink? 为啥 maven 仓库里找不到 2.x 版本？
+  <a class="anchor" href="#q3-%e4%b8%ba%e5%95%a5%e6%8a%8a%e5%8c%85%e5%90%8d%e4%bb%8e-comalibabaververica-%e6%94%b9%e6%88%90-orgapacheflink-%e4%b8%ba%e5%95%a5-maven-%e4%bb%93%e5%ba%93%e9%87%8c%e6%89%be%e4%b8%8d%e5%88%b0-2x-%e7%89%88%e6%9c%ac">#</a>
+</h3>
+<p>Flink CDC 项目 从 2.0.0 版本将 group id 从com.alibaba.ververica 改成 com.ververica, 自 3.1 版本从将 group id 从 com.ververica 改成 org.apache.flink。
+这是为了让项目更加社区中立，让各个公司的开发者共建时更方便。所以在maven仓库找 2.x 的包时，路径是 /com/ververica；找3.1及以上版本的包时，路径是/org/apache/flink</p>
+<h2 id="mysql-cdc-faq">
+  MySQL CDC FAQ
+  <a class="anchor" href="#mysql-cdc-faq">#</a>
+</h2>
+<h3 id="q1-使用cdc-2x版本只能读取全量数据无法读取增量binlog-数据怎么回事">
+  Q1: 使用CDC 2.x版本，只能读取全量数据，无法读取增量（binlog） 数据，怎么回事？
+  <a class="anchor" href="#q1-%e4%bd%bf%e7%94%a8cdc-2x%e7%89%88%e6%9c%ac%e5%8f%aa%e8%83%bd%e8%af%bb%e5%8f%96%e5%85%a8%e9%87%8f%e6%95%b0%e6%8d%ae%e6%97%a0%e6%b3%95%e8%af%bb%e5%8f%96%e5%a2%9e%e9%87%8fbinlog-%e6%95%b0%e6%8d%ae%e6%80%8e%e4%b9%88%e5%9b%9e%e4%ba%8b">#</a>
+</h3>
+<p>CDC 2.0 支持了无锁算法，支持并发读取，为了保证全量数据 + 增量数据的顺序性，依赖Flink 的 checkpoint机制，所以作业需要配置 checkpoint。 SQL 作业中配置方式：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="cl"><span class="n">Flink</span><span class="w"> </span><span class="k">SQL</span><span class="o">&gt;</span><span class="w"> </span><span class="k">SET</span><span class="w"> </span><span class="s1">&#39;execution.checkpointing.interval&#39;</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;3s&#39;</span><span class="p">;</span><span class="w">    
+</span></span></span></code></pre></div><p>DataStream 作业配置方式：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="n">StreamExecutionEnvironment</span><span class="w"> </span><span class="n">env</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">StreamExecutionEnvironment</span><span class="p">.</span><span class="na">getExecutionEnvironment</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">env</span><span class="p">.</span><span class="na">enableCheckpointing</span><span class="p">(</span><span class="n">3000</span><span class="p">);</span><span class="w">  
+</span></span></span></code></pre></div><p>此外，如果某些数据库的只读实例是简化过binlog的，比如阿里云RDS MySQL 5.6 只读实例，其binlog不含有变更数据，自然无法获得所需增量数据</p>
+<h3 id="q2-使用-mysql-cdc增量阶段读取出来的-timestamp-字段时区相差8小时怎么回事呢">
+  Q2: 使用 MySQL CDC，增量阶段读取出来的 timestamp 字段时区相差8小时，怎么回事呢？
+  <a class="anchor" href="#q2-%e4%bd%bf%e7%94%a8-mysql-cdc%e5%a2%9e%e9%87%8f%e9%98%b6%e6%ae%b5%e8%af%bb%e5%8f%96%e5%87%ba%e6%9d%a5%e7%9a%84-timestamp-%e5%ad%97%e6%ae%b5%e6%97%b6%e5%8c%ba%e7%9b%b8%e5%b7%ae8%e5%b0%8f%e6%97%b6%e6%80%8e%e4%b9%88%e5%9b%9e%e4%ba%8b%e5%91%a2">#</a>
+</h3>
+<p>在解析binlog数据中的timestamp字段时，cdc 会使用到作业里配置的server-time-zone信息，也就是MySQL服务器的时区，如果这个时区没有和你的MySQL服务器时区一致，就会出现这个问题。</p>
+<p>此外，如果是在DataStream作业中自定义列化器如 MyDeserializer implements DebeziumDeserializationSchema, 自定义的序列化器在解析 timestamp 类型数据时，需要参考下 RowDataDebeziumDeserializeSchema 中对 timestamp 类型的解析，用时给定的时区信息。</p>
+<pre tabindex="0"><code>private TimestampData convertToTimestamp(Object dbzObj, Schema schema) {
+        if (dbzObj instanceof Long) {
+            switch (schema.name()) {
+                case Timestamp.SCHEMA_NAME:
+                    return TimestampData.fromEpochMillis((Long) dbzObj);
+                case MicroTimestamp.SCHEMA_NAME:
+                    long micro = (long) dbzObj;
+                    return TimestampData.fromEpochMillis(micro / 1000, (int) (micro % 1000 * 1000));
+                case NanoTimestamp.SCHEMA_NAME:
+                    long nano = (long) dbzObj;
+                    return TimestampData.fromEpochMillis(nano / 1000_000, (int) (nano % 1000_000));
+            }
+        }
+        LocalDateTime localDateTime = TemporalConversions.toLocalDateTime(dbzObj, serverTimeZone);
+        return TimestampData.fromLocalDateTime(localDateTime);
+    }
+</code></pre><h3 id="q3-mysql-cdc支持监听从库吗从库需要如何配置">
+  Q3: mysql cdc支持监听从库吗？从库需要如何配置？
+  <a class="anchor" href="#q3-mysql-cdc%e6%94%af%e6%8c%81%e7%9b%91%e5%90%ac%e4%bb%8e%e5%ba%93%e5%90%97%e4%bb%8e%e5%ba%93%e9%9c%80%e8%a6%81%e5%a6%82%e4%bd%95%e9%85%8d%e7%bd%ae">#</a>
+</h3>
+<p>支持的，从库需要配置 log-slave-updates = 1 使从实例也能将从主实例同步的数据写入从库的 binlog 文件中，如果主库开启了gtid mode，从库也需要开启。</p>
+<pre tabindex="0"><code>log-slave-updates = 1
+gtid_mode = on 
+enforce_gtid_consistency = on 
+</code></pre><h3 id="q4-我想同步分库分表应该如何配置">
+  Q4: 我想同步分库分表，应该如何配置？
+  <a class="anchor" href="#q4-%e6%88%91%e6%83%b3%e5%90%8c%e6%ad%a5%e5%88%86%e5%ba%93%e5%88%86%e8%a1%a8%e5%ba%94%e8%af%a5%e5%a6%82%e4%bd%95%e9%85%8d%e7%bd%ae">#</a>
+</h3>
+<p>通过 mysql cdc 表的with参数中，表名和库名均支持正则配置，比如 &rsquo;table-name&rsquo; =&lsquo;user_.&rsquo; 可以匹配表名 user_1, user_2,user_a表，注意正则匹配任意字符是&rsquo;.&rsquo; 而不是 &lsquo;*&rsquo;, 其中点号表示任意字符，星号表示0个或多个，database-name也如此。</p>
+<h3 id="q5-我想跳过存量读取阶段只读取-binlog-数据怎么配置">
+  Q5: 我想跳过存量读取阶段，只读取 binlog 数据，怎么配置？
+  <a class="anchor" href="#q5-%e6%88%91%e6%83%b3%e8%b7%b3%e8%bf%87%e5%ad%98%e9%87%8f%e8%af%bb%e5%8f%96%e9%98%b6%e6%ae%b5%e5%8f%aa%e8%af%bb%e5%8f%96-binlog-%e6%95%b0%e6%8d%ae%e6%80%8e%e4%b9%88%e9%85%8d%e7%bd%ae">#</a>
+</h3>
+<p>在 mysql cdc 表的 with 参数中指定 &lsquo;scan.startup.mode&rsquo; = &rsquo;latest-offset&rsquo; 即可。</p>
+<pre tabindex="0"><code>&#39;scan.startup.mode&#39; = &#39;latest-offset&#39;.
+</code></pre><h3 id="q6-我想获取数据库中的-ddl事件怎么办有demo吗">
+  Q6: 我想获取数据库中的 DDL事件，怎么办，有demo吗？
+  <a class="anchor" href="#q6-%e6%88%91%e6%83%b3%e8%8e%b7%e5%8f%96%e6%95%b0%e6%8d%ae%e5%ba%93%e4%b8%ad%e7%9a%84-ddl%e4%ba%8b%e4%bb%b6%e6%80%8e%e4%b9%88%e5%8a%9e%e6%9c%89demo%e5%90%97">#</a>
+</h3>
+<p>CDC 2.1 版本提供了 DataStream API： MysqlSource， 用户可以配置 includeSchemaChanges 表示是否需要DDL 事件，获取到 DDL 事件后自己写代码处理。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="w"> </span><span class="kd">public</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">consumingAllEvents</span><span class="p">()</span><span class="w"> </span><span class="kd">throws</span><span class="w"> </span><span class="n">Exception</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">inventoryDatabase</span><span class="p">.</span><span class="na">createAndInitialize</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">MySqlSource</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;</span><span class="w"> </span><span class="n">mySqlSource</span><span class="w"> </span><span class="o">=</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="n">MySqlSource</span><span class="p">.</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;</span><span class="n">builder</span><span class="p">()</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                        </span><span class="p">.</span><span class="na">hostname</span><span class="p">(</span><span class="n">MYSQL_CONTAINER</span><span class="p">.</span><span class="na">getHost</span><span class="p">())</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                        </span><span class="p">.</span><span class="na">port</span><span class="p">(</span><span class="n">MYSQL_CONTAINER</span><span class="p">.</span><span class="na">getDatabasePort</span><span class="p">())</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                        </span><span class="p">.</span><span class="na">databaseList</span><span class="p">(</span><span class="n">inventoryDatabase</span><span class="p">.</span><span class="na">getDatabaseName</span><span class="p">())</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                        </span><span class="p">.</span><span class="na">tableList</span><span class="p">(</span><span class="n">inventoryDatabase</span><span class="p">.</span><span class="na">getDatabaseName</span><span class="p">()</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="s">&#34;.products&#34;</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                        </span><span class="p">.</span><span class="na">username</span><span class="p">(</span><span class="n">inventoryDatabase</span><span class="p">.</span><span class="na">getUsername</span><span class="p">())</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                        </span><span class="p">.</span><span class="na">password</span><span class="p">(</span><span class="n">inventoryDatabase</span><span class="p">.</span><span class="na">getPassword</span><span class="p">())</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                        </span><span class="p">.</span><span class="na">serverId</span><span class="p">(</span><span class="s">&#34;5401-5404&#34;</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                        </span><span class="p">.</span><span class="na">deserializer</span><span class="p">(</span><span class="k">new</span><span class="w"> </span><span class="n">JsonDebeziumDeserializationSchema</span><span class="p">())</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                        </span><span class="p">.</span><span class="na">includeSchemaChanges</span><span class="p">(</span><span class="kc">true</span><span class="p">)</span><span class="w"> </span><span class="c1">// Configure here and output DDL events</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                        </span><span class="p">.</span><span class="na">build</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">				</span><span class="p">...</span><span class="w"> </span><span class="c1">// Other processing logic                        </span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></div><h3 id="q7-mysql-整库同步怎么做-flink-cdc-支持吗">
+  Q7: MySQL 整库同步怎么做, Flink CDC 支持吗？
+  <a class="anchor" href="#q7-mysql-%e6%95%b4%e5%ba%93%e5%90%8c%e6%ad%a5%e6%80%8e%e4%b9%88%e5%81%9a-flink-cdc-%e6%94%af%e6%8c%81%e5%90%97">#</a>
+</h3>
+<p>Flink CDC 支持的.</p>
+<ol>
+<li>Q6 中 提供的 DataStream API 已经可以让用户获取 DDL 变更事件和数据变更事件，用户需要在此基础上，根据自己的业务逻辑和下游存储进行 DataStream 作业开发。</li>
+<li>Flink CDC 3.0以上版本支持以Pipeline的形式对Mysql整库同步。</li>
+</ol>
+<h3 id="q8-同一个实例下某个库的表无法同步增量数据其他库都可以这是为啥">
+  Q8: 同一个实例下，某个库的表无法同步增量数据，其他库都可以，这是为啥？
+  <a class="anchor" href="#q8-%e5%90%8c%e4%b8%80%e4%b8%aa%e5%ae%9e%e4%be%8b%e4%b8%8b%e6%9f%90%e4%b8%aa%e5%ba%93%e7%9a%84%e8%a1%a8%e6%97%a0%e6%b3%95%e5%90%8c%e6%ad%a5%e5%a2%9e%e9%87%8f%e6%95%b0%e6%8d%ae%e5%85%b6%e4%bb%96%e5%ba%93%e9%83%bd%e5%8f%af%e4%bb%a5%e8%bf%99%e6%98%af%e4%b8%ba%e5%95%a5">#</a>
+</h3>
+<p>这个问题是因为 mysql 服务器 可以配置 binlog 过滤器，忽略了某些库的 binlog。用户可以通过 show master status 命令查看 Binlog_Ignore_DB 和 Binlog_Do_DB。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-mysql" data-lang="mysql"><span class="line"><span class="cl"><span class="n">mysql</span><span class="o">&gt;</span><span class="w"> </span><span class="k">show</span><span class="w"> </span><span class="n">master</span><span class="w"> </span><span class="n">status</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="o">+------------------+----------+--------------+------------------+----------------------+</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="o">|</span><span class="w"> </span><span class="n">File</span><span class="w">             </span><span class="o">|</span><span class="w"> </span><span class="n">Position</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">Binlog_Do_DB</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">Binlog_Ignore_DB</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">Executed_Gtid_Set</span><span class="w">    </span><span class="o">|</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="o">+------------------+----------+--------------+------------------+----------------------+</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="o">|</span><span class="w"> </span><span class="n">mysql</span><span class="o">-</span><span class="n">bin</span><span class="p">.</span><span class="mi">000006</span><span class="w"> </span><span class="o">|</span><span class="w">     </span><span class="mi">4594</span><span class="w"> </span><span class="o">|</span><span class="w">              </span><span class="o">|</span><span class="w">                  </span><span class="o">|</span><span class="w"> </span><span class="n">xxx</span><span class="p">:</span><span class="mi">1</span><span class="o">-</span><span class="mi">15</span><span class="w">             </span><span class="o">|</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="o">+------------------+----------+--------------+------------------+----------------------+</span><span class="w">
+</span></span></span></code></pre></div><h3 id="q9-作业报错-the-connector-is-trying-to-read-binlog-starting-at-gtids-xxx-and-binlog-file-binlog000064-pos89887992-skipping-4-events-plus-1-rows-but-this-is-no-longer-available-on-the-server-reconfigure-the-connector-to-use-a-snapshot-when-needed怎么办呢">
+  Q9: 作业报错 The connector is trying to read binlog starting at GTIDs xxx and binlog file &lsquo;binlog.000064&rsquo;, pos=89887992, skipping 4 events plus 1 rows, but this is no longer available on the server. Reconfigure the connector to use a snapshot when needed，怎么办呢？
+  <a class="anchor" href="#q9-%e4%bd%9c%e4%b8%9a%e6%8a%a5%e9%94%99-the-connector-is-trying-to-read-binlog-starting-at-gtids-xxx-and-binlog-file-binlog000064-pos89887992-skipping-4-events-plus-1-rows-but-this-is-no-longer-available-on-the-server-reconfigure-the-connector-to-use-a-snapshot-when-needed%e6%80%8e%e4%b9%88%e5%8a%9e%e5%91%a2">#</a>
+</h3>
+<p>出现这种错误是 作业正在读取的binlog文件在 MySQL 服务器已经被清理掉，这种情况一般是 MySQL 服务器上保留的 binlog 文件过期时间太短，可以将该值设置大一点，比如7天。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-mysql" data-lang="mysql"><span class="line"><span class="cl"><span class="n">mysql</span><span class="o">&gt;</span><span class="w"> </span><span class="k">show</span><span class="w"> </span><span class="n">variables</span><span class="w"> </span><span class="k">like</span><span class="w"> </span><span class="s1">&#39;expire_logs_days&#39;</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">mysql</span><span class="o">&gt;</span><span class="w"> </span><span class="kt">set</span><span class="w"> </span><span class="n">global</span><span class="w"> </span><span class="n">expire_logs_days</span><span class="o">=</span><span class="mi">7</span><span class="p">;</span><span class="w">
+</span></span></span></code></pre></div><p>还有种情况是 flink cdc 作业消费binlog 太慢，这种一般分配足够的资源即可。</p>
+<h3 id="q10-作业报错-connectexception-a-slave-with-the-same-server_uuidserver_id-as-this-slave-has-connected-to-the-master怎么办呢">
+  Q10: 作业报错 ConnectException: A slave with the same server_uuid/server_id as this slave has connected to the master，怎么办呢？
+  <a class="anchor" href="#q10-%e4%bd%9c%e4%b8%9a%e6%8a%a5%e9%94%99-connectexception-a-slave-with-the-same-server_uuidserver_id-as-this-slave-has-connected-to-the-master%e6%80%8e%e4%b9%88%e5%8a%9e%e5%91%a2">#</a>
+</h3>
+<p>出现这种错误是 作业里使用的 server id 和其他作业或其他同步工具使用的server id 冲突了，server id 需要全局唯一，server id 是一个int类型整数。 在 CDC 2.x 版本中，source 的每个并发都需要一个server id，建议合理规划好server id，比如作业的 source 设置成了四个并发，可以配置 &lsquo;server-id&rsquo; = &lsquo;5001-5004&rsquo;, 这样每个 source task 就不会冲突了。</p>
+<h3 id="q11-作业报错-connectexception-received-dml--for-processing-binlog-probably-contains-events-generated-with-statement-or-mixed-based-replication-format怎么办呢">
+  Q11: 作业报错 ConnectException: Received DML ‘…’ for processing, binlog probably contains events generated with statement or mixed based replication format，怎么办呢？
+  <a class="anchor" href="#q11-%e4%bd%9c%e4%b8%9a%e6%8a%a5%e9%94%99-connectexception-received-dml--for-processing-binlog-probably-contains-events-generated-with-statement-or-mixed-based-replication-format%e6%80%8e%e4%b9%88%e5%8a%9e%e5%91%a2">#</a>
+</h3>
+<p>出现这种错误是 MySQL 服务器配置不对，需要检查下 binlog_format 是不是 ROW? 可以通过下面的命令查看</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-mysql" data-lang="mysql"><span class="line"><span class="cl"><span class="n">mysql</span><span class="o">&gt;</span><span class="w"> </span><span class="k">show</span><span class="w"> </span><span class="n">variables</span><span class="w"> </span><span class="k">like</span><span class="w"> </span><span class="s1">&#39;%binlog_format%&#39;</span><span class="p">;</span><span class="w"> 
+</span></span></span></code></pre></div><h3 id="q12-作业报错-mysql80-public-key-retrieval-is-not-allowed-怎么办呢">
+  Q12: 作业报错 Mysql8.0 Public Key Retrieval is not allowed， 怎么办呢?
+  <a class="anchor" href="#q12-%e4%bd%9c%e4%b8%9a%e6%8a%a5%e9%94%99-mysql80-public-key-retrieval-is-not-allowed-%e6%80%8e%e4%b9%88%e5%8a%9e%e5%91%a2">#</a>
+</h3>
+<p>这是因为用户配置的 MySQL 用户 使用的是 sha256 密码认证，需要 TLS 等协议传输密码。一种简单的方法是使允许 MySQL用户 支持原始密码方式访问。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-mysql" data-lang="mysql"><span class="line"><span class="cl"><span class="n">mysql</span><span class="o">&gt;</span><span class="w"> </span><span class="k">ALTER</span><span class="w"> </span><span class="k">USER</span><span class="w"> </span><span class="s1">&#39;username&#39;</span><span class="o">@</span><span class="s1">&#39;localhost&#39;</span><span class="w"> </span><span class="k">IDENTIFIED</span><span class="w"> </span><span class="k">WITH</span><span class="w"> </span><span class="n">mysql_native_password</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="s1">&#39;password&#39;</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">mysql</span><span class="o">&gt;</span><span class="w"> </span><span class="k">FLUSH</span><span class="w"> </span><span class="k">PRIVILEGES</span><span class="p">;</span><span class="w"> 
+</span></span></span></code></pre></div><h3 id="q13-作业报错-eventdatadeserializationexception-failed-to-deserialize-data-of-eventheaderv4--caused-by-javanetsocketexception-connection-reset-怎么办呢-">
+  Q13: 作业报错 EventDataDeserializationException: Failed to deserialize data of EventHeaderV4 &hellip;. Caused by: java.net.SocketException: Connection reset， 怎么办呢 ?
+  <a class="anchor" href="#q13-%e4%bd%9c%e4%b8%9a%e6%8a%a5%e9%94%99-eventdatadeserializationexception-failed-to-deserialize-data-of-eventheaderv4--caused-by-javanetsocketexception-connection-reset-%e6%80%8e%e4%b9%88%e5%8a%9e%e5%91%a2-">#</a>
+</h3>
+<p>这个问题一般是网络原因或者数据库繁忙引起，首先排查flink 集群 到 数据库之间的网络情况，其次可以调大 MySQL 服务器的网络参数。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-mysql" data-lang="mysql"><span class="line"><span class="cl"><span class="n">mysql</span><span class="o">&gt;</span><span class="w"> </span><span class="kt">set</span><span class="w"> </span><span class="n">global</span><span class="w"> </span><span class="n">slave_net_timeout</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">120</span><span class="p">;</span><span class="w"> 
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">mysql</span><span class="o">&gt;</span><span class="w"> </span><span class="kt">set</span><span class="w"> </span><span class="n">global</span><span class="w"> </span><span class="n">thread_pool_idle_timeout</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">120</span><span class="p">;</span><span class="w">
+</span></span></span></code></pre></div><p>或者采用下面的Flink配置：</p>
+<pre tabindex="0"><code>execution.checkpointing.interval=10min
+execution.checkpointing.tolerable-failed-checkpoints=100
+restart-strategy=fixed-delay
+restart-strategy.fixed-delay.attempts=2147483647
+restart-strategy.fixed-delay.delay= 30s
+</code></pre><p>如果作业存在反压，也可能出现这个问题。你需要先处理作业的反压。</p>
+<h3 id="q14-作业报错-the-slave-is-connecting-using-change-master-to-master_auto_position--1-but-the-master-has-purged-binary-logs-containing-gtids-that-the-slave-requires-怎么办呢-">
+  Q14: 作业报错 The slave is connecting using CHANGE MASTER TO MASTER_AUTO_POSITION = 1, but the master has purged binary logs containing GTIDs that the slave requires. 怎么办呢 ?
+  <a class="anchor" href="#q14-%e4%bd%9c%e4%b8%9a%e6%8a%a5%e9%94%99-the-slave-is-connecting-using-change-master-to-master_auto_position--1-but-the-master-has-purged-binary-logs-containing-gtids-that-the-slave-requires-%e6%80%8e%e4%b9%88%e5%8a%9e%e5%91%a2-">#</a>
+</h3>
+<p>出现这个问题的原因是的作业全量阶段读取太慢，在全量阶段读完后，之前记录的全量阶段开始时的 gtid 位点已经被 mysql 清理掉了。这种可以增大 mysql 服务器上 binlog 文件的保存时间，也可以调大 source 的并发，让全量阶段读取更快。</p>
+<h3 id="q15-在-datastream-api中构建mysql-cdc源时如何配置tablelist选项">
+  Q15: 在 DataStream API中构建MySQL CDC源时如何配置tableList选项？
+  <a class="anchor" href="#q15-%e5%9c%a8-datastream-api%e4%b8%ad%e6%9e%84%e5%bb%bamysql-cdc%e6%ba%90%e6%97%b6%e5%a6%82%e4%bd%95%e9%85%8d%e7%bd%aetablelist%e9%80%89%e9%a1%b9">#</a>
+</h3>
+<p>tableList选项要求表名使用数据库名，而不是DataStream API中的表名。对于MySQL CDC源代码，tableList选项值应该类似于‘my_db.my_table’。</p>
+<h2 id="postgres-cdc-faq">
+  Postgres CDC FAQ
+  <a class="anchor" href="#postgres-cdc-faq">#</a>
+</h2>
+<h3 id="q1-发现-pg-服务器磁盘使用率高wal-不释放-是什么原因">
+  Q1: 发现 PG 服务器磁盘使用率高，WAL 不释放 是什么原因？
+  <a class="anchor" href="#q1-%e5%8f%91%e7%8e%b0-pg-%e6%9c%8d%e5%8a%a1%e5%99%a8%e7%a3%81%e7%9b%98%e4%bd%bf%e7%94%a8%e7%8e%87%e9%ab%98wal-%e4%b8%8d%e9%87%8a%e6%94%be-%e6%98%af%e4%bb%80%e4%b9%88%e5%8e%9f%e5%9b%a0">#</a>
+</h3>
+<p>Flink Postgres CDC 只会在 checkpoint 完成的时候更新 Postgres slot 中的 LSN。因此如果发现磁盘使用率高的情况下，请先确认 checkpoint 是否开启。</p>
+<h3 id="q2-flink-postgres-cdc-同步-postgres-中将-超过最大精度3818的-decimal-类型返回-null">
+  Q2: Flink Postgres CDC 同步 Postgres 中将 超过最大精度（38，18）的 DECIMAL 类型返回 NULL
+  <a class="anchor" href="#q2-flink-postgres-cdc-%e5%90%8c%e6%ad%a5-postgres-%e4%b8%ad%e5%b0%86-%e8%b6%85%e8%bf%87%e6%9c%80%e5%a4%a7%e7%b2%be%e5%ba%a63818%e7%9a%84-decimal-%e7%b1%bb%e5%9e%8b%e8%bf%94%e5%9b%9e-null">#</a>
+</h3>
+<p>Flink 中如果收到数据的 precision 大于在 Flink 中声明的类型的 precision 时，会将数据处理成 NULL。此时可以配置相应&rsquo;debezium.decimal.handling.mode&rsquo; = &lsquo;string&rsquo; 将读取的数据用 STRING 类型 来处理。</p>
+<h3 id="q3-flink-postgres-cdc-提示未传输-toast-数据是什么原因">
+  Q3: Flink Postgres CDC 提示未传输 TOAST 数据，是什么原因？
+  <a class="anchor" href="#q3-flink-postgres-cdc-%e6%8f%90%e7%a4%ba%e6%9c%aa%e4%bc%a0%e8%be%93-toast-%e6%95%b0%e6%8d%ae%e6%98%af%e4%bb%80%e4%b9%88%e5%8e%9f%e5%9b%a0">#</a>
+</h3>
+<p>请先确保 REPLICA IDENTITY 是 FULL。 TOAST 的数据比较大，为了节省 wal 的大小，如果 TOAST 数据没有变更，那么 wal2json plugin 就不会在更新后的数据中带上 toast 数据。为了避免这个问题，可以通过 &lsquo;debezium.schema.refresh.mode&rsquo;=&lsquo;columns_diff_exclude_unchanged_toast&rsquo;来解决。</p>
+<h3 id="q4-作业报错-replication-slot-xxxx-is-active-怎么办">
+  Q4: 作业报错 Replication slot &ldquo;xxxx&rdquo; is active， 怎么办？
+  <a class="anchor" href="#q4-%e4%bd%9c%e4%b8%9a%e6%8a%a5%e9%94%99-replication-slot-xxxx-is-active-%e6%80%8e%e4%b9%88%e5%8a%9e">#</a>
+</h3>
+<p>当前 Flink Postgres CDC 在作业退出后并不会手动释放 slot。前往 Postgres 中手动执行以下命令：</p>
+<pre tabindex="0"><code>select pg_drop_replication_slot(&#39;rep_slot&#39;);
+    ERROR:  replication slot &#34;rep_slot&#34; is active for PID 162564
+select pg_terminate_backend(162564); select pg_drop_replication_slot(&#39;rep_slot&#39;);
+</code></pre><h3 id="q5-作业有脏数据比如非法的日期有参数可以配置可以过滤吗">
+  Q5: 作业有脏数据，比如非法的日期，有参数可以配置可以过滤吗？
+  <a class="anchor" href="#q5-%e4%bd%9c%e4%b8%9a%e6%9c%89%e8%84%8f%e6%95%b0%e6%8d%ae%e6%af%94%e5%a6%82%e9%9d%9e%e6%b3%95%e7%9a%84%e6%97%a5%e6%9c%9f%e6%9c%89%e5%8f%82%e6%95%b0%e5%8f%af%e4%bb%a5%e9%85%8d%e7%bd%ae%e5%8f%af%e4%bb%a5%e8%bf%87%e6%bb%a4%e5%90%97">#</a>
+</h3>
+<p>可以的，可以在 Flink CDC 表的with 参数里 加下 &lsquo;debezium.event.deserialization.failure.handling.mode&rsquo;=&lsquo;warn&rsquo; 参数，跳过脏数据，将脏数据打印到WARN日志里。 也可以配置 &lsquo;debezium.event.deserialization.failure.handling.mode&rsquo;=&lsquo;ignore&rsquo;， 直接跳过脏数据，不打印脏数据到日志。</p>
+<h3 id="q6-在datastream-api中构建postgres-cdc源时如何配置tablelist选项">
+  Q6: 在DataStream API中构建Postgres CDC源时如何配置tableList选项？
+  <a class="anchor" href="#q6-%e5%9c%a8datastream-api%e4%b8%ad%e6%9e%84%e5%bb%bapostgres-cdc%e6%ba%90%e6%97%b6%e5%a6%82%e4%bd%95%e9%85%8d%e7%bd%aetablelist%e9%80%89%e9%a1%b9">#</a>
+</h3>
+<p>tableList选项要求表名使用架构名，而不是DataStream API中的表名。对于Postgres CDC source，tableList选项值应为‘my_schema.my_table’。</p>
+<h2 id="mongodb-cdc-faq">
+  MongoDB CDC FAQ
+  <a class="anchor" href="#mongodb-cdc-faq">#</a>
+</h2>
+<h3 id="q1-mongodb-cdc-支持-全量增量读-和-只读增量吗">
+  Q1: MongoDB CDC 支持 全量+增量读 和 只读增量吗？
+  <a class="anchor" href="#q1-mongodb-cdc-%e6%94%af%e6%8c%81-%e5%85%a8%e9%87%8f%e5%a2%9e%e9%87%8f%e8%af%bb-%e5%92%8c-%e5%8f%aa%e8%af%bb%e5%a2%9e%e9%87%8f%e5%90%97">#</a>
+</h3>
+<p>支持，默认为 全量+增量 读取；使用 &lsquo;scan.startup.mode&rsquo; = &rsquo;latest-offset&rsquo; 参数设置为只读增量。</p>
+<h3 id="q2-mongodb-cdc-支持从-checkpoint-恢复吗-原理是怎么样的呢">
+  Q2: MongoDB CDC 支持从 checkpoint 恢复吗? 原理是怎么样的呢？
+  <a class="anchor" href="#q2-mongodb-cdc-%e6%94%af%e6%8c%81%e4%bb%8e-checkpoint-%e6%81%a2%e5%a4%8d%e5%90%97-%e5%8e%9f%e7%90%86%e6%98%af%e6%80%8e%e4%b9%88%e6%a0%b7%e7%9a%84%e5%91%a2">#</a>
+</h3>
+<p>支持，checkpoint 会记录 ChangeStream 的 resumeToken，恢复的时候可以通过resumeToken重新恢复ChangeStream。其中 resumeToken 对应 <code>oplog.rs</code> (MongoDB 变更日志collection) 的位置，<code>oplog.rs</code> 是一个固定容量的 collection。当 resumeToken 对应的记录在 <code>oplog.rs</code> 中不存在的时候，可能会出现 Invalid resumeToken 的异常。这种情况，在使用时可以设置合适<code>oplog.rs</code>的集合大小，避免<code>oplog.rs</code>保留时间过短，可以参考 <a href="https://docs.mongodb.com/manual/tutorial/change-oplog-size/">https://docs.mongodb.com/manual/tutorial/change-oplog-size/</a> 。另外，resumeToken 可以通过新到的变更记录和 heartbeat 记录来刷新。</p>
+<h3 id="q3-mongodb-cdc-支持输出--uupdate_before更新前镜像值消息吗">
+  Q3: MongoDB CDC 支持输出 -U（update_before，更新前镜像值）消息吗？
+  <a class="anchor" href="#q3-mongodb-cdc-%e6%94%af%e6%8c%81%e8%be%93%e5%87%ba--uupdate_before%e6%9b%b4%e6%96%b0%e5%89%8d%e9%95%9c%e5%83%8f%e5%80%bc%e6%b6%88%e6%81%af%e5%90%97">#</a>
+</h3>
+<p>在 MongoDB 6.0 及以上版本，若数据库开启了<a href="https://www.mongodb.com/docs/atlas/app-services/mongodb/preimages/">前像或后像功能</a>，可以在SQL作业中配置参数 &lsquo;scan.full-changelog&rsquo; = &rsquo;true&rsquo;，使得数据源能够输出-U 消息，从而省去ChangelogNormalize。</p>
+<p>在 MongoDB 6.0 版本前，MongoDB 原始的 <code>oplog.rs</code> 只有 INSERT, UPDATE, REPLACE, DELETE 这几种操作类型，没有保留更新前的信息，不能输出-U 消息，在 Flink 中只能实现 UPSERT 语义。在使用MongoDBTableSource 时，Flink planner 会自动进行 ChangelogNormalize 优化，补齐缺失的 -U 消息，输出完整的 +I, -U， +U， -D 四种消息， 代价是 ChangelogNormalize 优化的代价是该节点会保存之前所有 key 的状态。所以，如果是 DataStream 作业直接使用 MongoDBSource，如果没有 Flink planner 的优化，将不会自动进行 ChangelogNormalize，所以不能直接获取 —U 消息。想要获取更新前镜像值，需要自己管理状态，如果不希望自己管理状态，可以将 MongoDBTableSource 转换为 ChangelogStream 或者 RetractStream，借助 Flink planner 的优化能力补齐更新前镜像值，示例如下：</p>
+<pre tabindex="0"><code>    tEnv.executeSql(&#34;CREATE TABLE orders ( ... ) WITH ( &#39;connector&#39;=&#39;mongodb-cdc&#39;,... )&#34;);
+
+    Table table = tEnv.from(&#34;orders&#34;)
+            .select($(&#34;*&#34;));
+
+    tEnv.toChangelogStream(table)
+            .print()
+            .setParallelism(1);
+
+    env.execute();
+</code></pre><h3 id="q4-mongodb-cdc-支持订阅多个集合吗">
+  Q4: MongoDB CDC 支持订阅多个集合吗？
+  <a class="anchor" href="#q4-mongodb-cdc-%e6%94%af%e6%8c%81%e8%ae%a2%e9%98%85%e5%a4%9a%e4%b8%aa%e9%9b%86%e5%90%88%e5%90%97">#</a>
+</h3>
+<p>支持订阅整库的 collection，例如配置 database 为 &lsquo;mgdb&rsquo;，并且配置 collection 为空字符串，则会订阅 &lsquo;mgdb&rsquo; 库下所有 collection。</p>
+<p>也支持通过正则表达式匹配 collection，如果要监控的集合名称中包含正则表达式特殊字符，则 collection 参数必须配置为完全限定的名字空间（数据库名称.集合名称），否则无法捕获对应 collection 的变更。</p>
+<h3 id="q5-mongodb-cdc-支持-mongodb-的版本是哪些">
+  Q5: MongoDB CDC 支持 MongoDB 的版本是哪些？
+  <a class="anchor" href="#q5-mongodb-cdc-%e6%94%af%e6%8c%81-mongodb-%e7%9a%84%e7%89%88%e6%9c%ac%e6%98%af%e5%93%aa%e4%ba%9b">#</a>
+</h3>
+<p>MongoDB CDC 基于 ChangeStream 特性实现，ChangeStream 是 MongoDB 3.6 推出的新特性。MongoDB CDC 理论上支持 3.6 及以上版本，建议运行版本 &gt;= 4.0, 在低于3.6版本执行时，会出现错误: Unrecognized pipeline stage name: &lsquo;$changeStream&rsquo; 。</p>
+<h3 id="q6-mongodb-cdc-支持-mongodb-的运行模式是什么">
+  Q6: MongoDB CDC 支持 MongoDB 的运行模式是什么？
+  <a class="anchor" href="#q6-mongodb-cdc-%e6%94%af%e6%8c%81-mongodb-%e7%9a%84%e8%bf%90%e8%a1%8c%e6%a8%a1%e5%bc%8f%e6%98%af%e4%bb%80%e4%b9%88">#</a>
+</h3>
+<p>ChangeStream 需要 MongoDB 以副本集或者分片模式运行，本地测试可以使用单机版副本集 <code>rs.initiate()</code> 。在 standalone 模式下会出现错误：The $changestage is only supported on replica sets.</p>
+<h3 id="q7-mongodb-cdc-报错用户名密码错误-但其他组件使用该用户名密码都能正常连接这是什么原因">
+  Q7: MongoDB CDC 报错用户名密码错误, 但其他组件使用该用户名密码都能正常连接，这是什么原因？
+  <a class="anchor" href="#q7-mongodb-cdc-%e6%8a%a5%e9%94%99%e7%94%a8%e6%88%b7%e5%90%8d%e5%af%86%e7%a0%81%e9%94%99%e8%af%af-%e4%bd%86%e5%85%b6%e4%bb%96%e7%bb%84%e4%bb%b6%e4%bd%bf%e7%94%a8%e8%af%a5%e7%94%a8%e6%88%b7%e5%90%8d%e5%af%86%e7%a0%81%e9%83%bd%e8%83%bd%e6%ad%a3%e5%b8%b8%e8%bf%9e%e6%8e%a5%e8%bf%99%e6%98%af%e4%bb%80%e4%b9%88%e5%8e%9f%e5%9b%a0">#</a>
+</h3>
+<p>如果用户不是在默认的admin数据库下创建的，需要在with参数里加下 &lsquo;connection.options&rsquo; = &lsquo;authSource=用户所在的db&rsquo;。</p>
+<h3 id="q8--mongodb-cdc-是否支持-debezium-相关的参数">
+  Q8:  MongoDB CDC 是否支持 debezium 相关的参数？
+  <a class="anchor" href="#q8--mongodb-cdc-%e6%98%af%e5%90%a6%e6%94%af%e6%8c%81-debezium-%e7%9b%b8%e5%85%b3%e7%9a%84%e5%8f%82%e6%95%b0">#</a>
+</h3>
+<p>不支持的，因为 MongoDB CDC 连接器是在 Flink CDC 项目中独立开发，并不依赖Debezium项目，所以不支持。</p>
+<h2 id="oracle-cdc-faq">
+  Oracle CDC FAQ
+  <a class="anchor" href="#oracle-cdc-faq">#</a>
+</h2>
+<h3 id="q1-oracle-cdc-的归档日志增长很快且读取-log-慢">
+  Q1: Oracle CDC 的归档日志增长很快，且读取 log 慢？
+  <a class="anchor" href="#q1-oracle-cdc-%e7%9a%84%e5%bd%92%e6%a1%a3%e6%97%a5%e5%bf%97%e5%a2%9e%e9%95%bf%e5%be%88%e5%bf%ab%e4%b8%94%e8%af%bb%e5%8f%96-log-%e6%85%a2">#</a>
+</h3>
+<p>可以使用在线挖掘的模式，不写入数据字典到 redo log 中，但是这样无法处理 DDL 语句。 生产环境默认策略读取 log 较慢，且默认策略会写入数据字典信息到 redo log 中导致日志量增加较多，可以添加如下 debezium 的配置项。 &rsquo;log.mining.strategy&rsquo; = &lsquo;online_catalog&rsquo;,&rsquo;log.mining.continuous.mine&rsquo; = &rsquo;true&rsquo;。如果使用 SQL 的方式，则需要在配置项中加上前缀 &lsquo;debezium.&rsquo;,即：</p>
+<pre tabindex="0"><code>&#39;debezium.log.mining.strategy&#39; = &#39;online_catalog&#39;,
+&#39;debezium.log.mining.continuous.mine&#39; = &#39;true&#39;
+</code></pre><h3 id="q2-作业报错-caused-by-iodebeziumdebeziumexception-supplemental-logging-not-configured-for-table-xxx-use-command-alter-table-xxx-add-supplemental-log-data-all-columns-怎么办呢">
+  Q2: 作业报错 Caused by: io.debezium.DebeziumException: Supplemental logging not configured for table xxx. Use command: ALTER TABLE xxx ADD SUPPLEMENTAL LOG DATA (ALL) COLUMNS， 怎么办呢？
+  <a class="anchor" href="#q2-%e4%bd%9c%e4%b8%9a%e6%8a%a5%e9%94%99-caused-by-iodebeziumdebeziumexception-supplemental-logging-not-configured-for-table-xxx-use-command-alter-table-xxx-add-supplemental-log-data-all-columns-%e6%80%8e%e4%b9%88%e5%8a%9e%e5%91%a2">#</a>
+</h3>
+<p>对于 oracle11 版本，debezium 会默认把 tableIdCaseInsensitive 设置为true, 导致表名被更新为小写，因此在oracle中查询不到 这个表补全日志设置，导致误报这个Supplemental logging not configured for table 错误”。 添加 debezium 的配置项 &lsquo;database.tablename.case.insensitive&rsquo; = &lsquo;false&rsquo;， 如果使用 SQL 的方式，则在表的 option 中添加配置项 &lsquo;debezium.database.tablename.case.insensitive&rsquo; = &lsquo;false&rsquo;</p>
+<h3 id="q3-oracle-cdc-如何切换成-xstream-的方式">
+  Q3: Oracle CDC 如何切换成 XStream 的方式？
+  <a class="anchor" href="#q3-oracle-cdc-%e5%a6%82%e4%bd%95%e5%88%87%e6%8d%a2%e6%88%90-xstream-%e7%9a%84%e6%96%b9%e5%bc%8f">#</a>
+</h3>
+<p>添加 debezium 的配置项 &lsquo;database.connection.adpter&rsquo; = &lsquo;xstream&rsquo;， 如果使用 SQL 的方式，则在表的 option 中添加配置项 &lsquo;debezium.database.connection.adpter&rsquo; = &lsquo;xstream&rsquo;</p>
+<h3 id="q4-oracle-cdc-的-database-name-和-schema-name-分别是什么">
+  Q4: Oracle CDC 的 database-name 和 schema-name 分别是什么?
+  <a class="anchor" href="#q4-oracle-cdc-%e7%9a%84-database-name-%e5%92%8c-schema-name-%e5%88%86%e5%88%ab%e6%98%af%e4%bb%80%e4%b9%88">#</a>
+</h3>
+<p>database-name 是数据库示例的名字，也就是 Oracle 的 SID schema-name 是表对应的 schema，一般而言，一个用户就对应一个 schema, 该用户的 schema 名等于用户名，并作为该用户缺省 schema。所以 schema-name 一般都是创建这个表的用户名，但是如果创建表的时候指定了 schema，则指定的 schema 则为 schema-name。 比如用 CREATE TABLE aaaa.testtable(xxxx) 的方式成功创建了表 testtable， 则 aaaa 为 schema-name。</p>
+</article>
+ 
+      
+
+      <footer class="book-footer">
+        
+  
+
+
+
+
+	
+
+<a href="//github.com/apache/flink-cdc/edit/master/docs/content.zh/docs/faq/faq.md" style="color:black"><i class="fa fa-edit fa-fw"></i>Edit This Page</a>
+
+
+ 
+        
+      </footer>
+
+      
+  
+  <div class="book-comments">
+
+</div>
+  
+ 
+
+      <label for="menu-control" class="hidden book-menu-overlay"></label>
+    </div>
+
+    
+    <aside class="book-toc">
+      
+  
+
+<nav id="TableOfContents"><h3>On This Page <button class="toc" onclick="collapseToc()"><i class="fa fa-compress" aria-hidden="true"></i></button></h3>
+  <ul>
+    <li><a href="#通用faq">通用FAQ</a>
+      <ul>
+        <li><a href="#q1-为啥没法下载-flink-sql-connector-mysql-cdc-22-snapshotjar-maven-仓库为啥没有-xxx-snapshot-依赖">Q1: 为啥没法下载 flink-sql-connector-mysql-cdc-2.2-SNAPSHOT.jar ，maven 仓库为啥没有 xxx-SNAPSHOT 依赖？</a></li>
+        <li><a href="#q2-什么时候使用-flink-sql-connector-xxxjar什么时候使用-flink-connector-xxxjar两者有啥区别">Q2: 什么时候使用 flink-sql-connector-xxx.jar，什么时候使用 flink-connector-xxx.jar，两者有啥区别?</a></li>
+        <li><a href="#q3-为啥把包名从-comalibabaververica-改成-orgapacheflink-为啥-maven-仓库里找不到-2x-版本">Q3: 为啥把包名从 com.alibaba.ververica 改成 org.apache.flink? 为啥 maven 仓库里找不到 2.x 版本？</a></li>
+      </ul>
+    </li>
+    <li><a href="#mysql-cdc-faq">MySQL CDC FAQ</a>
+      <ul>
+        <li><a href="#q1-使用cdc-2x版本只能读取全量数据无法读取增量binlog-数据怎么回事">Q1: 使用CDC 2.x版本，只能读取全量数据，无法读取增量（binlog） 数据，怎么回事？</a></li>
+        <li><a href="#q2-使用-mysql-cdc增量阶段读取出来的-timestamp-字段时区相差8小时怎么回事呢">Q2: 使用 MySQL CDC，增量阶段读取出来的 timestamp 字段时区相差8小时，怎么回事呢？</a></li>
+        <li><a href="#q3-mysql-cdc支持监听从库吗从库需要如何配置">Q3: mysql cdc支持监听从库吗？从库需要如何配置？</a></li>
+        <li><a href="#q4-我想同步分库分表应该如何配置">Q4: 我想同步分库分表，应该如何配置？</a></li>
+        <li><a href="#q5-我想跳过存量读取阶段只读取-binlog-数据怎么配置">Q5: 我想跳过存量读取阶段，只读取 binlog 数据，怎么配置？</a></li>
+        <li><a href="#q6-我想获取数据库中的-ddl事件怎么办有demo吗">Q6: 我想获取数据库中的 DDL事件，怎么办，有demo吗？</a></li>
+        <li><a href="#q7-mysql-整库同步怎么做-flink-cdc-支持吗">Q7: MySQL 整库同步怎么做, Flink CDC 支持吗？</a></li>
+        <li><a href="#q8-同一个实例下某个库的表无法同步增量数据其他库都可以这是为啥">Q8: 同一个实例下，某个库的表无法同步增量数据，其他库都可以，这是为啥？</a></li>
+        <li><a href="#q9-作业报错-the-connector-is-trying-to-read-binlog-starting-at-gtids-xxx-and-binlog-file-binlog000064-pos89887992-skipping-4-events-plus-1-rows-but-this-is-no-longer-available-on-the-server-reconfigure-the-connector-to-use-a-snapshot-when-needed怎么办呢">Q9: 作业报错 The connector is trying to read binlog starting at GTIDs xxx and binlog file &lsquo;binlog.000064&rsquo;, pos=89887992, skipping 4 events plus 1 rows, but this is no longer available on the server. Reconfigure the connector to use a snapshot when needed，怎么办呢？</a></li>
+        <li><a href="#q10-作业报错-connectexception-a-slave-with-the-same-server_uuidserver_id-as-this-slave-has-connected-to-the-master怎么办呢">Q10: 作业报错 ConnectException: A slave with the same server_uuid/server_id as this slave has connected to the master，怎么办呢？</a></li>
+        <li><a href="#q11-作业报错-connectexception-received-dml--for-processing-binlog-probably-contains-events-generated-with-statement-or-mixed-based-replication-format怎么办呢">Q11: 作业报错 ConnectException: Received DML ‘…’ for processing, binlog probably contains events generated with statement or mixed based replication format，怎么办呢？</a></li>
+        <li><a href="#q12-作业报错-mysql80-public-key-retrieval-is-not-allowed-怎么办呢">Q12: 作业报错 Mysql8.0 Public Key Retrieval is not allowed， 怎么办呢?</a></li>
+        <li><a href="#q13-作业报错-eventdatadeserializationexception-failed-to-deserialize-data-of-eventheaderv4--caused-by-javanetsocketexception-connection-reset-怎么办呢-">Q13: 作业报错 EventDataDeserializationException: Failed to deserialize data of EventHeaderV4 &hellip;. Caused by: java.net.SocketException: Connection reset， 怎么办呢 ?</a></li>
+        <li><a href="#q14-作业报错-the-slave-is-connecting-using-change-master-to-master_auto_position--1-but-the-master-has-purged-binary-logs-containing-gtids-that-the-slave-requires-怎么办呢-">Q14: 作业报错 The slave is connecting using CHANGE MASTER TO MASTER_AUTO_POSITION = 1, but the master has purged binary logs containing GTIDs that the slave requires. 怎么办呢 ?</a></li>
+        <li><a href="#q15-在-datastream-api中构建mysql-cdc源时如何配置tablelist选项">Q15: 在 DataStream API中构建MySQL CDC源时如何配置tableList选项？</a></li>
+      </ul>
+    </li>
+    <li><a href="#postgres-cdc-faq">Postgres CDC FAQ</a>
+      <ul>
+        <li><a href="#q1-发现-pg-服务器磁盘使用率高wal-不释放-是什么原因">Q1: 发现 PG 服务器磁盘使用率高，WAL 不释放 是什么原因？</a></li>
+        <li><a href="#q2-flink-postgres-cdc-同步-postgres-中将-超过最大精度3818的-decimal-类型返回-null">Q2: Flink Postgres CDC 同步 Postgres 中将 超过最大精度（38，18）的 DECIMAL 类型返回 NULL</a></li>
+        <li><a href="#q3-flink-postgres-cdc-提示未传输-toast-数据是什么原因">Q3: Flink Postgres CDC 提示未传输 TOAST 数据，是什么原因？</a></li>
+        <li><a href="#q4-作业报错-replication-slot-xxxx-is-active-怎么办">Q4: 作业报错 Replication slot &ldquo;xxxx&rdquo; is active， 怎么办？</a></li>
+        <li><a href="#q5-作业有脏数据比如非法的日期有参数可以配置可以过滤吗">Q5: 作业有脏数据，比如非法的日期，有参数可以配置可以过滤吗？</a></li>
+        <li><a href="#q6-在datastream-api中构建postgres-cdc源时如何配置tablelist选项">Q6: 在DataStream API中构建Postgres CDC源时如何配置tableList选项？</a></li>
+      </ul>
+    </li>
+    <li><a href="#mongodb-cdc-faq">MongoDB CDC FAQ</a>
+      <ul>
+        <li><a href="#q1-mongodb-cdc-支持-全量增量读-和-只读增量吗">Q1: MongoDB CDC 支持 全量+增量读 和 只读增量吗？</a></li>
+        <li><a href="#q2-mongodb-cdc-支持从-checkpoint-恢复吗-原理是怎么样的呢">Q2: MongoDB CDC 支持从 checkpoint 恢复吗? 原理是怎么样的呢？</a></li>
+        <li><a href="#q3-mongodb-cdc-支持输出--uupdate_before更新前镜像值消息吗">Q3: MongoDB CDC 支持输出 -U（update_before，更新前镜像值）消息吗？</a></li>
+        <li><a href="#q4-mongodb-cdc-支持订阅多个集合吗">Q4: MongoDB CDC 支持订阅多个集合吗？</a></li>
+        <li><a href="#q5-mongodb-cdc-支持-mongodb-的版本是哪些">Q5: MongoDB CDC 支持 MongoDB 的版本是哪些？</a></li>
+        <li><a href="#q6-mongodb-cdc-支持-mongodb-的运行模式是什么">Q6: MongoDB CDC 支持 MongoDB 的运行模式是什么？</a></li>
+        <li><a href="#q7-mongodb-cdc-报错用户名密码错误-但其他组件使用该用户名密码都能正常连接这是什么原因">Q7: MongoDB CDC 报错用户名密码错误, 但其他组件使用该用户名密码都能正常连接，这是什么原因？</a></li>
+        <li><a href="#q8--mongodb-cdc-是否支持-debezium-相关的参数">Q8:  MongoDB CDC 是否支持 debezium 相关的参数？</a></li>
+      </ul>
+    </li>
+    <li><a href="#oracle-cdc-faq">Oracle CDC FAQ</a>
+      <ul>
+        <li><a href="#q1-oracle-cdc-的归档日志增长很快且读取-log-慢">Q1: Oracle CDC 的归档日志增长很快，且读取 log 慢？</a></li>
+        <li><a href="#q2-作业报错-caused-by-iodebeziumdebeziumexception-supplemental-logging-not-configured-for-table-xxx-use-command-alter-table-xxx-add-supplemental-log-data-all-columns-怎么办呢">Q2: 作业报错 Caused by: io.debezium.DebeziumException: Supplemental logging not configured for table xxx. Use command: ALTER TABLE xxx ADD SUPPLEMENTAL LOG DATA (ALL) COLUMNS， 怎么办呢？</a></li>
+        <li><a href="#q3-oracle-cdc-如何切换成-xstream-的方式">Q3: Oracle CDC 如何切换成 XStream 的方式？</a></li>
+        <li><a href="#q4-oracle-cdc-的-database-name-和-schema-name-分别是什么">Q4: Oracle CDC 的 database-name 和 schema-name 分别是什么?</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+
+ 
+    </aside>
+    <aside class="expand-toc">
+      <button class="toc" onclick="expandToc()">
+        <i class="fa fa-expand" aria-hidden="true"></i>
+      </button>
+    </aside>
+    
+  </main>
+
+  
+</body>
+
+</html>
+
+
+
+
+
+
+
+
+
+
+
+

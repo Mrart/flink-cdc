@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>FAQ on Apache Flink CDC</title>
+    <link>//localhost:1313/flink/flink-cdc-docs-master/docs/faq/</link>
+    <description>Recent content in FAQ on Apache Flink CDC</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en</language>
+    <atom:link href="//localhost:1313/flink/flink-cdc-docs-master/docs/faq/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Frequently Asked Questions</title>
+      <link>//localhost:1313/flink/flink-cdc-docs-master/docs/faq/faq/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>//localhost:1313/flink/flink-cdc-docs-master/docs/faq/faq/</guid>
+      <description>General FAQ # Q1: Why can&amp;rsquo;t I download Flink-sql-connector-mysql-cdc-2.2-snapshot jar, why doesn&amp;rsquo;t Maven warehouse rely on XXX snapshot? # Like the mainstream Maven project version management, XXX snapshot version is the code corresponding to the development branch. Users need to download the source code and compile the corresponding jar. Users should use the released version, such as flink-sql-connector-mysql-cdc-2.1 0.jar, the released version will be available in the Maven central warehouse.</description>
+    </item>
+  </channel>
+</rss>

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>部署模式 on Apache Flink CDC</title>
+    <link>//localhost:1313/flink/flink-cdc-docs-master/zh/docs/deployment/</link>
+    <description>Recent content in 部署模式 on Apache Flink CDC</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>zh</language>
+    <atom:link href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/deployment/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Standalone</title>
+      <link>//localhost:1313/flink/flink-cdc-docs-master/zh/docs/deployment/standalone/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>//localhost:1313/flink/flink-cdc-docs-master/zh/docs/deployment/standalone/</guid>
+      <description>Introduction # Standalone mode is Flink’s simplest deployment mode. This short guide will show you how to download the latest stable version of Flink, install, and run it. You will also run an example Flink CDC job and view it in the web UI.&#xA;Preparation # Flink runs on all UNIX-like environments, i.e. Linux, Mac OS X, and Cygwin (for Windows).&#xA;You can refer overview to check supported versions and download the binary release of Flink, then extract the archive:</description>
+    </item>
+    <item>
+      <title>YARN</title>
+      <link>//localhost:1313/flink/flink-cdc-docs-master/zh/docs/deployment/yarn/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>//localhost:1313/flink/flink-cdc-docs-master/zh/docs/deployment/yarn/</guid>
+      <description>Introduction # Apache Hadoop YARN is a resource provider popular with many data processing frameworks. Flink services are submitted to YARN&amp;rsquo;s ResourceManager, which spawns containers on machines managed by YARN NodeManagers. Flink deploys its JobManager and TaskManager instances into such containers.&#xA;Flink can dynamically allocate and de-allocate TaskManager resources depending on the number of processing slots required by the job(s) running on the JobManager.&#xA;Preparation # This Getting Started section assumes a functional YARN environment, starting from version 2.</description>
+    </item>
+    <item>
+      <title>Kubernetes</title>
+      <link>//localhost:1313/flink/flink-cdc-docs-master/zh/docs/deployment/kubernetes/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>//localhost:1313/flink/flink-cdc-docs-master/zh/docs/deployment/kubernetes/</guid>
+      <description>Introduction # Kubernetes is a popular container-orchestration system for automating computer application deployment, scaling, and management. Flink&amp;rsquo;s native Kubernetes integration allows you to directly deploy Flink on a running Kubernetes cluster. Moreover, Flink is able to dynamically allocate and de-allocate TaskManagers depending on the required resources because it can directly talk to Kubernetes.&#xA;Apache Flink also provides a Kubernetes operator for managing Flink clusters on Kubernetes. It supports both standalone and native deployment mode and greatly simplifies deployment, configuration and the life cycle management of Flink resources on Kubernetes.</description>
+    </item>
+  </channel>
+</rss>

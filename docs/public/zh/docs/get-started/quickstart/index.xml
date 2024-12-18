@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>快速开始 on Apache Flink CDC</title>
+    <link>//localhost:1313/flink/flink-cdc-docs-master/zh/docs/get-started/quickstart/</link>
+    <description>Recent content in 快速开始 on Apache Flink CDC</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>zh</language>
+    <atom:link href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/get-started/quickstart/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>MySQL 同步到 Doris</title>
+      <link>//localhost:1313/flink/flink-cdc-docs-master/zh/docs/get-started/quickstart/mysql-to-doris/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>//localhost:1313/flink/flink-cdc-docs-master/zh/docs/get-started/quickstart/mysql-to-doris/</guid>
+      <description>Streaming ELT 同步 MySQL 到 Doris # 这篇教程将展示如何基于 Flink CDC 快速构建 MySQL 到 Doris 的 Streaming ELT 作业，包含整库同步、表结构变更同步和分库分表同步的功能。 本教程的演示都将在 Flink CDC CLI 中进行，无需一行 Java/Scala 代码，也无需安装 IDE。&#xA;准备阶段 # 准备一台已经安装了 Docker 的 Linux 或者 MacOS 电脑。&#xA;准备 Flink Standalone 集群 # 下载 Flink 1.18.0，解压后得到 flink-1.18.0 目录。 使用下面的命令跳转至 Flink 目录下，并且设置 FLINK_HOME 为 flink-1.18.0 所在目录。&#xA;cd flink-1.18.0 通过在 conf/flink-conf.yaml 配置文件追加下列参数开启 checkpoint，每隔 3 秒做一次 checkpoint。&#xA;execution.checkpointing.interval: 3000 使用下面的命令启动 Flink 集群。&#xA;./bin/start-cluster.sh 启动成功的话，可以在 http://localhost:8081/访问到 Flink Web UI，如下所示：</description>
+    </item>
+    <item>
+      <title>MySQL 同步到 StarRocks</title>
+      <link>//localhost:1313/flink/flink-cdc-docs-master/zh/docs/get-started/quickstart/mysql-to-starrocks/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>//localhost:1313/flink/flink-cdc-docs-master/zh/docs/get-started/quickstart/mysql-to-starrocks/</guid>
+      <description>Streaming ELT 同步 MySQL 到 StarRocks # 这篇教程将展示如何基于 Flink CDC 快速构建 MySQL 到 StarRocks 的 Streaming ELT 作业，包含整库同步、表结构变更同步和分库分表同步的功能。&#xA;本教程的演示都将在 Flink CDC CLI 中进行，无需一行 Java/Scala 代码，也无需安装 IDE。&#xA;准备阶段 # 准备一台已经安装了 Docker 的 Linux 或者 MacOS 电脑。&#xA;准备 Flink Standalone 集群 # 下载 Flink 1.18.0 ，解压后得到 flink-1.18.0 目录。&#xA;使用下面的命令跳转至 Flink 目录下，并且设置 FLINK_HOME 为 flink-1.18.0 所在目录。&#xA;cd flink-1.18.0 通过在 conf/flink-conf.yaml 配置文件追加下列参数开启 checkpoint，每隔 3 秒做一次 checkpoint。&#xA;execution.checkpointing.interval: 3000 使用下面的命令启动 Flink 集群。&#xA;./bin/start-cluster.sh 启动成功的话，可以在 http://localhost:8081/ 访问到 Flink Web UI，如下所示：</description>
+    </item>
+  </channel>
+</rss>

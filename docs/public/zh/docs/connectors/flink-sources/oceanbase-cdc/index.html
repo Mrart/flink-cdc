@@ -1,0 +1,2023 @@
+
+<!DOCTYPE html>
+<html lang="zh" dir=ZgotmplZ>
+
+<head><script src="/flink/flink-cdc-docs-master/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=flink/flink-cdc-docs-master/livereload" data-no-instant defer></script>
+  <meta name="generator" content="Hugo 0.124.1">
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="OceanBase CDC 连接器 # OceanBase CDC 连接器允许从 OceanBase 读取快照数据和增量数据。本文介绍了如何设置 OceanBase CDC 连接器以对 OceanBase 进行 SQL 查询。
+OceanBase CDC 方案 # 名词解释:
+OceanBase CE: OceanBase 社区版。OceanBase 的开源版本，兼容 MySQL https://github.com/oceanbase/oceanbase 。 OceanBase EE: OceanBase 企业版。OceanBase 的商业版本，支持 MySQL 和 Oracle 两种兼容模式 https://www.oceanbase.com 。 OceanBase Cloud: OceanBase 云数据库 https://www.oceanbase.com/product/cloud 。 Log Proxy CE: OceanBase 日志代理服务社区版。单独使用时支持 CDC 模式，是一个获取 OceanBase 社区版事务日志（commit log）的代理服务 https://github.com/oceanbase/oblogproxy 。 Log Proxy EE: OceanBase 日志代理服务企业版。单独使用时支持 CDC 模式，是一个获取 OceanBase 企业版事务日志（commit log）的代理服务，目前仅在 OceanBase Cloud 上提供有限的支持, 详情请咨询相关技术支持。 Binlog Service CE: OceanBase Binlog 服务社区版。OceanBase 社区版的一个兼容 MySQL 复制协议的解决方案，详情参考 Log Proxy CE Binlog 模式的文档。 Binlog Service EE: OceanBase Binlog 服务企业版。OceanBase 企业版 MySQL 模式的一个兼容 MySQL 复制协议的解决方案，仅可在阿里云使用，详情见操作指南。 MySQL Driver: mysql-connector-java，可用于 OceanBase 社区版和 OceanBase 企业版 MySQL 模式。 OceanBase Driver: OceanBase JDBC 驱动，支持所有版本的 MySQL 和 Oracle 兼容模式 https://github.">
+<meta name="theme-color" content="#FFFFFF"><meta property="og:title" content="OceanBase" />
+<meta property="og:description" content="OceanBase CDC 连接器 # OceanBase CDC 连接器允许从 OceanBase 读取快照数据和增量数据。本文介绍了如何设置 OceanBase CDC 连接器以对 OceanBase 进行 SQL 查询。
+OceanBase CDC 方案 # 名词解释:
+OceanBase CE: OceanBase 社区版。OceanBase 的开源版本，兼容 MySQL https://github.com/oceanbase/oceanbase 。 OceanBase EE: OceanBase 企业版。OceanBase 的商业版本，支持 MySQL 和 Oracle 两种兼容模式 https://www.oceanbase.com 。 OceanBase Cloud: OceanBase 云数据库 https://www.oceanbase.com/product/cloud 。 Log Proxy CE: OceanBase 日志代理服务社区版。单独使用时支持 CDC 模式，是一个获取 OceanBase 社区版事务日志（commit log）的代理服务 https://github.com/oceanbase/oblogproxy 。 Log Proxy EE: OceanBase 日志代理服务企业版。单独使用时支持 CDC 模式，是一个获取 OceanBase 企业版事务日志（commit log）的代理服务，目前仅在 OceanBase Cloud 上提供有限的支持, 详情请咨询相关技术支持。 Binlog Service CE: OceanBase Binlog 服务社区版。OceanBase 社区版的一个兼容 MySQL 复制协议的解决方案，详情参考 Log Proxy CE Binlog 模式的文档。 Binlog Service EE: OceanBase Binlog 服务企业版。OceanBase 企业版 MySQL 模式的一个兼容 MySQL 复制协议的解决方案，仅可在阿里云使用，详情见操作指南。 MySQL Driver: mysql-connector-java，可用于 OceanBase 社区版和 OceanBase 企业版 MySQL 模式。 OceanBase Driver: OceanBase JDBC 驱动，支持所有版本的 MySQL 和 Oracle 兼容模式 https://github." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/flink-sources/oceanbase-cdc/" /><meta property="article:section" content="docs" />
+
+
+<title>OceanBase | Apache Flink CDC</title>
+<link rel="manifest" href="/flink/flink-cdc-docs-master/manifest.json">
+<link rel="icon" href="/flink/flink-cdc-docs-master/favicon.png" type="image/x-icon">
+<link rel="alternate" hreflang="en" href="//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/flink-sources/oceanbase-cdc/" title="OceanBase">
+
+<link rel="stylesheet" href="/flink/flink-cdc-docs-master/book.min.59471f109f689a198d44e845028ea35c1b638516a64e46df5101f6f6537d611e.css" integrity="sha256-WUcfEJ9omhmNROhFAo6jXBtjhRamTkbfUQH29lN9YR4=">
+<script defer src="/flink/flink-cdc-docs-master/zh.search.min.f05f9a91a4965726eddeeef36688c3cc1be81e20847d75375191fa5968377892.js" integrity="sha256-8F&#43;akaSWVybt3u7zZojDzBvoHiCEfXU3UZH6WWg3eJI="></script>
+<!--
+Made with Book Theme
+https://github.com/alex-shpak/hugo-book
+-->
+
+  
+
+<link rel="stylesheet" type="text/css" href="//localhost:1313/flink/flink-cdc-docs-master//font-awesome/css/font-awesome.min.css">
+<script src="//localhost:1313/flink/flink-cdc-docs-master//js/anchor.min.js"></script>
+<script src="//localhost:1313/flink/flink-cdc-docs-master//js/flink.js"></script>
+
+
+  
+  <script>
+    var _paq = window._paq = window._paq || [];
+     
+     
+    _paq.push(['disableCookies']);
+     
+    _paq.push(["setDomains", ["*.flink.apache.org","*.nightlies.apache.org/flink"]]);
+    _paq.push(['trackPageView']);
+    _paq.push(['enableLinkTracking']);
+    (function() {
+      var u="//matomo.privacy.apache.org/";
+      _paq.push(['setTrackerUrl', u+'matomo.php']);
+      _paq.push(['setSiteId', '1']);
+      var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
+      g.async=true; g.src=u+'matomo.js'; s.parentNode.insertBefore(g,s);
+    })();
+  </script>
+  
+</head>
+
+<body dir=ZgotmplZ>
+  <input type="checkbox" class="hidden toggle" id="menu-control" />
+  <input type="checkbox" class="hidden toggle" id="toc-control" />
+  <main class="container flex">
+    <aside class="book-menu">
+      
+  
+
+<nav>
+
+
+<a id="logo" href="//localhost:1313/flink/flink-cdc-docs-master//zh">
+    <img width="70%" src="//localhost:1313/flink/flink-cdc-docs-master//navbar-brand-logo.jpg">
+</a>
+<p style="text-align:right">v3.2-SNAPSHOT</p>
+
+<div class="book-search">
+  <input type="text" id="book-search-input" placeholder="搜索" aria-label="搜索" maxlength="64" data-hotkeys="s/" />
+  <div class="book-search-spinner hidden"></div>
+  <ul id="book-search-results"></ul>
+</div>
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+  <ul>
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <input type="checkbox" id="section-6200e334011b863c650806533c1e934d" class="toggle"  />
+    <label for="section-6200e334011b863c650806533c1e934d" class="flex justify-between"><div style="font-weight:450;margin-bottom:0.5em">入门指南</div><span>▾</span>
+    </label>
+  
+
+          
+  <ul>
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/get-started/introduction/" class="">项目介绍</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <input type="checkbox" id="section-65126ba91b4ad451d64ae3bb634a3d69" class="toggle"  />
+    <label for="section-65126ba91b4ad451d64ae3bb634a3d69" class="flex justify-between">快速开始<span>▾</span>
+    </label>
+  
+
+          
+  <ul>
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/get-started/quickstart/mysql-to-doris/" class="">MySQL 同步到 Doris</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/get-started/quickstart/mysql-to-starrocks/" class="">MySQL 同步到 StarRocks</a>
+  
+
+        </li>
+      
+    
+  </ul>
+
+        </li>
+      
+    
+  </ul>
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <input type="checkbox" id="section-9368478381278f3e55d1d748555c70f6" class="toggle"  />
+    <label for="section-9368478381278f3e55d1d748555c70f6" class="flex justify-between"><div style="font-weight:450;margin-bottom:0.5em">核心概念</div><span>▾</span>
+    </label>
+  
+
+          
+  <ul>
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/core-concept/data-pipeline/" class="">Data Pipeline</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/core-concept/data-source/" class="">Data Source</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/core-concept/data-sink/" class="">Data Sink</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/core-concept/table-id/" class="">Table ID</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/core-concept/transform/" class="">Transform</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/core-concept/route/" class="">Route</a>
+  
+
+        </li>
+      
+    
+  </ul>
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <input type="checkbox" id="section-cca35f842c08f0e2b4a94e3d03b79c9b" class="toggle" checked />
+    <label for="section-cca35f842c08f0e2b4a94e3d03b79c9b" class="flex justify-between"><div style="font-weight:450;margin-bottom:0.5em">连接器</div><span>▾</span>
+    </label>
+  
+
+          
+  <ul>
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <input type="checkbox" id="section-4436a0c8f6839ca41c460c9dd3348724" class="toggle"  />
+    <label for="section-4436a0c8f6839ca41c460c9dd3348724" class="flex justify-between">Pipeline 连接器<span>▾</span>
+    </label>
+  
+
+          
+  <ul>
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/pipeline-connectors/overview/" class="">概览</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/pipeline-connectors/mysql/" class="">MySQL</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/pipeline-connectors/paimon/" class="">Paimon</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/pipeline-connectors/kafka/" class="">Kafka</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/pipeline-connectors/doris/" class="">Doris</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/pipeline-connectors/starrocks/" class="">StarRocks</a>
+  
+
+        </li>
+      
+    
+  </ul>
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <input type="checkbox" id="section-c0a0971d8f495dc42589f86cef138818" class="toggle" checked />
+    <label for="section-c0a0971d8f495dc42589f86cef138818" class="flex justify-between">Flink Source 连接器<span>▾</span>
+    </label>
+  
+
+          
+  <ul>
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/flink-sources/overview/" class="">概览</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/flink-sources/mysql-cdc/" class="">MySQL</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/flink-sources/oracle-cdc/" class="">Oracle</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/flink-sources/sqlserver-cdc/" class="">SQL Server</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/flink-sources/postgres-cdc/" class="">Postgres</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/flink-sources/mongodb-cdc/" class="">MongoDB</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/flink-sources/db2-cdc/" class="">Db2</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/flink-sources/tidb-cdc/" class="">TiDB</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/flink-sources/oceanbase-cdc/" class=" active">OceanBase</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/flink-sources/vitess-cdc/" class="">Vitess</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/flink-sources/datastream-api-package-guidance/" class="">DataStream API 打包指南</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <input type="checkbox" id="section-c23e2f7ee1f6d87942cc0f2b79648372" class="toggle"  />
+    <label for="section-c23e2f7ee1f6d87942cc0f2b79648372" class="flex justify-between">Flink CDC Sources 教程<span>▾</span>
+    </label>
+  
+
+          
+  <ul>
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/flink-sources/tutorials/mongodb-tutorial/" class="">MongoDB 教程</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/flink-sources/tutorials/db2-tutorial/" class="">Db2 教程</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/flink-sources/tutorials/oceanbase-tutorial/" class="">OceanBase 教程</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/flink-sources/tutorials/oracle-tutorial/" class="">Oracle 教程</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/flink-sources/tutorials/polardbx-tutorial/" class="">PolarDB-X 教程</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/flink-sources/tutorials/sqlserver-tutorial/" class="">SqlServer 教程</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/flink-sources/tutorials/tidb-tutorial/" class="">TiDB 教程</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/flink-sources/tutorials/build-real-time-data-lake-tutorial/" class="">使用 Flink CDC 构建实时数据湖</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/flink-sources/tutorials/build-streaming-etl-tutorial/" class="">使用 Flink CDC 构建 Streaming ETL</a>
+  
+
+        </li>
+      
+    
+  </ul>
+
+        </li>
+      
+    
+  </ul>
+
+        </li>
+      
+    
+  </ul>
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <input type="checkbox" id="section-988c4238198a24c7eac9b0f056d01246" class="toggle"  />
+    <label for="section-988c4238198a24c7eac9b0f056d01246" class="flex justify-between"><div style="font-weight:450;margin-bottom:0.5em">部署模式</div><span>▾</span>
+    </label>
+  
+
+          
+  <ul>
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/deployment/standalone/" class="">Standalone</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/deployment/yarn/" class="">YARN</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/deployment/kubernetes/" class="">Kubernetes</a>
+  
+
+        </li>
+      
+    
+  </ul>
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <input type="checkbox" id="section-fc36b619eabb0ca9cb7b253e0eba8a7a" class="toggle"  />
+    <label for="section-fc36b619eabb0ca9cb7b253e0eba8a7a" class="flex justify-between"><div style="font-weight:450;margin-bottom:0.5em">开发者指南</div><span>▾</span>
+    </label>
+  
+
+          
+  <ul>
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/developer-guide/understand-flink-cdc-api/" class="">理解 Flink CDC API</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/developer-guide/contribute-to-flink-cdc/" class="">向 Flink CDC 提交贡献</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/developer-guide/licenses/" class="">许可证</a>
+  
+
+        </li>
+      
+    
+  </ul>
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <input type="checkbox" id="section-fb051daccb64de13ff5dc1ae657b01b6" class="toggle"  />
+    <label for="section-fb051daccb64de13ff5dc1ae657b01b6" class="flex justify-between">常见问题<span>▾</span>
+    </label>
+  
+
+          
+  <ul>
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/faq/faq/" class="">通用FAQ</a>
+  
+
+        </li>
+      
+    
+  </ul>
+
+        </li>
+      
+    
+  </ul>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<br/>
+<hr class="menu-break">
+
+<a href="//flink.apache.org" style="color:black;margin-bottom:0.5em"><i class="link fa fa-external-link title" aria-hidden="true"></i> Project Homepage</a>
+<br/>
+
+<a href="//nightlies.apache.org/flink/flink-cdc-docs-master/api/java/" style="color:black;margin-bottom:0.5em"><i class="link fa fa-external-link title" aria-hidden="true"></i> JavaDocs</a>
+<br/>
+
+<hr class="menu-break">
+<li style="list-style-type: none">
+  <br>
+  <input type="checkbox" id="section-version-picker" class="toggle">
+  <label for="section-version-picker" class="flex justify-between">
+     <div style="font-weight:450;margin-bottom:0.5em">Pick Docs Version</div>
+     <span>▾</span>
+  </label>
+  <ul>
+    <a href="//localhost:1313/flink/flink-cdc-docs-master//zh">
+      3.2-SNAPSHOT (✓)
+    </a>
+    <hr class="menu-break">
+    
+      <li>
+        <a href="https://nightlies.apache.org/flink/flink-cdc-docs-release-3.0">
+          v3.0
+        </a>
+      </li>
+    
+    <hr class="menu-break">
+    <li>
+      <a href="//localhost:1313/flink/flink-cdc-docs-master//zh/versions">
+          All Versions
+      </a>
+    </li>
+  </ul>
+</li>
+
+
+
+
+  
+
+  
+
+
+  
+
+
+
+
+
+<a  href="//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/flink-sources/oceanbase-cdc/" class="flex align-center">
+  <i class="fa fa-globe" aria-hidden="true"></i>&nbsp;&nbsp;
+  English
+</a>
+
+
+
+</nav>
+
+
+
+
+  <script>(function(){var e=document.querySelector("aside.book-menu nav");addEventListener("beforeunload",function(){localStorage.setItem("menu.scrollTop",e.scrollTop)}),e.scrollTop=localStorage.getItem("menu.scrollTop")})()</script>
+
+
+ 
+    </aside>
+
+    <div class="book-page">
+      <header class="book-header">
+        
+  <div class="flex align-center justify-between">
+  <label for="menu-control">
+    <img src="/flink/flink-cdc-docs-master/svg/menu.svg" class="book-icon" alt="Menu" />
+  </label>
+
+  <strong>OceanBase</strong>
+
+  <label for="toc-control">
+    
+    <img src="/flink/flink-cdc-docs-master/svg/toc.svg" class="book-icon" alt="Table of Contents" />
+    
+  </label>
+</div>
+
+
+  
+  <aside class="hidden clearfix">
+    
+  
+
+<nav id="TableOfContents"><h3>On This Page <button class="toc" onclick="collapseToc()"><i class="fa fa-compress" aria-hidden="true"></i></button></h3>
+  <ul>
+    <li>
+      <ul>
+        <li><a href="#oceanbase-cdc-方案">OceanBase CDC 方案</a></li>
+      </ul>
+    </li>
+    <li><a href="#依赖">依赖</a>
+      <ul>
+        <li><a href="#maven-dependency">Maven dependency</a></li>
+        <li><a href="#sql-client-jar">SQL Client JAR</a></li>
+      </ul>
+    </li>
+    <li><a href="#配置-oceanbase-数据库和-log-proxy-服务">配置 OceanBase 数据库和 Log Proxy 服务</a></li>
+    <li><a href="#创建-oceanbase-cdc-表">创建 OceanBase CDC 表</a></li>
+    <li><a href="#oceanbase-cdc-连接器选项">OceanBase CDC 连接器选项</a></li>
+    <li><a href="#支持的元数据">支持的元数据</a></li>
+    <li><a href="#特性">特性</a>
+      <ul>
+        <li><a href="#at-least-once-处理">At-Least-Once 处理</a></li>
+        <li><a href="#启动模式">启动模式</a></li>
+        <li><a href="#消费提交日志">消费提交日志</a></li>
+        <li><a href="#datastream-source">DataStream Source</a></li>
+      </ul>
+    </li>
+    <li><a href="#数据类型映射">数据类型映射</a>
+      <ul>
+        <li><a href="#mysql-模式">Mysql 模式</a></li>
+        <li><a href="#oracle-模式">Oracle 模式</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+
+
+  </aside>
+  
+ 
+      </header>
+
+      
+
+
+
+
+<article class="markdown">
+    <blockquote style="border-color:#f66">
+        This documentation is for an unreleased version of Apache Flink CDC. We recommend you use the latest <a href="https://ci.apache.org/projects/flink/flink-cdc-docs-stable/">stable version</a>.
+    </blockquote>
+</article>
+
+
+
+      
+  <article class="markdown"><!--
+Licensed to the Apache Software Foundation (ASF) under one
+or more contributor license agreements.  See the NOTICE file
+distributed with this work for additional information
+regarding copyright ownership.  The ASF licenses this file
+to you under the Apache License, Version 2.0 (the
+"License"); you may not use this file except in compliance
+with the License.  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing,
+software distributed under the License is distributed on an
+"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, either express or implied.  See the License for the
+specific language governing permissions and limitations
+under the License.
+-->
+<h1 id="oceanbase-cdc-连接器">
+  OceanBase CDC 连接器
+  <a class="anchor" href="#oceanbase-cdc-%e8%bf%9e%e6%8e%a5%e5%99%a8">#</a>
+</h1>
+<p>OceanBase CDC 连接器允许从 OceanBase 读取快照数据和增量数据。本文介绍了如何设置 OceanBase CDC 连接器以对 OceanBase 进行 SQL 查询。</p>
+<h3 id="oceanbase-cdc-方案">
+  OceanBase CDC 方案
+  <a class="anchor" href="#oceanbase-cdc-%e6%96%b9%e6%a1%88">#</a>
+</h3>
+<p>名词解释:</p>
+<ul>
+<li><em>OceanBase CE</em>: OceanBase 社区版。OceanBase 的开源版本，兼容 MySQL <a href="https://github.com/oceanbase/oceanbase">https://github.com/oceanbase/oceanbase</a> 。</li>
+<li><em>OceanBase EE</em>: OceanBase 企业版。OceanBase 的商业版本，支持 MySQL 和 Oracle 两种兼容模式 <a href="https://www.oceanbase.com">https://www.oceanbase.com</a> 。</li>
+<li><em>OceanBase Cloud</em>: OceanBase 云数据库 <a href="https://www.oceanbase.com/product/cloud">https://www.oceanbase.com/product/cloud</a> 。</li>
+<li><em>Log Proxy CE</em>: OceanBase 日志代理服务社区版。单独使用时支持 CDC 模式，是一个获取 OceanBase 社区版事务日志（commit log）的代理服务 <a href="https://github.com/oceanbase/oblogproxy">https://github.com/oceanbase/oblogproxy</a> 。</li>
+<li><em>Log Proxy EE</em>: OceanBase 日志代理服务企业版。单独使用时支持 CDC 模式，是一个获取 OceanBase 企业版事务日志（commit log）的代理服务，目前仅在 OceanBase Cloud 上提供有限的支持, 详情请咨询相关技术支持。</li>
+<li><em>Binlog Service CE</em>: OceanBase Binlog 服务社区版。OceanBase 社区版的一个兼容 MySQL 复制协议的解决方案，详情参考 Log Proxy CE Binlog 模式的文档。</li>
+<li><em>Binlog Service EE</em>: OceanBase Binlog 服务企业版。OceanBase 企业版 MySQL 模式的一个兼容 MySQL 复制协议的解决方案，仅可在阿里云使用，详情见<a href="https://www.alibabacloud.com/help/zh/apsaradb-for-oceanbase/latest/binlog-overview">操作指南</a>。</li>
+<li><em>MySQL Driver</em>: <code>mysql-connector-java</code>，可用于 OceanBase 社区版和 OceanBase 企业版 MySQL 模式。</li>
+<li><em>OceanBase Driver</em>: OceanBase JDBC 驱动，支持所有版本的 MySQL 和 Oracle 兼容模式 <a href="https://github.com/oceanbase/obconnector-j">https://github.com/oceanbase/obconnector-j</a> 。</li>
+</ul>
+<p>OceanBase CDC 源端读取方案：</p>
+<div class="wy-table-responsive">
+    <table class="colwidths-auto docutils">
+        <thead>
+            <tr>
+                <th class="text-left">数据库类型</th>
+                <th class="text-left">支持的驱动</th>
+                <th class="text-left">CDC 连接器</th>
+                <th class="text-left">其他用到的组件</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td rowspan="2">OceanBase CE</td>
+                <td>
+                    MySQL Driver: 5.1.4x, 8.0.x <br>
+                    OceanBase Driver: 2.4.x
+                </td>
+                <td>OceanBase CDC Connector</td>
+                <td>Log Proxy CE</td>
+            </tr>
+            <tr>
+                <td>MySQL Driver: 8.0.x</td>
+                <td>MySQL CDC Connector</td>
+                <td>Binlog Service CE</td>
+            </tr>
+            <tr>
+                <td rowspan="2">OceanBase EE (MySQL 模式)</td>
+                <td>
+                    MySQL Driver: 5.1.4x, 8.0.x <br>
+                    OceanBase Driver: 2.4.x
+                </td>
+                <td>OceanBase CDC Connector</td>
+                <td>Log Proxy EE</td>
+            </tr>
+            <tr>
+                <td>MySQL Driver: 8.0.x</td>
+                <td>MySQL CDC Connector</td>
+                <td>Binlog Service EE</td>
+            </tr>
+            <tr>
+                <td>OceanBase EE (Oracle 模式)</td>
+                <td>OceanBase Driver: 2.4.x</td>
+                <td>OceanBase CDC Connector</td>
+                <td>Log Proxy EE (CDC 模式)</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+<p>注意: 对于使用 OceanBase 社区版或 OceanBase 企业版 MySQL 模式的用户，我们推荐参考  <a href="mysql-cdc.md">MySQL CDC 的文档</a>，使用 MySQL CDC 连接器搭配 Binlog 服务。</p>
+<h2 id="依赖">
+  依赖
+  <a class="anchor" href="#%e4%be%9d%e8%b5%96">#</a>
+</h2>
+<p>为了使用 OceanBase CDC 连接器，您必须提供相关的依赖信息。以下依赖信息适用于使用自动构建工具（如 Maven 或 SBT）构建的项目和带有 SQL JAR 包的 SQL 客户端。</p>
+<h3 id="maven-dependency">
+  Maven dependency
+  <a class="anchor" href="#maven-dependency">#</a>
+</h3>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div id="c7179cf1e9c3c8ec45e12482ff9a00d4" onclick="selectTextAndCopy('c7179cf1e9c3c8ec45e12482ff9a00d4')"class="highlight"><pre class="chroma"><code class="language-xml" data-lang="xml"><span class="nt">&ltdependency&gt</span>
+    <span class="nt">&ltgroupId&gt</span>org.apache.flink<span class="nt">&lt/groupId&gt</span>
+    <span class="nt">&ltartifactId&gt</span>flink-connector-oceanbase-cdc<span class="nt">&lt/artifactId&gt</span>
+    <span class="nt">&ltversion&gt</span>3.2-SNAPSHOT<span class="nt">&lt/version&gt</span>
+<span class="nt">&lt/dependency&gt</span></code></pre></div>
+<div class="book-hint info" style="text-align:center;display:none" copyable="flink-module" copyattribute="c7179cf1e9c3c8ec45e12482ff9a00d4">
+  Copied to clipboard!
+</div> 
+
+<h3 id="sql-client-jar">
+  SQL Client JAR
+  <a class="anchor" href="#sql-client-jar">#</a>
+</h3>
+<p><code>下载链接仅在已发布版本可用，请在文档网站左下角选择浏览已发布的版本。</code></p>
+<p>下载<a href="https://repo1.maven.org/maven2/com/ververica/flink-sql-connector-oceanbase-cdc/3.0.1/flink-sql-connector-oceanbase-cdc-3.0.1.jar">flink-sql-connector-oceanbase-cdc-3.0.1.jar</a>  到 <code>&lt;FLINK_HOME&gt;/lib/</code> 目录下。</p>
+<p><strong>注意:</strong> 参考 <a href="https://mvnrepository.com/artifact/com.ververica/flink-sql-connector-oceanbase-cdc">flink-sql-connector-oceanbase-cdc</a> 当前已发布的所有版本都可以在 Maven 中央仓库获取。</p>
+<p>由于 MySQL Driver 和 OceanBase Driver 使用的开源协议都与 Flink CDC 项目不兼容，我们无法在 jar 包中提供驱动。 您可能需要手动配置以下依赖：</p>
+<div class="wy-table-responsive">
+<table class="colwidths-auto docutils">
+    <thead>
+      <tr>
+        <th class="text-left">依赖名称</th>
+        <th class="text-left">说明</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a href="https://mvnrepository.com/artifact/mysql/mysql-connector-java/8.0.27">mysql:mysql-connector-java:8.0.27</a></td>
+        <td>用于连接到 OceanBase 数据库的 MySQL 租户。</td>
+      </tr>
+    </tbody>
+    <tbody>
+      <tr>
+        <td><a href="https://mvnrepository.com/artifact/com.oceanbase/oceanbase-client/2.4.9">com.oceanbase:oceanbase-client:2.4.9</a></td>
+        <td>用于连接到 OceanBase 数据库的 MySQL 或 Oracle 租户。</td>
+      </tr>
+    </tbody>
+</table>
+</div>
+<h2 id="配置-oceanbase-数据库和-log-proxy-服务">
+  配置 OceanBase 数据库和 Log Proxy 服务
+  <a class="anchor" href="#%e9%85%8d%e7%bd%ae-oceanbase-%e6%95%b0%e6%8d%ae%e5%ba%93%e5%92%8c-log-proxy-%e6%9c%8d%e5%8a%a1">#</a>
+</h2>
+<ol>
+<li>
+<p>按照 <a href="https://github.com/oceanbase/oceanbase#quick-start">文档</a> 配置 OceanBase 集群。</p>
+</li>
+<li>
+<p>在 sys 租户中，为 oblogproxy 创建一个带密码的用户。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">mysql -h<span class="si">${</span><span class="nv">host</span><span class="si">}</span> -P<span class="si">${</span><span class="nv">port</span><span class="si">}</span> -uroot
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">mysql&gt; SHOW TENANT<span class="p">;</span>
+</span></span><span class="line"><span class="cl">mysql&gt; CREATE USER <span class="si">${</span><span class="nv">sys_username</span><span class="si">}</span> IDENTIFIED BY <span class="s1">&#39;${sys_password}&#39;</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">mysql&gt; GRANT ALL PRIVILEGES ON *.* TO <span class="si">${</span><span class="nv">sys_username</span><span class="si">}</span> WITH GRANT OPTION<span class="p">;</span>
+</span></span></code></pre></div></li>
+<li>
+<p>为你想要监控的租户创建一个用户，这个用户用来读取快照数据和变化事件数据。</p>
+</li>
+<li>
+<p>OceanBase 社区版用户需要获取<code>rootserver-list</code>，可以使用以下命令获取：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">mysql&gt; SHOW PARAMETERS LIKE <span class="s1">&#39;rootservice_list&#39;</span><span class="p">;</span>
+</span></span></code></pre></div><p>OceanBase 企业版用户需要获取 <code>config-url</code>，可以使用以下命令获取：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">mysql&gt; show parameters like <span class="s1">&#39;obconfig_url&#39;</span><span class="p">;</span>
+</span></span></code></pre></div></li>
+<li>
+<p>设置 OceanBase LogProxy。 对于OceanBase社区版的用户，您可以按照<a href="https://www.oceanbase.com/docs/community-oblogproxy-doc-1000000000531984">此文档</a>进行操作。</p>
+</li>
+</ol>
+<h2 id="创建-oceanbase-cdc-表">
+  创建 OceanBase CDC 表
+  <a class="anchor" href="#%e5%88%9b%e5%bb%ba-oceanbase-cdc-%e8%a1%a8">#</a>
+</h2>
+<p>使用以下命令，创建 OceanBase CDC 表：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="cl"><span class="c1">-- 每 3 秒做一次 checkpoint，用于测试，生产配置建议 5 到 10 分钟                  
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="n">Flink</span><span class="w"> </span><span class="k">SQL</span><span class="o">&gt;</span><span class="w"> </span><span class="k">SET</span><span class="w"> </span><span class="s1">&#39;execution.checkpointing.interval&#39;</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;3s&#39;</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="c1">-- 在 Flink SQL 中创建 OceanBase 表 `orders`
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="n">Flink</span><span class="w"> </span><span class="k">SQL</span><span class="o">&gt;</span><span class="w"> </span><span class="k">CREATE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">orders</span><span class="w"> </span><span class="p">(</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">order_id</span><span class="w">     </span><span class="nb">INT</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">order_date</span><span class="w">   </span><span class="k">TIMESTAMP</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">customer_name</span><span class="w"> </span><span class="n">STRING</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">price</span><span class="w">        </span><span class="nb">DECIMAL</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="w"> </span><span class="mi">5</span><span class="p">),</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">product_id</span><span class="w">   </span><span class="nb">INT</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">order_status</span><span class="w"> </span><span class="nb">BOOLEAN</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">PRIMARY</span><span class="w"> </span><span class="k">KEY</span><span class="w"> </span><span class="p">(</span><span class="n">order_id</span><span class="p">)</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="n">ENFORCED</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">)</span><span class="w"> </span><span class="k">WITH</span><span class="w"> </span><span class="p">(</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s1">&#39;connector&#39;</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;oceanbase-cdc&#39;</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s1">&#39;scan.startup.mode&#39;</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;initial&#39;</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s1">&#39;username&#39;</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;user@test_tenant#cluster_name&#39;</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s1">&#39;password&#39;</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;pswd&#39;</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s1">&#39;tenant-name&#39;</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;test_tenant&#39;</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s1">&#39;database-name&#39;</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;^test_db$&#39;</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s1">&#39;table-name&#39;</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;^orders$&#39;</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s1">&#39;hostname&#39;</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;127.0.0.1&#39;</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s1">&#39;port&#39;</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;2881&#39;</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s1">&#39;rootserver-list&#39;</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;127.0.0.1:2882:2881&#39;</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s1">&#39;logproxy.host&#39;</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;127.0.0.1&#39;</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s1">&#39;logproxy.port&#39;</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;2983&#39;</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s1">&#39;working-mode&#39;</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;memory&#39;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="c1">-- 从表 orders 中读取快照数据和 binlog 数据
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="n">Flink</span><span class="w"> </span><span class="k">SQL</span><span class="o">&gt;</span><span class="w"> </span><span class="k">SELECT</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="n">orders</span><span class="p">;</span><span class="w">
+</span></span></span></code></pre></div><p>如果您使用的是企业版的 OceanBase Oracle 模式，您需要先添加 OceanBase 的官方 JDBC 驱动 jar 包到 Flink 环境，并且部署企业版的 oblogproxy 服务，然后通过以下命令创建 OceanBase CDC 表：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="cl"><span class="n">Flink</span><span class="w"> </span><span class="k">SQL</span><span class="o">&gt;</span><span class="w"> </span><span class="k">CREATE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">orders</span><span class="w"> </span><span class="p">(</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">order_id</span><span class="w">     </span><span class="nb">INT</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">order_date</span><span class="w">   </span><span class="k">TIMESTAMP</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">customer_name</span><span class="w"> </span><span class="n">STRING</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">price</span><span class="w">        </span><span class="nb">DECIMAL</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="w"> </span><span class="mi">5</span><span class="p">),</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">product_id</span><span class="w">   </span><span class="nb">INT</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">order_status</span><span class="w"> </span><span class="nb">BOOLEAN</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">PRIMARY</span><span class="w"> </span><span class="k">KEY</span><span class="w"> </span><span class="p">(</span><span class="n">order_id</span><span class="p">)</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="n">ENFORCED</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">)</span><span class="w"> </span><span class="k">WITH</span><span class="w"> </span><span class="p">(</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s1">&#39;connector&#39;</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;oceanbase-cdc&#39;</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s1">&#39;scan.startup.mode&#39;</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;initial&#39;</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s1">&#39;username&#39;</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;user@test_tenant#cluster_name&#39;</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s1">&#39;password&#39;</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;pswd&#39;</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s1">&#39;tenant-name&#39;</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;test_tenant&#39;</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s1">&#39;database-name&#39;</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;^test_db$&#39;</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s1">&#39;table-name&#39;</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;^orders$&#39;</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s1">&#39;hostname&#39;</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;127.0.0.1&#39;</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s1">&#39;port&#39;</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;2881&#39;</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s1">&#39;compatible-mode&#39;</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;oracle&#39;</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s1">&#39;jdbc.driver&#39;</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;com.oceanbase.jdbc.Driver&#39;</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s1">&#39;config-url&#39;</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;http://127.0.0.1:8080/services?Action=ObRootServiceInfo&amp;User_ID=xxx&amp;UID=xxx&amp;ObRegion=xxx&#39;</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s1">&#39;logproxy.host&#39;</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;127.0.0.1&#39;</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s1">&#39;logproxy.port&#39;</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;2983&#39;</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s1">&#39;working-mode&#39;</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;memory&#39;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">);</span><span class="w">
+</span></span></span></code></pre></div><p>您也可以访问 Flink CDC 官网文档，快速体验将数据从 OceanBase 导入到 Elasticsearch。更多信息，参考 <a href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/flink-sources/tutorials/oceanbase-tutorial/">Flink CDC 官网文档</a>。</p>
+<h2 id="oceanbase-cdc-连接器选项">
+  OceanBase CDC 连接器选项
+  <a class="anchor" href="#oceanbase-cdc-%e8%bf%9e%e6%8e%a5%e5%99%a8%e9%80%89%e9%a1%b9">#</a>
+</h2>
+<p>OceanBase CDC 连接器包括用于 SQL 和 DataStream API 的选项，如下表所示。</p>
+<p><em>注意</em>：连接器支持两种方式来指定需要监听的表，两种方式同时使用时会监听两种方式匹配的所有表。</p>
+<ol>
+<li>使用 <code>database-name</code> 和 <code>table-name</code> 匹配正则表达式中的数据库和表名。</li>
+<li>使用 <code>table-list</code> 去匹配数据库名和表名的准确列表。</li>
+</ol>
+<div class="highlight">
+    <table class="colwidths-auto docutils">
+        <thead>
+            <tr>
+                <th class="text-left" style="width: 10%">配置项</th>
+                <th class="text-left" style="width: 8%">是否必选</th>
+                <th class="text-left" style="width: 7%">默认值</th>
+                <th class="text-left" style="width: 10%">类型</th>
+                <th class="text-left" style="width: 65%">描述</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>connector</td>
+                <td>是</td>
+                <td style="word-wrap: break-word;">无</td>
+                <td>String</td>
+                <td>指定要使用的连接器，此处为 <code>'oceanbase-cdc'</code>。</td>
+            </tr>
+            <tr>
+                <td>scan.startup.mode</td>
+                <td>否</td>
+                <td style="word-wrap: break-word;">initial</td>
+                <td>String</td>
+                <td>指定 OceanBase CDC 消费者的启动模式。可取值为
+                    <code>'initial'</code>，<code>'latest-offset'</code>，<code>'timestamp'</code> 或 <code>'snapshot'</code>。
+                </td>
+            </tr>
+            <tr>
+                <td>scan.startup.timestamp</td>
+                <td>否</td>
+                <td style="word-wrap: break-word;">无</td>
+                <td>Long</td>
+                <td>起始点的时间戳，单位为秒。仅在启动模式为 <code>'timestamp'</code> 时可用。</td>
+            </tr>
+            <tr>
+                <td>username</td>
+                <td>是</td>
+                <td style="word-wrap: break-word;">无</td>
+                <td>String</td>
+                <td>连接 OceanBase 数据库的用户的名称。</td>
+            </tr>
+            <tr>
+                <td>password</td>
+                <td>是</td>
+                <td style="word-wrap: break-word;">无</td>
+                <td>String</td>
+                <td>连接 OceanBase 数据库时使用的密码。</td>
+            </tr>
+            <tr>
+                <td>tenant-name</td>
+                <td>否</td>
+                <td style="word-wrap: break-word;">无</td>
+                <td>String</td>
+                <td>待监控 OceanBase 数据库的租户名，应该填入精确值。</td>
+            </tr>
+            <tr>
+                <td>database-name</td>
+                <td>否</td>
+                <td style="word-wrap: break-word;">无</td>
+                <td>String</td>
+                <td>待监控 OceanBase 数据库的数据库名，应该是正则表达式。</td>
+            </tr>
+            <tr>
+                <td>table-name</td>
+                <td>否</td>
+                <td style="word-wrap: break-word;">无</td>
+                <td>String</td>
+                <td>待监控 OceanBase 数据库的表名，应该是正则表达式。</td>
+            </tr>
+            <tr>
+                <td>table-list</td>
+                <td>否</td>
+                <td style="word-wrap: break-word;">无</td>
+                <td>String</td>
+                <td>待监控 OceanBase 数据库的全路径的表名列表，逗号分隔，如："db1.table1, db2.table2"。</td>
+            </tr>
+            <tr>
+                <td>hostname</td>
+                <td>是</td>
+                <td style="word-wrap: break-word;">无</td>
+                <td>String</td>
+                <td>OceanBase 数据库或 OceanBbase 代理 ODP 的 IP 地址或主机名。</td>
+            </tr>
+            <tr>
+                <td>port</td>
+                <td>是</td>
+                <td style="word-wrap: break-word;">无</td>
+                <td>Integer</td>
+                <td>
+                    OceanBase 数据库服务器的整数端口号。可以是 OceanBase 服务器的 SQL 端口号（默认值为 2881）<br>
+                    或 OceanBase代理服务的端口号（默认值为 2883）</td>
+            </tr>
+            <tr>
+                <td>connect.timeout</td>
+                <td>否</td>
+                <td style="word-wrap: break-word;">30s</td>
+                <td>Duration</td>
+                <td>连接器在尝试连接到 OceanBase 数据库服务器超时前的最长时间。</td>
+            </tr>
+            <tr>
+                <td>server-time-zone</td>
+                <td>否</td>
+                <td style="word-wrap: break-word;">+00:00</td>
+                <td>String</td>
+                <td>
+                    数据库服务器中的会话时区，用户控制 OceanBase 的时间类型如何转换为 STRING。<br>
+                    合法的值可以是格式为"±hh:mm"的 UTC 时区偏移量，<br>
+                    如果 mysql 数据库中的时区信息表已创建，合法的值则可以是创建的时区。
+                </td>
+            </tr>
+            <tr>
+                <td>logproxy.host</td>
+                <td>否</td>
+                <td style="word-wrap: break-word;">无</td>
+                <td>String</td>
+                <td>OceanBase 日志代理服务 的 IP 地址或主机名。</td>
+            </tr>
+            <tr>
+                <td>logproxy.port</td>
+                <td>否</td>
+                <td style="word-wrap: break-word;">无</td>
+                <td>Integer</td>
+                <td>OceanBase 日志代理服务 的端口号。</td>
+            </tr>
+            <tr>
+                <td>logproxy.client.id</td>
+                <td>否</td>
+                <td style="word-wrap: break-word;">规则生成</td>
+                <td>String</td>
+                <td>OceanBase日志代理服务的客户端连接 ID，默认值的生成规则是 {flink_ip}_{process_id}_{timestamp}_{thread_id}_{tenant}。</td>
+            </tr>
+            <tr>
+                <td>rootserver-list</td>
+                <td>否</td>
+                <td style="word-wrap: break-word;">无</td>
+                <td>String</td>
+                <td>OceanBase root 服务器列表，服务器格式为 `ip:rpc_port:sql_port`，<br>多个服务器地址使用英文分号 `;` 隔开，OceanBase 社区版本必填。</td>
+            </tr>
+            <tr>
+                <td>config-url</td>
+                <td>否</td>
+                <td style="word-wrap: break-word;">无</td>
+                <td>String</td>
+                <td>从配置服务器获取服务器信息的 url, OceanBase 企业版本必填。</td>
+            </tr>
+            <tr>
+                <td>working-mode</td>
+                <td>否</td>
+                <td style="word-wrap: break-word;">storage</td>
+                <td>String</td>
+                <td>日志代理中 `libobcdc` 的工作模式 , 可以是 `storage` 或 `memory`。</td>
+            </tr>
+            <tr>
+                <td>compatible-mode</td>
+                <td>否</td>
+                <td style="word-wrap: break-word;">mysql</td>
+                <td>String</td>
+                <td>OceanBase 的兼容模式，可以是 `mysql` 或 `oracle`。</td>
+            </tr>
+            <tr>
+                <td>jdbc.driver</td>
+                <td>否</td>
+                <td style="word-wrap: break-word;">com.mysql.cj.jdbc.Driver</td>
+                <td>String</td>
+                <td>全量读取时使用的 jdbc 驱动类名。</td>
+            </tr>
+            <tr>
+                <td>jdbc.properties.*</td>
+                <td>否</td>
+                <td style="word-wrap: break-word;">无</td>
+                <td>String</td>
+                <td>传递自定义 JDBC URL 属性的选项。用户可以传递自定义属性，如 'jdbc.properties.useSSL' = 'false'。</td>
+            </tr>
+            <tr>
+                <td>obcdc.properties.*</td>
+                <td>否</td>
+                <td style="word-wrap: break-word;">无</td>
+                <td>String</td>
+                <td>传递自定义 <code>libobcdc</code> 属性的选项，如 'obcdc.properties.sort_trans_participants' = '1'。详情参见 <a href="https://www.oceanbase.com/docs/common-oceanbase-database-cn-1000000000510698">obcdc 配置项说明</a>。</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+<h2 id="支持的元数据">
+  支持的元数据
+  <a class="anchor" href="#%e6%94%af%e6%8c%81%e7%9a%84%e5%85%83%e6%95%b0%e6%8d%ae">#</a>
+</h2>
+<p>在创建表时，您可以使用以下格式的元数据作为只读列（VIRTUAL）。</p>
+<table class="colwidths-auto docutils">
+    <thead>
+        <tr>
+            <th class="text-left" style="width: 15%">列名</th>
+            <th class="text-left" style="width: 30%">数据类型</th>
+            <th class="text-left" style="width: 55%">描述</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>tenant_name</td>
+            <td>STRING</td>
+            <td>当前记录所属的租户名称。</td>
+        </tr>
+        <tr>
+            <td>database_name</td>
+            <td>STRING</td>
+            <td>当前记录所属的 db 名。</td>
+        </tr>
+        <tr>
+            <td>schema_name</td>
+            <td>STRING</td>
+            <td>当前记录所属的 schema 名。</td>
+        </tr>
+        <tr>
+            <td>table_name</td>
+            <td>STRING NOT NULL</td>
+            <td>当前记录所属的表名称。</td>
+        </tr>
+        <tr>
+            <td>op_ts</td>
+            <td>TIMESTAMP_LTZ(3) NOT NULL</td>
+            <td>该值表示此修改在数据库中发生的时间。如果这条记录是该表在快照阶段读取的记录，则该值返回 0。</td>
+        </tr>
+    </tbody>
+</table>
+<p>如下 SQL 展示了如何在表中使用这些元数据列：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="cl"><span class="k">CREATE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">products</span><span class="w"> </span><span class="p">(</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">tenant_name</span><span class="w"> </span><span class="n">STRING</span><span class="w"> </span><span class="n">METADATA</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="s1">&#39;tenant_name&#39;</span><span class="w"> </span><span class="n">VIRTUAL</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">db_name</span><span class="w"> </span><span class="n">STRING</span><span class="w"> </span><span class="n">METADATA</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="s1">&#39;database_name&#39;</span><span class="w"> </span><span class="n">VIRTUAL</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">table_name</span><span class="w"> </span><span class="n">STRING</span><span class="w"> </span><span class="n">METADATA</span><span class="w">  </span><span class="k">FROM</span><span class="w"> </span><span class="s1">&#39;table_name&#39;</span><span class="w"> </span><span class="n">VIRTUAL</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">operation_ts</span><span class="w"> </span><span class="n">TIMESTAMP_LTZ</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="w"> </span><span class="n">METADATA</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="s1">&#39;op_ts&#39;</span><span class="w"> </span><span class="n">VIRTUAL</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">order_id</span><span class="w"> </span><span class="nb">INT</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">order_date</span><span class="w"> </span><span class="k">TIMESTAMP</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">customer_name</span><span class="w"> </span><span class="n">STRING</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">price</span><span class="w"> </span><span class="nb">DECIMAL</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="w"> </span><span class="mi">5</span><span class="p">),</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">product_id</span><span class="w"> </span><span class="nb">INT</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">order_status</span><span class="w"> </span><span class="nb">BOOLEAN</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">PRIMARY</span><span class="w"> </span><span class="k">KEY</span><span class="p">(</span><span class="n">order_id</span><span class="p">)</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="n">ENFORCED</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">)</span><span class="w"> </span><span class="k">WITH</span><span class="w"> </span><span class="p">(</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">   </span><span class="s1">&#39;connector&#39;</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;oceanbase-cdc&#39;</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">   </span><span class="s1">&#39;scan.startup.mode&#39;</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;initial&#39;</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">   </span><span class="s1">&#39;username&#39;</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;user@test_tenant&#39;</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">   </span><span class="s1">&#39;password&#39;</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;pswd&#39;</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">   </span><span class="s1">&#39;tenant-name&#39;</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;test_tenant&#39;</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">   </span><span class="s1">&#39;database-name&#39;</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;^test_db$&#39;</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">   </span><span class="s1">&#39;table-name&#39;</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;^orders$&#39;</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">   </span><span class="s1">&#39;hostname&#39;</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;127.0.0.1&#39;</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">   </span><span class="s1">&#39;port&#39;</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;2881&#39;</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">   </span><span class="s1">&#39;rootserver-list&#39;</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;127.0.0.1:2882:2881&#39;</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">   </span><span class="s1">&#39;logproxy.host&#39;</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;127.0.0.1&#39;</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">   </span><span class="s1">&#39;logproxy.port&#39;</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;2983&#39;</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">   </span><span class="s1">&#39;working-mode&#39;</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;memory&#39;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">);</span><span class="w">
+</span></span></span></code></pre></div><h2 id="特性">
+  特性
+  <a class="anchor" href="#%e7%89%b9%e6%80%a7">#</a>
+</h2>
+<h3 id="at-least-once-处理">
+  At-Least-Once 处理
+  <a class="anchor" href="#at-least-once-%e5%a4%84%e7%90%86">#</a>
+</h3>
+<p>OceanBase CDC 连接器是一个 Flink Source 连接器。它将首先读取数据库快照，然后再读取变化事件，并进行 <strong>At-Least-Once 处理</strong>。</p>
+<p>OceanBase 数据库是一个分布式数据库，它的日志也分散在不同的服务器上。由于没有类似 MySQL binlog 偏移量的位置信息，OceanBase 数据库用时间戳作为位置标记。为确保读取完整的数据，liboblog（读取 OceanBase 日志记录的 C++ 库）可能会在给定的时间戳之前读取一些日志数据。因此，OceanBase 数据库可能会读到起始点附近时间戳的重复数据，可保证 <strong>At-Least-Once 处理</strong>。</p>
+<h3 id="启动模式">
+  启动模式
+  <a class="anchor" href="#%e5%90%af%e5%8a%a8%e6%a8%a1%e5%bc%8f">#</a>
+</h3>
+<p>配置选项 <code>scan.startup.mode</code> 指定 OceanBase CDC 连接器的启动模式。可用取值包括：</p>
+<ul>
+<li><code>initial</code>（默认）：在首次启动时对受监视的数据库表执行初始快照，并继续读取最新的提交日志。</li>
+<li><code>latest-offset</code>：首次启动时，不对受监视的数据库表执行快照，仅从连接器启动时读取提交日志。</li>
+<li><code>timestamp</code>：在首次启动时不对受监视的数据库表执行初始快照，仅从指定的 <code>scan.startup.timestamp</code> 读取最新的提交日志。</li>
+<li><code>snapshot</code>: 仅对受监视的数据库表执行初始快照。</li>
+</ul>
+<h3 id="消费提交日志">
+  消费提交日志
+  <a class="anchor" href="#%e6%b6%88%e8%b4%b9%e6%8f%90%e4%ba%a4%e6%97%a5%e5%bf%97">#</a>
+</h3>
+<p>OceanBase CDC 连接器使用 <a href="https://github.com/oceanbase/oblogclient">oblogclient</a> 消费 OceanBase日志代理服务 中的事务日志。</p>
+<h3 id="datastream-source">
+  DataStream Source
+  <a class="anchor" href="#datastream-source">#</a>
+</h3>
+<p>OceanBase CDC 连接器也可以作为 DataStream Source 使用。您可以按照如下创建一个 SourceFunction：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kn">import</span><span class="w"> </span><span class="nn">org.apache.flink.cdc.connectors.base.options.StartupOptions</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kn">import</span><span class="w"> </span><span class="nn">org.apache.flink.cdc.connectors.oceanbase.OceanBaseSource</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kn">import</span><span class="w"> </span><span class="nn">org.apache.flink.cdc.debezium.JsonDebeziumDeserializationSchema</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kn">import</span><span class="w"> </span><span class="nn">org.apache.flink.streaming.api.environment.StreamExecutionEnvironment</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kn">import</span><span class="w"> </span><span class="nn">org.apache.flink.streaming.api.functions.source.SourceFunction</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kd">public</span><span class="w"> </span><span class="kd">class</span> <span class="nc">OceanBaseSourceExample</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">   </span><span class="kd">public</span><span class="w"> </span><span class="kd">static</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">main</span><span class="p">(</span><span class="n">String</span><span class="o">[]</span><span class="w"> </span><span class="n">args</span><span class="p">)</span><span class="w"> </span><span class="kd">throws</span><span class="w"> </span><span class="n">Exception</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">SourceFunction</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;</span><span class="w"> </span><span class="n">oceanBaseSource</span><span class="w"> </span><span class="o">=</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">              </span><span class="n">OceanBaseSource</span><span class="p">.</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;</span><span class="n">builder</span><span class="p">()</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                      </span><span class="p">.</span><span class="na">startupOptions</span><span class="p">(</span><span class="n">StartupOptions</span><span class="p">.</span><span class="na">initial</span><span class="p">())</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                      </span><span class="p">.</span><span class="na">hostname</span><span class="p">(</span><span class="s">&#34;127.0.0.1&#34;</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                      </span><span class="p">.</span><span class="na">port</span><span class="p">(</span><span class="n">2881</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                      </span><span class="p">.</span><span class="na">username</span><span class="p">(</span><span class="s">&#34;user@test_tenant&#34;</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                      </span><span class="p">.</span><span class="na">password</span><span class="p">(</span><span class="s">&#34;pswd&#34;</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                      </span><span class="p">.</span><span class="na">compatibleMode</span><span class="p">(</span><span class="s">&#34;mysql&#34;</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                      </span><span class="p">.</span><span class="na">jdbcDriver</span><span class="p">(</span><span class="s">&#34;com.mysql.cj.jdbc.Driver&#34;</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                      </span><span class="p">.</span><span class="na">tenantName</span><span class="p">(</span><span class="s">&#34;test_tenant&#34;</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                      </span><span class="p">.</span><span class="na">databaseName</span><span class="p">(</span><span class="s">&#34;^test_db$&#34;</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                      </span><span class="p">.</span><span class="na">tableName</span><span class="p">(</span><span class="s">&#34;^test_table$&#34;</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                      </span><span class="p">.</span><span class="na">logProxyHost</span><span class="p">(</span><span class="s">&#34;127.0.0.1&#34;</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                      </span><span class="p">.</span><span class="na">logProxyPort</span><span class="p">(</span><span class="n">2983</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                      </span><span class="p">.</span><span class="na">rsList</span><span class="p">(</span><span class="s">&#34;127.0.0.1:2882:2881&#34;</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                      </span><span class="p">.</span><span class="na">serverTimeZone</span><span class="p">(</span><span class="s">&#34;+08:00&#34;</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                      </span><span class="p">.</span><span class="na">deserializer</span><span class="p">(</span><span class="k">new</span><span class="w"> </span><span class="n">JsonDebeziumDeserializationSchema</span><span class="p">())</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                      </span><span class="p">.</span><span class="na">build</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">StreamExecutionEnvironment</span><span class="w"> </span><span class="n">env</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">StreamExecutionEnvironment</span><span class="p">.</span><span class="na">getExecutionEnvironment</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="c1">// enable checkpoint</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">env</span><span class="p">.</span><span class="na">enableCheckpointing</span><span class="p">(</span><span class="n">3000</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">env</span><span class="p">.</span><span class="na">addSource</span><span class="p">(</span><span class="n">oceanBaseSource</span><span class="p">).</span><span class="na">print</span><span class="p">().</span><span class="na">setParallelism</span><span class="p">(</span><span class="n">1</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">env</span><span class="p">.</span><span class="na">execute</span><span class="p">(</span><span class="s">&#34;Print OceanBase Snapshot + Change Events&#34;</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">   </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></div><h2 id="数据类型映射">
+  数据类型映射
+  <a class="anchor" href="#%e6%95%b0%e6%8d%ae%e7%b1%bb%e5%9e%8b%e6%98%a0%e5%b0%84">#</a>
+</h2>
+<h3 id="mysql-模式">
+  Mysql 模式
+  <a class="anchor" href="#mysql-%e6%a8%a1%e5%bc%8f">#</a>
+</h3>
+<div class="wy-table-responsive">
+    <table class="colwidths-auto docutils">
+        <thead>
+            <tr>
+                <th class="text-left">OceanBase 数据类型</th>
+                <th class="text-left">Flink SQL 类型</th>
+                <th class="text-left">描述</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>
+                    BOOLEAN<br>
+                    TINYINT(1)<br>
+                    BIT(1)
+                </td>
+                <td>BOOLEAN</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>TINYINT</td>
+                <td>TINYINT</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>
+                    SMALLINT<br>
+                    TINYINT UNSIGNED
+                </td>
+                <td>SMALLINT</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>
+                    INT<br>
+                    MEDIUMINT<br>
+                    SMALLINT UNSIGNED
+                </td>
+                <td>INT</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>
+                    BIGINT<br>
+                    INT UNSIGNED
+                </td>
+                <td>BIGINT</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>BIGINT UNSIGNED</td>
+                <td>DECIMAL(20, 0)</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>
+                    REAL<br>
+                    FLOAT
+                </td>
+                <td>FLOAT</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>
+                    DOUBLE
+                </td>
+                <td>DOUBLE</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>
+                    NUMERIC(p, s)<br>
+                    DECIMAL(p, s)<br>
+                    where p <= 38 </td>
+                <td>DECIMAL(p, s)</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>
+                    NUMERIC(p, s)<br>
+                    DECIMAL(p, s)<br>
+                    where 38 < p <=65<br>
+                </td>
+                <td>STRING</td>
+                <td>
+                    DECIMAL 等同于 NUMERIC。在 OceanBase 数据库中，DECIMAL 数据类型的精度最高为 65。<br>
+                    但在 Flink 中，DECIMAL 的最高精度为 38。因此，<br>
+                    如果你定义了一个精度大于 38 的 DECIMAL 列，你应当将其映射为 STRING，以避免精度损失。
+                </td>
+            </tr>
+            <tr>
+                <td>DATE</td>
+                <td>DATE</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>TIME [(p)]</td>
+                <td>TIME [(p)]</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>DATETIME [(p)]</td>
+                <td>TIMESTAMP [(p)]</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>TIMESTAMP [(p)]</td>
+                <td>TIMESTAMP_LTZ [(p)]</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>CHAR(n)</td>
+                <td>CHAR(n)</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>VARCHAR(n)</td>
+                <td>VARCHAR(n)</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>BIT(n)</td>
+                <td>BINARY(⌈(n + 7) / 8⌉)</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>BINARY(n)</td>
+                <td>BINARY(n)</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>VARBINARY(N)</td>
+                <td>VARBINARY(N)</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>
+                    TINYTEXT<br>
+                    TEXT<br>
+                    MEDIUMTEXT<br>
+                    LONGTEXT
+                </td>
+                <td>STRING</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>
+                    TINYBLOB<br>
+                    BLOB<br>
+                    MEDIUMBLOB<br>
+                    LONGBLOB
+                </td>
+                <td>BYTES</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>YEAR</td>
+                <td>INT</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>ENUM</td>
+                <td>STRING</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>SET</td>
+                <td>ARRAY&lt;STRING&gt;</td>
+                <td>
+                    因为 OceanBase 的 SET 类型是用包含一个或多个值的字符串对象表示，<br>
+                    所以映射到 Flink 时是一个字符串数组
+                </td>
+            </tr>
+            <tr>
+                <td>JSON</td>
+                <td>STRING</td>
+                <td>JSON 类型的数据在 Flink 中会转化为 JSON 格式的字符串</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+<h3 id="oracle-模式">
+  Oracle 模式
+  <a class="anchor" href="#oracle-%e6%a8%a1%e5%bc%8f">#</a>
+</h3>
+<div class="wy-table-responsive">
+    <table class="colwidths-auto docutils">
+        <thead>
+            <tr>
+                <th class="text-left">OceanBase type</th>
+                <th class="text-left">Flink SQL type</th>
+                <th class="text-left">NOTE</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>NUMBER(1)</td>
+                <td>BOOLEAN</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>NUMBER(p, s <= 0), p - s < 3 </td>
+                <td>TINYINT</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>NUMBER(p, s <= 0), p - s < 5 </td>
+                <td>SMALLINT</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>NUMBER(p, s <= 0), p - s < 10 </td>
+                <td>INT</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>NUMBER(p, s <= 0), p - s < 19 </td>
+                <td>BIGINT</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>NUMBER(p, s <= 0), 19 <=p - s <=38</td>
+                <td>DECIMAL(p - s, 0)</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>NUMBER(p, s > 0)</td>
+                <td>DECIMAL(p, s)</td>
+            </tr>
+            <tr>
+                <td>NUMBER(p, s <= 0), p - s> 38 </td>
+                <td>STRING</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>
+                    FLOAT<br>
+                    BINARY_FLOAT
+                </td>
+                <td>FLOAT</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>BINARY_DOUBLE</td>
+                <td>DOUBLE</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>
+                    DATE<br>
+                    TIMESTAMP [(p)]
+                </td>
+                <td>TIMESTAMP [(p)]</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>
+                    CHAR(n)<br>
+                    NCHAR(n)<br>
+                    VARCHAR(n)<br>
+                    VARCHAR2(n)<br>
+                    NVARCHAR2(n)<br>
+                    CLOB<br>
+                </td>
+                <td>STRING</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>
+                    RAW<br>
+                    BLOB<br>
+                    ROWID
+                </td>
+                <td>BYTES</td>
+                <td></td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<p><a href="#top" class="top pull-right"><i class="fas fa-triangle"></i> Back to top</a></p>
+
+
+</article>
+ 
+      
+
+      <footer class="book-footer">
+        
+  
+
+
+
+
+	
+
+<a href="//github.com/apache/flink-cdc/edit/master/docs/content.zh/docs/connectors/flink-sources/oceanbase-cdc.md" style="color:black"><i class="fa fa-edit fa-fw"></i>Edit This Page</a>
+
+
+ 
+        
+      </footer>
+
+      
+  
+  <div class="book-comments">
+
+</div>
+  
+ 
+
+      <label for="menu-control" class="hidden book-menu-overlay"></label>
+    </div>
+
+    
+    <aside class="book-toc">
+      
+  
+
+<nav id="TableOfContents"><h3>On This Page <button class="toc" onclick="collapseToc()"><i class="fa fa-compress" aria-hidden="true"></i></button></h3>
+  <ul>
+    <li>
+      <ul>
+        <li><a href="#oceanbase-cdc-方案">OceanBase CDC 方案</a></li>
+      </ul>
+    </li>
+    <li><a href="#依赖">依赖</a>
+      <ul>
+        <li><a href="#maven-dependency">Maven dependency</a></li>
+        <li><a href="#sql-client-jar">SQL Client JAR</a></li>
+      </ul>
+    </li>
+    <li><a href="#配置-oceanbase-数据库和-log-proxy-服务">配置 OceanBase 数据库和 Log Proxy 服务</a></li>
+    <li><a href="#创建-oceanbase-cdc-表">创建 OceanBase CDC 表</a></li>
+    <li><a href="#oceanbase-cdc-连接器选项">OceanBase CDC 连接器选项</a></li>
+    <li><a href="#支持的元数据">支持的元数据</a></li>
+    <li><a href="#特性">特性</a>
+      <ul>
+        <li><a href="#at-least-once-处理">At-Least-Once 处理</a></li>
+        <li><a href="#启动模式">启动模式</a></li>
+        <li><a href="#消费提交日志">消费提交日志</a></li>
+        <li><a href="#datastream-source">DataStream Source</a></li>
+      </ul>
+    </li>
+    <li><a href="#数据类型映射">数据类型映射</a>
+      <ul>
+        <li><a href="#mysql-模式">Mysql 模式</a></li>
+        <li><a href="#oracle-模式">Oracle 模式</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+
+ 
+    </aside>
+    <aside class="expand-toc">
+      <button class="toc" onclick="expandToc()">
+        <i class="fa fa-expand" aria-hidden="true"></i>
+      </button>
+    </aside>
+    
+  </main>
+
+  
+</body>
+
+</html>
+
+
+
+
+
+
+
+
+
+
+
+

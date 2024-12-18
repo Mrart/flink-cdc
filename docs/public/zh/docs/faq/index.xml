@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>常见问题 on Apache Flink CDC</title>
+    <link>//localhost:1313/flink/flink-cdc-docs-master/zh/docs/faq/</link>
+    <description>Recent content in 常见问题 on Apache Flink CDC</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>zh</language>
+    <atom:link href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/faq/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>通用FAQ</title>
+      <link>//localhost:1313/flink/flink-cdc-docs-master/zh/docs/faq/faq/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>//localhost:1313/flink/flink-cdc-docs-master/zh/docs/faq/faq/</guid>
+      <description>通用FAQ # Q1: 为啥没法下载 flink-sql-connector-mysql-cdc-2.2-SNAPSHOT.jar ，maven 仓库为啥没有 xxx-SNAPSHOT 依赖？ # 和主流的 maven 项目版本管理相同，xxx-SNAPSHOT 版本都是对应开发分支的代码，需要用户自己下载源码并编译对应的jar， 用户应该使用已经 release 过的版本，比如 flink-sql-connector-mysql-cdc-2.1.0.jar，release 过的版本maven中心仓库才会有。&#xA;Q2: 什么时候使用 flink-sql-connector-xxx.jar，什么时候使用 flink-connector-xxx.jar，两者有啥区别? # Flink CDC 项目中各个connector的依赖管理和Flink 项目中 connector 保持一致。flink-sql-connector-xx 是胖包，除了connector的代码外，还把 connector 依赖的所有三方包 shade 后打入，提供给 SQL 作业使用，用户只需要在 lib目录下添加该胖包即可。flink-connector-xx 只有该 connector 的代码，不包含其所需的依赖，提供 datastream 作业使用，用户需要自己管理所需的三方包依赖，有冲突的依赖需要自己做 exclude, shade 处理。&#xA;Q3: 为啥把包名从 com.alibaba.ververica 改成 org.apache.flink? 为啥 maven 仓库里找不到 2.x 版本？ # Flink CDC 项目 从 2.0.0 版本将 group id 从com.alibaba.ververica 改成 com.ververica, 自 3.</description>
+    </item>
+  </channel>
+</rss>

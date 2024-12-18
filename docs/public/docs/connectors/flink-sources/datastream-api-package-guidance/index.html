@@ -1,0 +1,1363 @@
+
+<!DOCTYPE html>
+<html lang="en" dir=ZgotmplZ>
+
+<head><script src="/flink/flink-cdc-docs-master/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=flink/flink-cdc-docs-master/livereload" data-no-instant defer></script>
+  <meta name="generator" content="Hugo 0.124.1">
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="DataStream API Package Guidance # This guide provides a simple pom.xml example for packaging DataStream job JARs with MySQL CDC source.
+Example for pom.xml # &lt;?xml version=&#34;1.0&#34; encoding=&#34;UTF-8&#34;?&gt; &lt;project xmlns=&#34;http://maven.apache.org/POM/4.0.0&#34; xmlns:xsi=&#34;http://www.w3.org/2001/XMLSchema-instance&#34; xsi:schemaLocation=&#34;http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd&#34;&gt; &lt;modelVersion&gt;4.0.0&lt;/modelVersion&gt; &lt;groupId&gt;org.apache.flink&lt;/groupId&gt; &lt;artifactId&gt;FlinkCDCTest&lt;/artifactId&gt; &lt;version&gt;1.0-SNAPSHOT&lt;/version&gt; &lt;properties&gt; &lt;maven.compiler.source&gt;8&lt;/maven.compiler.source&gt; &lt;maven.compiler.target&gt;8&lt;/maven.compiler.target&gt; &lt;project.build.sourceEncoding&gt;UTF-8&lt;/project.build.sourceEncoding&gt; &lt;java.version&gt;1.8&lt;/java.version&gt; &lt;scala.binary.version&gt;2.12&lt;/scala.binary.version&gt; &lt;maven.compiler.source&gt;${java.version}&lt;/maven.compiler.source&gt; &lt;maven.compiler.target&gt;${java.version}&lt;/maven.compiler.target&gt; &lt;project.build.sourceEncoding&gt;UTF-8&lt;/project.build.sourceEncoding&gt; &lt;!-- Enforce single fork execution due to heavy mini cluster use in the tests --&gt; &lt;flink.forkCount&gt;1&lt;/flink.forkCount&gt; &lt;flink.reuseForks&gt;true&lt;/flink.reuseForks&gt; &lt;!-- dependencies versions --&gt; &lt;flink.version&gt;1.17.2&lt;/flink.version&gt; &lt;slf4j.version&gt;1.7.15&lt;/slf4j.version&gt; &lt;log4j.">
+<meta name="theme-color" content="#FFFFFF"><meta property="og:title" content="DataStream API Package Guidance" />
+<meta property="og:description" content="DataStream API Package Guidance # This guide provides a simple pom.xml example for packaging DataStream job JARs with MySQL CDC source.
+Example for pom.xml # &lt;?xml version=&#34;1.0&#34; encoding=&#34;UTF-8&#34;?&gt; &lt;project xmlns=&#34;http://maven.apache.org/POM/4.0.0&#34; xmlns:xsi=&#34;http://www.w3.org/2001/XMLSchema-instance&#34; xsi:schemaLocation=&#34;http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd&#34;&gt; &lt;modelVersion&gt;4.0.0&lt;/modelVersion&gt; &lt;groupId&gt;org.apache.flink&lt;/groupId&gt; &lt;artifactId&gt;FlinkCDCTest&lt;/artifactId&gt; &lt;version&gt;1.0-SNAPSHOT&lt;/version&gt; &lt;properties&gt; &lt;maven.compiler.source&gt;8&lt;/maven.compiler.source&gt; &lt;maven.compiler.target&gt;8&lt;/maven.compiler.target&gt; &lt;project.build.sourceEncoding&gt;UTF-8&lt;/project.build.sourceEncoding&gt; &lt;java.version&gt;1.8&lt;/java.version&gt; &lt;scala.binary.version&gt;2.12&lt;/scala.binary.version&gt; &lt;maven.compiler.source&gt;${java.version}&lt;/maven.compiler.source&gt; &lt;maven.compiler.target&gt;${java.version}&lt;/maven.compiler.target&gt; &lt;project.build.sourceEncoding&gt;UTF-8&lt;/project.build.sourceEncoding&gt; &lt;!-- Enforce single fork execution due to heavy mini cluster use in the tests --&gt; &lt;flink.forkCount&gt;1&lt;/flink.forkCount&gt; &lt;flink.reuseForks&gt;true&lt;/flink.reuseForks&gt; &lt;!-- dependencies versions --&gt; &lt;flink.version&gt;1.17.2&lt;/flink.version&gt; &lt;slf4j.version&gt;1.7.15&lt;/slf4j.version&gt; &lt;log4j." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/flink-sources/datastream-api-package-guidance/" /><meta property="article:section" content="docs" />
+
+
+<title>DataStream API Package Guidance | Apache Flink CDC</title>
+<link rel="manifest" href="/flink/flink-cdc-docs-master/manifest.json">
+<link rel="icon" href="/flink/flink-cdc-docs-master/favicon.png" type="image/x-icon">
+<link rel="alternate" hreflang="zh" href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/flink-sources/datastream-api-package-guidance/" title="DataStream API 打包指南">
+
+<link rel="stylesheet" href="/flink/flink-cdc-docs-master/book.min.59471f109f689a198d44e845028ea35c1b638516a64e46df5101f6f6537d611e.css" integrity="sha256-WUcfEJ9omhmNROhFAo6jXBtjhRamTkbfUQH29lN9YR4=">
+<script defer src="/flink/flink-cdc-docs-master/en.search.min.60d7dc9e723d3271101320a889b96a35e0c8d94bb858e65d4cc723e8e6ec1674.js" integrity="sha256-YNfcnnI9MnEQEyCoiblqNeDI2Uu4WOZdTMcj6ObsFnQ="></script>
+<!--
+Made with Book Theme
+https://github.com/alex-shpak/hugo-book
+-->
+
+  
+
+<link rel="stylesheet" type="text/css" href="//localhost:1313/flink/flink-cdc-docs-master//font-awesome/css/font-awesome.min.css">
+<script src="//localhost:1313/flink/flink-cdc-docs-master//js/anchor.min.js"></script>
+<script src="//localhost:1313/flink/flink-cdc-docs-master//js/flink.js"></script>
+
+
+  
+  <script>
+    var _paq = window._paq = window._paq || [];
+     
+     
+    _paq.push(['disableCookies']);
+     
+    _paq.push(["setDomains", ["*.flink.apache.org","*.nightlies.apache.org/flink"]]);
+    _paq.push(['trackPageView']);
+    _paq.push(['enableLinkTracking']);
+    (function() {
+      var u="//matomo.privacy.apache.org/";
+      _paq.push(['setTrackerUrl', u+'matomo.php']);
+      _paq.push(['setSiteId', '1']);
+      var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
+      g.async=true; g.src=u+'matomo.js'; s.parentNode.insertBefore(g,s);
+    })();
+  </script>
+  
+</head>
+
+<body dir=ZgotmplZ>
+  <input type="checkbox" class="hidden toggle" id="menu-control" />
+  <input type="checkbox" class="hidden toggle" id="toc-control" />
+  <main class="container flex">
+    <aside class="book-menu">
+      
+  
+
+<nav>
+
+
+<a id="logo" href="//localhost:1313/flink/flink-cdc-docs-master/">
+    <img width="70%" src="//localhost:1313/flink/flink-cdc-docs-master//navbar-brand-logo.jpg">
+</a>
+<p style="text-align:right">v3.2-SNAPSHOT</p>
+
+<div class="book-search">
+  <input type="text" id="book-search-input" placeholder="Search" aria-label="Search" maxlength="64" data-hotkeys="s/" />
+  <div class="book-search-spinner hidden"></div>
+  <ul id="book-search-results"></ul>
+</div>
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+  <ul>
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <input type="checkbox" id="section-6200e334011b863c650806533c1e934d" class="toggle"  />
+    <label for="section-6200e334011b863c650806533c1e934d" class="flex justify-between"><div style="font-weight:450;margin-bottom:0.5em">Get Started</div><span>▾</span>
+    </label>
+  
+
+          
+  <ul>
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/get-started/introduction/" class="">Introduction</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <input type="checkbox" id="section-65126ba91b4ad451d64ae3bb634a3d69" class="toggle"  />
+    <label for="section-65126ba91b4ad451d64ae3bb634a3d69" class="flex justify-between">Quickstart<span>▾</span>
+    </label>
+  
+
+          
+  <ul>
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/get-started/quickstart/mysql-to-doris/" class="">MySQL to Doris</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/get-started/quickstart/mysql-to-starrocks/" class="">MySQL to StarRocks</a>
+  
+
+        </li>
+      
+    
+  </ul>
+
+        </li>
+      
+    
+  </ul>
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <input type="checkbox" id="section-9368478381278f3e55d1d748555c70f6" class="toggle"  />
+    <label for="section-9368478381278f3e55d1d748555c70f6" class="flex justify-between"><div style="font-weight:450;margin-bottom:0.5em">Core Concept</div><span>▾</span>
+    </label>
+  
+
+          
+  <ul>
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/core-concept/data-pipeline/" class="">Data Pipeline</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/core-concept/data-source/" class="">Data Source</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/core-concept/data-sink/" class="">Data Sink</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/core-concept/table-id/" class="">Table ID</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/core-concept/transform/" class="">Transform</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/core-concept/route/" class="">Route</a>
+  
+
+        </li>
+      
+    
+  </ul>
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <input type="checkbox" id="section-cca35f842c08f0e2b4a94e3d03b79c9b" class="toggle" checked />
+    <label for="section-cca35f842c08f0e2b4a94e3d03b79c9b" class="flex justify-between"><div style="font-weight:450;margin-bottom:0.5em">Connectors</div><span>▾</span>
+    </label>
+  
+
+          
+  <ul>
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <input type="checkbox" id="section-4436a0c8f6839ca41c460c9dd3348724" class="toggle"  />
+    <label for="section-4436a0c8f6839ca41c460c9dd3348724" class="flex justify-between">Pipeline Connectors<span>▾</span>
+    </label>
+  
+
+          
+  <ul>
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/pipeline-connectors/overview/" class="">Overview</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/pipeline-connectors/mysql/" class="">MySQL</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/pipeline-connectors/paimon/" class="">Paimon</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/pipeline-connectors/kafka/" class="">Kafka</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/pipeline-connectors/doris/" class="">Doris</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/pipeline-connectors/starrocks/" class="">StarRocks</a>
+  
+
+        </li>
+      
+    
+  </ul>
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <input type="checkbox" id="section-c0a0971d8f495dc42589f86cef138818" class="toggle" checked />
+    <label for="section-c0a0971d8f495dc42589f86cef138818" class="flex justify-between">Flink Sources<span>▾</span>
+    </label>
+  
+
+          
+  <ul>
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/flink-sources/overview/" class="">Overview</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/flink-sources/mysql-cdc/" class="">MySQL</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/flink-sources/oracle-cdc/" class="">Oracle</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/flink-sources/sqlserver-cdc/" class="">SQL Server</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/flink-sources/postgres-cdc/" class="">Postgres</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/flink-sources/mongodb-cdc/" class="">MongoDB</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/flink-sources/db2-cdc/" class="">Db2</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/flink-sources/tidb-cdc/" class="">TiDB</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/flink-sources/oceanbase-cdc/" class="">OceanBase</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/flink-sources/vitess-cdc/" class="">Vitess</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/flink-sources/datastream-api-package-guidance/" class=" active">DataStream API Package Guidance</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <input type="checkbox" id="section-c23e2f7ee1f6d87942cc0f2b79648372" class="toggle"  />
+    <label for="section-c23e2f7ee1f6d87942cc0f2b79648372" class="flex justify-between">Tutorials<span>▾</span>
+    </label>
+  
+
+          
+  <ul>
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/flink-sources/tutorials/mongodb-tutorial/" class="">MongoDB Tutorial</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/flink-sources/tutorials/db2-tutorial/" class="">Db2 Tutorial</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/flink-sources/tutorials/oceanbase-tutorial/" class="">OceanBase Tutorial</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/flink-sources/tutorials/oracle-tutorial/" class="">Oracle Tutorial</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/flink-sources/tutorials/polardbx-tutorial/" class="">PolarDB-X Tutorial</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/flink-sources/tutorials/sqlserver-tutorial/" class="">SqlServer Tutorial</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/flink-sources/tutorials/tidb-tutorial/" class="">TiDB Tutorial</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/flink-sources/tutorials/build-real-time-data-lake-tutorial/" class="">Building a Real-time Data Lake with Flink CDC</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/flink-sources/tutorials/build-streaming-etl-tutorial/" class="">Building a Streaming ETL with Flink CDC</a>
+  
+
+        </li>
+      
+    
+  </ul>
+
+        </li>
+      
+    
+  </ul>
+
+        </li>
+      
+    
+  </ul>
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <input type="checkbox" id="section-988c4238198a24c7eac9b0f056d01246" class="toggle"  />
+    <label for="section-988c4238198a24c7eac9b0f056d01246" class="flex justify-between"><div style="font-weight:450;margin-bottom:0.5em">Deployment</div><span>▾</span>
+    </label>
+  
+
+          
+  <ul>
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/deployment/standalone/" class="">Standalone</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/deployment/yarn/" class="">YARN</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/deployment/kubernetes/" class="">Kubernetes</a>
+  
+
+        </li>
+      
+    
+  </ul>
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <input type="checkbox" id="section-fc36b619eabb0ca9cb7b253e0eba8a7a" class="toggle"  />
+    <label for="section-fc36b619eabb0ca9cb7b253e0eba8a7a" class="flex justify-between"><div style="font-weight:450;margin-bottom:0.5em">Developer Guide</div><span>▾</span>
+    </label>
+  
+
+          
+  <ul>
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/developer-guide/understand-flink-cdc-api/" class="">Understand Flink CDC API</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/developer-guide/contribute-to-flink-cdc/" class="">Contribute to Flink CDC</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/developer-guide/licenses/" class="">Licenses</a>
+  
+
+        </li>
+      
+    
+  </ul>
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <input type="checkbox" id="section-fb051daccb64de13ff5dc1ae657b01b6" class="toggle"  />
+    <label for="section-fb051daccb64de13ff5dc1ae657b01b6" class="flex justify-between">FAQ<span>▾</span>
+    </label>
+  
+
+          
+  <ul>
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/faq/faq/" class="">Frequently Asked Questions</a>
+  
+
+        </li>
+      
+    
+  </ul>
+
+        </li>
+      
+    
+  </ul>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<br/>
+<hr class="menu-break">
+
+<a href="//flink.apache.org" style="color:black;margin-bottom:0.5em"><i class="link fa fa-external-link title" aria-hidden="true"></i> Project Homepage</a>
+<br/>
+
+<a href="//nightlies.apache.org/flink/flink-cdc-docs-master/api/java/" style="color:black;margin-bottom:0.5em"><i class="link fa fa-external-link title" aria-hidden="true"></i> JavaDocs</a>
+<br/>
+
+<hr class="menu-break">
+<li style="list-style-type: none">
+  <br>
+  <input type="checkbox" id="section-version-picker" class="toggle">
+  <label for="section-version-picker" class="flex justify-between">
+     <div style="font-weight:450;margin-bottom:0.5em">Pick Docs Version</div>
+     <span>▾</span>
+  </label>
+  <ul>
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/">
+      3.2-SNAPSHOT (✓)
+    </a>
+    <hr class="menu-break">
+    
+      <li>
+        <a href="https://nightlies.apache.org/flink/flink-cdc-docs-release-3.0">
+          v3.0
+        </a>
+      </li>
+    
+    <hr class="menu-break">
+    <li>
+      <a href="//localhost:1313/flink/flink-cdc-docs-master//versions">
+          All Versions
+      </a>
+    </li>
+  </ul>
+</li>
+
+
+
+
+  
+
+  
+
+
+  
+
+
+
+
+
+
+<a  href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/flink-sources/datastream-api-package-guidance/" class="flex align-center">
+  <i class="fa fa-globe" aria-hidden="true"></i>&nbsp;&nbsp;
+  中文版
+</a>
+
+
+</nav>
+
+
+
+
+  <script>(function(){var e=document.querySelector("aside.book-menu nav");addEventListener("beforeunload",function(){localStorage.setItem("menu.scrollTop",e.scrollTop)}),e.scrollTop=localStorage.getItem("menu.scrollTop")})()</script>
+
+
+ 
+    </aside>
+
+    <div class="book-page">
+      <header class="book-header">
+        
+  <div class="flex align-center justify-between">
+  <label for="menu-control">
+    <img src="/flink/flink-cdc-docs-master/svg/menu.svg" class="book-icon" alt="Menu" />
+  </label>
+
+  <strong>DataStream API Package Guidance</strong>
+
+  <label for="toc-control">
+    
+    <img src="/flink/flink-cdc-docs-master/svg/toc.svg" class="book-icon" alt="Table of Contents" />
+    
+  </label>
+</div>
+
+
+  
+  <aside class="hidden clearfix">
+    
+  
+
+<nav id="TableOfContents"><h3>On This Page <button class="toc" onclick="collapseToc()"><i class="fa fa-compress" aria-hidden="true"></i></button></h3>
+  <ul>
+    <li><a href="#example-for-pomxml">Example for <code>pom.xml</code></a></li>
+    <li><a href="#example-for-code">Example for Code</a></li>
+  </ul>
+</nav>
+
+
+  </aside>
+  
+ 
+      </header>
+
+      
+
+
+
+
+<article class="markdown">
+    <blockquote style="border-color:#f66">
+        This documentation is for an unreleased version of Apache Flink CDC. We recommend you use the latest <a href="https://ci.apache.org/projects/flink/flink-cdc-docs-stable/">stable version</a>.
+    </blockquote>
+</article>
+
+
+
+      
+  <article class="markdown"><!--
+Licensed to the Apache Software Foundation (ASF) under one
+or more contributor license agreements.  See the NOTICE file
+distributed with this work for additional information
+regarding copyright ownership.  The ASF licenses this file
+to you under the Apache License, Version 2.0 (the
+"License"); you may not use this file except in compliance
+with the License.  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing,
+software distributed under the License is distributed on an
+"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, either express or implied.  See the License for the
+specific language governing permissions and limitations
+under the License.
+-->
+<h1 id="datastream-api-package-guidance">
+  DataStream API Package Guidance
+  <a class="anchor" href="#datastream-api-package-guidance">#</a>
+</h1>
+<p>This guide provides a simple <code>pom.xml</code> example for packaging DataStream job JARs with MySQL CDC source.</p>
+<h2 id="example-for-pomxml">
+  Example for <code>pom.xml</code>
+  <a class="anchor" href="#example-for-pomxml">#</a>
+</h2>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-xml" data-lang="xml"><span class="line"><span class="cl"><span class="cp">&lt;?xml version=&#34;1.0&#34; encoding=&#34;UTF-8&#34;?&gt;</span>
+</span></span><span class="line"><span class="cl"><span class="nt">&lt;project</span> <span class="na">xmlns=</span><span class="s">&#34;http://maven.apache.org/POM/4.0.0&#34;</span>
+</span></span><span class="line"><span class="cl">         <span class="na">xmlns:xsi=</span><span class="s">&#34;http://www.w3.org/2001/XMLSchema-instance&#34;</span>
+</span></span><span class="line"><span class="cl">         <span class="na">xsi:schemaLocation=</span><span class="s">&#34;http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd&#34;</span><span class="nt">&gt;</span>
+</span></span><span class="line"><span class="cl">    <span class="nt">&lt;modelVersion&gt;</span>4.0.0<span class="nt">&lt;/modelVersion&gt;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="nt">&lt;groupId&gt;</span>org.apache.flink<span class="nt">&lt;/groupId&gt;</span>
+</span></span><span class="line"><span class="cl">    <span class="nt">&lt;artifactId&gt;</span>FlinkCDCTest<span class="nt">&lt;/artifactId&gt;</span>
+</span></span><span class="line"><span class="cl">    <span class="nt">&lt;version&gt;</span>1.0-SNAPSHOT<span class="nt">&lt;/version&gt;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="nt">&lt;properties&gt;</span>
+</span></span><span class="line"><span class="cl">        <span class="nt">&lt;maven.compiler.source&gt;</span>8<span class="nt">&lt;/maven.compiler.source&gt;</span>
+</span></span><span class="line"><span class="cl">        <span class="nt">&lt;maven.compiler.target&gt;</span>8<span class="nt">&lt;/maven.compiler.target&gt;</span>
+</span></span><span class="line"><span class="cl">        <span class="nt">&lt;project.build.sourceEncoding&gt;</span>UTF-8<span class="nt">&lt;/project.build.sourceEncoding&gt;</span>
+</span></span><span class="line"><span class="cl">        <span class="nt">&lt;java.version&gt;</span>1.8<span class="nt">&lt;/java.version&gt;</span>
+</span></span><span class="line"><span class="cl">        <span class="nt">&lt;scala.binary.version&gt;</span>2.12<span class="nt">&lt;/scala.binary.version&gt;</span>
+</span></span><span class="line"><span class="cl">        <span class="nt">&lt;maven.compiler.source&gt;</span>${java.version}<span class="nt">&lt;/maven.compiler.source&gt;</span>
+</span></span><span class="line"><span class="cl">        <span class="nt">&lt;maven.compiler.target&gt;</span>${java.version}<span class="nt">&lt;/maven.compiler.target&gt;</span>
+</span></span><span class="line"><span class="cl">        <span class="nt">&lt;project.build.sourceEncoding&gt;</span>UTF-8<span class="nt">&lt;/project.build.sourceEncoding&gt;</span>
+</span></span><span class="line"><span class="cl">        <span class="c">&lt;!-- Enforce single fork execution due to heavy mini cluster use in the tests --&gt;</span>
+</span></span><span class="line"><span class="cl">        <span class="nt">&lt;flink.forkCount&gt;</span>1<span class="nt">&lt;/flink.forkCount&gt;</span>
+</span></span><span class="line"><span class="cl">        <span class="nt">&lt;flink.reuseForks&gt;</span>true<span class="nt">&lt;/flink.reuseForks&gt;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="c">&lt;!-- dependencies versions --&gt;</span>
+</span></span><span class="line"><span class="cl">        <span class="nt">&lt;flink.version&gt;</span>1.17.2<span class="nt">&lt;/flink.version&gt;</span>
+</span></span><span class="line"><span class="cl">        <span class="nt">&lt;slf4j.version&gt;</span>1.7.15<span class="nt">&lt;/slf4j.version&gt;</span>
+</span></span><span class="line"><span class="cl">        <span class="nt">&lt;log4j.version&gt;</span>2.17.1<span class="nt">&lt;/log4j.version&gt;</span>
+</span></span><span class="line"><span class="cl">        <span class="nt">&lt;debezium.version&gt;</span>1.9.7.Final<span class="nt">&lt;/debezium.version&gt;</span>
+</span></span><span class="line"><span class="cl">    <span class="nt">&lt;/properties&gt;</span>
+</span></span><span class="line"><span class="cl">    <span class="nt">&lt;dependencies&gt;</span>
+</span></span><span class="line"><span class="cl">        <span class="nt">&lt;dependency&gt;</span>
+</span></span><span class="line"><span class="cl">            <span class="nt">&lt;groupId&gt;</span>org.apache.flink<span class="nt">&lt;/groupId&gt;</span>
+</span></span><span class="line"><span class="cl">            <span class="nt">&lt;artifactId&gt;</span>flink-streaming-java<span class="nt">&lt;/artifactId&gt;</span>
+</span></span><span class="line"><span class="cl">            <span class="nt">&lt;version&gt;</span>${flink.version}<span class="nt">&lt;/version&gt;</span>
+</span></span><span class="line"><span class="cl">            <span class="nt">&lt;scope&gt;</span>provided<span class="nt">&lt;/scope&gt;</span>
+</span></span><span class="line"><span class="cl">        <span class="nt">&lt;/dependency&gt;</span>
+</span></span><span class="line"><span class="cl">        <span class="nt">&lt;dependency&gt;</span>
+</span></span><span class="line"><span class="cl">            <span class="nt">&lt;groupId&gt;</span>org.apache.flink<span class="nt">&lt;/groupId&gt;</span>
+</span></span><span class="line"><span class="cl">            <span class="nt">&lt;artifactId&gt;</span>flink-java<span class="nt">&lt;/artifactId&gt;</span>
+</span></span><span class="line"><span class="cl">            <span class="nt">&lt;version&gt;</span>${flink.version}<span class="nt">&lt;/version&gt;</span>
+</span></span><span class="line"><span class="cl">            <span class="nt">&lt;scope&gt;</span>provided<span class="nt">&lt;/scope&gt;</span>
+</span></span><span class="line"><span class="cl">        <span class="nt">&lt;/dependency&gt;</span>
+</span></span><span class="line"><span class="cl">        <span class="nt">&lt;dependency&gt;</span>
+</span></span><span class="line"><span class="cl">            <span class="nt">&lt;groupId&gt;</span>org.apache.flink<span class="nt">&lt;/groupId&gt;</span>
+</span></span><span class="line"><span class="cl">            <span class="nt">&lt;artifactId&gt;</span>flink-clients<span class="nt">&lt;/artifactId&gt;</span>
+</span></span><span class="line"><span class="cl">            <span class="nt">&lt;version&gt;</span>${flink.version}<span class="nt">&lt;/version&gt;</span>
+</span></span><span class="line"><span class="cl">            <span class="nt">&lt;scope&gt;</span>provided<span class="nt">&lt;/scope&gt;</span>
+</span></span><span class="line"><span class="cl">        <span class="nt">&lt;/dependency&gt;</span>
+</span></span><span class="line"><span class="cl">        <span class="nt">&lt;dependency&gt;</span>
+</span></span><span class="line"><span class="cl">            <span class="nt">&lt;groupId&gt;</span>org.apache.flink<span class="nt">&lt;/groupId&gt;</span>
+</span></span><span class="line"><span class="cl">            <span class="nt">&lt;artifactId&gt;</span>flink-table-planner_${scala.binary.version}<span class="nt">&lt;/artifactId&gt;</span>
+</span></span><span class="line"><span class="cl">            <span class="nt">&lt;version&gt;</span>${flink.version}<span class="nt">&lt;/version&gt;</span>
+</span></span><span class="line"><span class="cl">            <span class="nt">&lt;scope&gt;</span>provided<span class="nt">&lt;/scope&gt;</span>
+</span></span><span class="line"><span class="cl">        <span class="nt">&lt;/dependency&gt;</span>
+</span></span><span class="line"><span class="cl">        <span class="nt">&lt;dependency&gt;</span>
+</span></span><span class="line"><span class="cl">            <span class="nt">&lt;groupId&gt;</span>org.apache.flink<span class="nt">&lt;/groupId&gt;</span>
+</span></span><span class="line"><span class="cl">            <span class="nt">&lt;artifactId&gt;</span>flink-table-runtime<span class="nt">&lt;/artifactId&gt;</span>
+</span></span><span class="line"><span class="cl">            <span class="nt">&lt;version&gt;</span>${flink.version}<span class="nt">&lt;/version&gt;</span>
+</span></span><span class="line"><span class="cl">            <span class="nt">&lt;scope&gt;</span>provided<span class="nt">&lt;/scope&gt;</span>
+</span></span><span class="line"><span class="cl">        <span class="nt">&lt;/dependency&gt;</span>
+</span></span><span class="line"><span class="cl">        <span class="nt">&lt;dependency&gt;</span>
+</span></span><span class="line"><span class="cl">            <span class="nt">&lt;groupId&gt;</span>org.apache.flink<span class="nt">&lt;/groupId&gt;</span>
+</span></span><span class="line"><span class="cl">            <span class="nt">&lt;artifactId&gt;</span>flink-core<span class="nt">&lt;/artifactId&gt;</span>
+</span></span><span class="line"><span class="cl">            <span class="nt">&lt;version&gt;</span>${flink.version}<span class="nt">&lt;/version&gt;</span>
+</span></span><span class="line"><span class="cl">            <span class="nt">&lt;scope&gt;</span>provided<span class="nt">&lt;/scope&gt;</span>
+</span></span><span class="line"><span class="cl">        <span class="nt">&lt;/dependency&gt;</span>
+</span></span><span class="line"><span class="cl">        <span class="nt">&lt;dependency&gt;</span>
+</span></span><span class="line"><span class="cl">            <span class="nt">&lt;groupId&gt;</span>org.apache.flink<span class="nt">&lt;/groupId&gt;</span>
+</span></span><span class="line"><span class="cl">            <span class="nt">&lt;artifactId&gt;</span>flink-table-common<span class="nt">&lt;/artifactId&gt;</span>
+</span></span><span class="line"><span class="cl">            <span class="nt">&lt;version&gt;</span>${flink.version}<span class="nt">&lt;/version&gt;</span>
+</span></span><span class="line"><span class="cl">            <span class="nt">&lt;scope&gt;</span>provided<span class="nt">&lt;/scope&gt;</span>
+</span></span><span class="line"><span class="cl">        <span class="nt">&lt;/dependency&gt;</span>
+</span></span><span class="line"><span class="cl">        <span class="c">&lt;!-- Checked the dependencies of the Flink project and below is a feasible reference. --&gt;</span>
+</span></span><span class="line"><span class="cl">        <span class="c">&lt;!--  Use flink shaded guava  18.0-13.0 for flink 1.13   --&gt;</span>
+</span></span><span class="line"><span class="cl">        <span class="c">&lt;!--  Use flink shaded guava  30.1.1-jre-14.0 for flink-1.14  --&gt;</span>
+</span></span><span class="line"><span class="cl">        <span class="c">&lt;!--  Use flink shaded guava  30.1.1-jre-15.0 for flink-1.15  --&gt;</span>
+</span></span><span class="line"><span class="cl">        <span class="c">&lt;!--  Use flink shaded guava  30.1.1-jre-15.0 for flink-1.16  --&gt;</span>
+</span></span><span class="line"><span class="cl">        <span class="c">&lt;!--  Use flink shaded guava  30.1.1-jre-16.1 for flink-1.17  --&gt;</span>
+</span></span><span class="line"><span class="cl">        <span class="c">&lt;!--  Use flink shaded guava  31.1-jre-17.0   for flink-1.18  --&gt;</span>
+</span></span><span class="line"><span class="cl">        <span class="nt">&lt;dependency&gt;</span>
+</span></span><span class="line"><span class="cl">            <span class="nt">&lt;groupId&gt;</span>org.apache.flink<span class="nt">&lt;/groupId&gt;</span>
+</span></span><span class="line"><span class="cl">            <span class="nt">&lt;artifactId&gt;</span>flink-shaded-guava<span class="nt">&lt;/artifactId&gt;</span>
+</span></span><span class="line"><span class="cl">            <span class="nt">&lt;version&gt;</span>30.1.1-jre-16.1<span class="nt">&lt;/version&gt;</span>
+</span></span><span class="line"><span class="cl">        <span class="nt">&lt;/dependency&gt;</span>
+</span></span><span class="line"><span class="cl">        <span class="nt">&lt;dependency&gt;</span>
+</span></span><span class="line"><span class="cl">            <span class="nt">&lt;groupId&gt;</span>org.apache.flink<span class="nt">&lt;/groupId&gt;</span>
+</span></span><span class="line"><span class="cl">            <span class="nt">&lt;artifactId&gt;</span>flink-connector-mysql-cdc<span class="nt">&lt;/artifactId&gt;</span>
+</span></span><span class="line"><span class="cl">            <span class="nt">&lt;version&gt;</span>2.4.2<span class="nt">&lt;/version&gt;</span>
+</span></span><span class="line"><span class="cl">        <span class="nt">&lt;/dependency&gt;</span>
+</span></span><span class="line"><span class="cl">        <span class="nt">&lt;dependency&gt;</span>
+</span></span><span class="line"><span class="cl">            <span class="nt">&lt;groupId&gt;</span>io.debezium<span class="nt">&lt;/groupId&gt;</span>
+</span></span><span class="line"><span class="cl">            <span class="nt">&lt;artifactId&gt;</span>debezium-connector-mysql<span class="nt">&lt;/artifactId&gt;</span>
+</span></span><span class="line"><span class="cl">            <span class="nt">&lt;version&gt;</span>${debezium.version}<span class="nt">&lt;/version&gt;</span>
+</span></span><span class="line"><span class="cl">        <span class="nt">&lt;/dependency&gt;</span>
+</span></span><span class="line"><span class="cl">    <span class="nt">&lt;/dependencies&gt;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="nt">&lt;build&gt;</span>
+</span></span><span class="line"><span class="cl">        <span class="nt">&lt;plugins&gt;</span>
+</span></span><span class="line"><span class="cl">            <span class="nt">&lt;plugin&gt;</span>
+</span></span><span class="line"><span class="cl">                <span class="nt">&lt;groupId&gt;</span>org.apache.maven.plugins<span class="nt">&lt;/groupId&gt;</span>
+</span></span><span class="line"><span class="cl">                <span class="nt">&lt;artifactId&gt;</span>maven-shade-plugin<span class="nt">&lt;/artifactId&gt;</span>
+</span></span><span class="line"><span class="cl">                <span class="nt">&lt;executions&gt;</span>
+</span></span><span class="line"><span class="cl">                    <span class="nt">&lt;execution&gt;</span>
+</span></span><span class="line"><span class="cl">                        <span class="nt">&lt;id&gt;</span>shade-flink<span class="nt">&lt;/id&gt;</span>
+</span></span><span class="line"><span class="cl">                        <span class="nt">&lt;phase&gt;</span>package<span class="nt">&lt;/phase&gt;</span>
+</span></span><span class="line"><span class="cl">                        <span class="nt">&lt;goals&gt;</span>
+</span></span><span class="line"><span class="cl">                            <span class="nt">&lt;goal&gt;</span>shade<span class="nt">&lt;/goal&gt;</span>
+</span></span><span class="line"><span class="cl">                        <span class="nt">&lt;/goals&gt;</span>
+</span></span><span class="line"><span class="cl">                        <span class="nt">&lt;configuration&gt;</span>
+</span></span><span class="line"><span class="cl">                            <span class="c">&lt;!-- Shading test jar have bug in some previous version, so close this configuration here,
+</span></span></span><span class="line"><span class="cl"><span class="c">                            see https://issues.apache.org/jira/browse/MSHADE-284 --&gt;</span>
+</span></span><span class="line"><span class="cl">                            <span class="nt">&lt;shadeTestJar&gt;</span>false<span class="nt">&lt;/shadeTestJar&gt;</span>
+</span></span><span class="line"><span class="cl">                            <span class="nt">&lt;shadedArtifactAttached&gt;</span>false<span class="nt">&lt;/shadedArtifactAttached&gt;</span>
+</span></span><span class="line"><span class="cl">                            <span class="nt">&lt;createDependencyReducedPom&gt;</span>true<span class="nt">&lt;/createDependencyReducedPom&gt;</span>
+</span></span><span class="line"><span class="cl">                            <span class="nt">&lt;dependencyReducedPomLocation&gt;</span>
+</span></span><span class="line"><span class="cl">                                ${project.basedir}/target/dependency-reduced-pom.xml
+</span></span><span class="line"><span class="cl">                            <span class="nt">&lt;/dependencyReducedPomLocation&gt;</span>
+</span></span><span class="line"><span class="cl">                            <span class="nt">&lt;filters</span> <span class="na">combine.children=</span><span class="s">&#34;append&#34;</span><span class="nt">&gt;</span>
+</span></span><span class="line"><span class="cl">                                <span class="nt">&lt;filter&gt;</span>
+</span></span><span class="line"><span class="cl">                                    <span class="nt">&lt;artifact&gt;</span>*:*<span class="nt">&lt;/artifact&gt;</span>
+</span></span><span class="line"><span class="cl">                                    <span class="nt">&lt;excludes&gt;</span>
+</span></span><span class="line"><span class="cl">                                        <span class="nt">&lt;exclude&gt;</span>module-info.class<span class="nt">&lt;/exclude&gt;</span>
+</span></span><span class="line"><span class="cl">                                        <span class="nt">&lt;exclude&gt;</span>META-INF/*.SF<span class="nt">&lt;/exclude&gt;</span>
+</span></span><span class="line"><span class="cl">                                        <span class="nt">&lt;exclude&gt;</span>META-INF/*.DSA<span class="nt">&lt;/exclude&gt;</span>
+</span></span><span class="line"><span class="cl">                                        <span class="nt">&lt;exclude&gt;</span>META-INF/*.RSA<span class="nt">&lt;/exclude&gt;</span>
+</span></span><span class="line"><span class="cl">                                    <span class="nt">&lt;/excludes&gt;</span>
+</span></span><span class="line"><span class="cl">                                <span class="nt">&lt;/filter&gt;</span>
+</span></span><span class="line"><span class="cl">                            <span class="nt">&lt;/filters&gt;</span>
+</span></span><span class="line"><span class="cl">                            <span class="nt">&lt;artifactSet&gt;</span>
+</span></span><span class="line"><span class="cl">                                <span class="nt">&lt;includes&gt;</span>
+</span></span><span class="line"><span class="cl">                                    <span class="c">&lt;!-- include nothing --&gt;</span>
+</span></span><span class="line"><span class="cl">                                    <span class="nt">&lt;include&gt;</span>io.debezium:debezium-api<span class="nt">&lt;/include&gt;</span>
+</span></span><span class="line"><span class="cl">                                    <span class="nt">&lt;include&gt;</span>io.debezium:debezium-embedded<span class="nt">&lt;/include&gt;</span>
+</span></span><span class="line"><span class="cl">                                    <span class="nt">&lt;include&gt;</span>io.debezium:debezium-core<span class="nt">&lt;/include&gt;</span>
+</span></span><span class="line"><span class="cl">                                    <span class="nt">&lt;include&gt;</span>io.debezium:debezium-ddl-parser<span class="nt">&lt;/include&gt;</span>
+</span></span><span class="line"><span class="cl">                                    <span class="nt">&lt;include&gt;</span>io.debezium:debezium-connector-mysql<span class="nt">&lt;/include&gt;</span>
+</span></span><span class="line"><span class="cl">                                    <span class="nt">&lt;include&gt;</span>org.apache.flink:flink-connector-debezium<span class="nt">&lt;/include&gt;</span>
+</span></span><span class="line"><span class="cl">                                    <span class="nt">&lt;include&gt;</span>org.apache.flink:flink-connector-mysql-cdc<span class="nt">&lt;/include&gt;</span>
+</span></span><span class="line"><span class="cl">                                    <span class="nt">&lt;include&gt;</span>org.antlr:antlr4-runtime<span class="nt">&lt;/include&gt;</span>
+</span></span><span class="line"><span class="cl">                                    <span class="nt">&lt;include&gt;</span>org.apache.kafka:*<span class="nt">&lt;/include&gt;</span>
+</span></span><span class="line"><span class="cl">                                    <span class="nt">&lt;include&gt;</span>mysql:mysql-connector-java<span class="nt">&lt;/include&gt;</span>
+</span></span><span class="line"><span class="cl">                                    <span class="nt">&lt;include&gt;</span>com.zendesk:mysql-binlog-connector-java<span class="nt">&lt;/include&gt;</span>
+</span></span><span class="line"><span class="cl">                                    <span class="nt">&lt;include&gt;</span>com.fasterxml.*:*<span class="nt">&lt;/include&gt;</span>
+</span></span><span class="line"><span class="cl">                                    <span class="nt">&lt;include&gt;</span>com.google.guava:*<span class="nt">&lt;/include&gt;</span>
+</span></span><span class="line"><span class="cl">                                    <span class="nt">&lt;include&gt;</span>com.esri.geometry:esri-geometry-api<span class="nt">&lt;/include&gt;</span>
+</span></span><span class="line"><span class="cl">                                    <span class="nt">&lt;include&gt;</span>com.zaxxer:HikariCP<span class="nt">&lt;/include&gt;</span>
+</span></span><span class="line"><span class="cl">                                    <span class="c">&lt;!--  Include fixed version 30.1.1-jre-16.0 of flink shaded guava  --&gt;</span>
+</span></span><span class="line"><span class="cl">                                    <span class="nt">&lt;include&gt;</span>org.apache.flink:flink-shaded-guava<span class="nt">&lt;/include&gt;</span>
+</span></span><span class="line"><span class="cl">                                <span class="nt">&lt;/includes&gt;</span>
+</span></span><span class="line"><span class="cl">                            <span class="nt">&lt;/artifactSet&gt;</span>
+</span></span><span class="line"><span class="cl">                            <span class="nt">&lt;relocations&gt;</span>
+</span></span><span class="line"><span class="cl">                                <span class="nt">&lt;relocation&gt;</span>
+</span></span><span class="line"><span class="cl">                                    <span class="nt">&lt;pattern&gt;</span>org.apache.kafka<span class="nt">&lt;/pattern&gt;</span>
+</span></span><span class="line"><span class="cl">                                    <span class="nt">&lt;shadedPattern&gt;</span>
+</span></span><span class="line"><span class="cl">                                        org.apache.flink.cdc.connectors.shaded.org.apache.kafka
+</span></span><span class="line"><span class="cl">                                    <span class="nt">&lt;/shadedPattern&gt;</span>
+</span></span><span class="line"><span class="cl">                                <span class="nt">&lt;/relocation&gt;</span>
+</span></span><span class="line"><span class="cl">                                <span class="nt">&lt;relocation&gt;</span>
+</span></span><span class="line"><span class="cl">                                    <span class="nt">&lt;pattern&gt;</span>org.antlr<span class="nt">&lt;/pattern&gt;</span>
+</span></span><span class="line"><span class="cl">                                    <span class="nt">&lt;shadedPattern&gt;</span>
+</span></span><span class="line"><span class="cl">                                        org.apache.flink.cdc.connectors.shaded.org.antlr
+</span></span><span class="line"><span class="cl">                                    <span class="nt">&lt;/shadedPattern&gt;</span>
+</span></span><span class="line"><span class="cl">                                <span class="nt">&lt;/relocation&gt;</span>
+</span></span><span class="line"><span class="cl">                                <span class="nt">&lt;relocation&gt;</span>
+</span></span><span class="line"><span class="cl">                                    <span class="nt">&lt;pattern&gt;</span>com.fasterxml<span class="nt">&lt;/pattern&gt;</span>
+</span></span><span class="line"><span class="cl">                                    <span class="nt">&lt;shadedPattern&gt;</span>
+</span></span><span class="line"><span class="cl">                                        org.apache.flink.cdc.connectors.shaded.com.fasterxml
+</span></span><span class="line"><span class="cl">                                    <span class="nt">&lt;/shadedPattern&gt;</span>
+</span></span><span class="line"><span class="cl">                                <span class="nt">&lt;/relocation&gt;</span>
+</span></span><span class="line"><span class="cl">                                <span class="nt">&lt;relocation&gt;</span>
+</span></span><span class="line"><span class="cl">                                    <span class="nt">&lt;pattern&gt;</span>com.google<span class="nt">&lt;/pattern&gt;</span>
+</span></span><span class="line"><span class="cl">                                    <span class="nt">&lt;shadedPattern&gt;</span>
+</span></span><span class="line"><span class="cl">                                        org.apache.flink.cdc.connectors.shaded.com.google
+</span></span><span class="line"><span class="cl">                                    <span class="nt">&lt;/shadedPattern&gt;</span>
+</span></span><span class="line"><span class="cl">                                <span class="nt">&lt;/relocation&gt;</span>
+</span></span><span class="line"><span class="cl">                                <span class="nt">&lt;relocation&gt;</span>
+</span></span><span class="line"><span class="cl">                                    <span class="nt">&lt;pattern&gt;</span>com.esri.geometry<span class="nt">&lt;/pattern&gt;</span>
+</span></span><span class="line"><span class="cl">                                    <span class="nt">&lt;shadedPattern&gt;</span>org.apache.flink.cdc.connectors.shaded.com.esri.geometry<span class="nt">&lt;/shadedPattern&gt;</span>
+</span></span><span class="line"><span class="cl">                                <span class="nt">&lt;/relocation&gt;</span>
+</span></span><span class="line"><span class="cl">                                <span class="nt">&lt;relocation&gt;</span>
+</span></span><span class="line"><span class="cl">                                    <span class="nt">&lt;pattern&gt;</span>com.zaxxer<span class="nt">&lt;/pattern&gt;</span>
+</span></span><span class="line"><span class="cl">                                    <span class="nt">&lt;shadedPattern&gt;</span>
+</span></span><span class="line"><span class="cl">                                        org.apache.flink.cdc.connectors.shaded.com.zaxxer
+</span></span><span class="line"><span class="cl">                                    <span class="nt">&lt;/shadedPattern&gt;</span>
+</span></span><span class="line"><span class="cl">                                <span class="nt">&lt;/relocation&gt;</span>
+</span></span><span class="line"><span class="cl">                            <span class="nt">&lt;/relocations&gt;</span>
+</span></span><span class="line"><span class="cl">                        <span class="nt">&lt;/configuration&gt;</span>
+</span></span><span class="line"><span class="cl">                    <span class="nt">&lt;/execution&gt;</span>
+</span></span><span class="line"><span class="cl">                <span class="nt">&lt;/executions&gt;</span>
+</span></span><span class="line"><span class="cl">            <span class="nt">&lt;/plugin&gt;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="nt">&lt;/plugins&gt;</span>
+</span></span><span class="line"><span class="cl">    <span class="nt">&lt;/build&gt;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="nt">&lt;/project&gt;</span>
+</span></span></code></pre></div><h2 id="example-for-code">
+  Example for Code
+  <a class="anchor" href="#example-for-code">#</a>
+</h2>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kn">package</span><span class="w"> </span><span class="nn">org.apache.flink.flink.cdc</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kn">import</span><span class="w"> </span><span class="nn">org.apache.flink.api.common.eventtime.WatermarkStrategy</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kn">import</span><span class="w"> </span><span class="nn">org.apache.flink.streaming.api.environment.StreamExecutionEnvironment</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kn">import</span><span class="w"> </span><span class="nn">org.apache.flink.cdc.connectors.mysql.source.MySqlSource</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kn">import</span><span class="w"> </span><span class="nn">org.apache.flink.cdc.debezium.JsonDebeziumDeserializationSchema</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kd">public</span><span class="w"> </span><span class="kd">class</span> <span class="nc">CdcTest</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="kd">static</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">main</span><span class="p">(</span><span class="n">String</span><span class="o">[]</span><span class="w"> </span><span class="n">args</span><span class="p">)</span><span class="w"> </span><span class="kd">throws</span><span class="w"> </span><span class="n">Exception</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">MySqlSource</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;</span><span class="w"> </span><span class="n">mySqlSource</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">MySqlSource</span><span class="p">.</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;</span><span class="n">builder</span><span class="p">()</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="p">.</span><span class="na">hostname</span><span class="p">(</span><span class="s">&#34;yourHostname&#34;</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="p">.</span><span class="na">port</span><span class="p">(</span><span class="n">yourPort</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="p">.</span><span class="na">databaseList</span><span class="p">(</span><span class="s">&#34;yourDatabaseName&#34;</span><span class="p">)</span><span class="w"> </span><span class="c1">// set captured database, If you need to synchronize the whole database, Please set tableList to &#34;.*&#34;.</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="p">.</span><span class="na">tableList</span><span class="p">(</span><span class="s">&#34;yourDatabaseName.yourTableName&#34;</span><span class="p">)</span><span class="w"> </span><span class="c1">// set captured table</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="p">.</span><span class="na">username</span><span class="p">(</span><span class="s">&#34;yourUsername&#34;</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="p">.</span><span class="na">password</span><span class="p">(</span><span class="s">&#34;yourPassword&#34;</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="p">.</span><span class="na">deserializer</span><span class="p">(</span><span class="k">new</span><span class="w"> </span><span class="n">JsonDebeziumDeserializationSchema</span><span class="p">())</span><span class="w"> </span><span class="c1">// converts SourceRecord to JSON String</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="p">.</span><span class="na">build</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="kd">final</span><span class="w"> </span><span class="n">StreamExecutionEnvironment</span><span class="w"> </span><span class="n">env</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">StreamExecutionEnvironment</span><span class="p">.</span><span class="na">getExecutionEnvironment</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="c1">// enable checkpoint</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">env</span><span class="p">.</span><span class="na">enableCheckpointing</span><span class="p">(</span><span class="n">3000</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">env</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="p">.</span><span class="na">fromSource</span><span class="p">(</span><span class="n">mySqlSource</span><span class="p">,</span><span class="w"> </span><span class="n">WatermarkStrategy</span><span class="p">.</span><span class="na">noWatermarks</span><span class="p">(),</span><span class="w"> </span><span class="s">&#34;MySQL Source&#34;</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="c1">// set 1 parallel source tasks</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="p">.</span><span class="na">setParallelism</span><span class="p">(</span><span class="n">1</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="p">.</span><span class="na">print</span><span class="p">().</span><span class="na">setParallelism</span><span class="p">(</span><span class="n">1</span><span class="p">);</span><span class="w"> </span><span class="c1">// use parallelism 1 for sink</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">env</span><span class="p">.</span><span class="na">execute</span><span class="p">(</span><span class="s">&#34;Print MySQL Snapshot + Binlog&#34;</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></div>
+<p><a href="#top" class="top pull-right"><i class="fas fa-triangle"></i> Back to top</a></p>
+
+
+</article>
+ 
+      
+
+      <footer class="book-footer">
+        
+  
+
+
+
+
+<a href="//github.com/apache/flink-cdc/edit/master/docs/content/docs/connectors/flink-sources/datastream-api-package-guidance.md" style="color:black"><i class="fa fa-edit fa-fw"></i>Edit This Page</a>
+
+
+ 
+        
+      </footer>
+
+      
+  
+  <div class="book-comments">
+
+</div>
+  
+ 
+
+      <label for="menu-control" class="hidden book-menu-overlay"></label>
+    </div>
+
+    
+    <aside class="book-toc">
+      
+  
+
+<nav id="TableOfContents"><h3>On This Page <button class="toc" onclick="collapseToc()"><i class="fa fa-compress" aria-hidden="true"></i></button></h3>
+  <ul>
+    <li><a href="#example-for-pomxml">Example for <code>pom.xml</code></a></li>
+    <li><a href="#example-for-code">Example for Code</a></li>
+  </ul>
+</nav>
+
+ 
+    </aside>
+    <aside class="expand-toc">
+      <button class="toc" onclick="expandToc()">
+        <i class="fa fa-expand" aria-hidden="true"></i>
+      </button>
+    </aside>
+    
+  </main>
+
+  
+</body>
+
+</html>
+
+
+
+
+
+
+
+
+
+
+
+

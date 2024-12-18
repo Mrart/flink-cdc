@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Flink CDC Sources 教程 on Apache Flink CDC</title>
+    <link>//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/flink-sources/tutorials/</link>
+    <description>Recent content in Flink CDC Sources 教程 on Apache Flink CDC</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>zh</language>
+    <atom:link href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/flink-sources/tutorials/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>MongoDB 教程</title>
+      <link>//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/flink-sources/tutorials/mongodb-tutorial/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/flink-sources/tutorials/mongodb-tutorial/</guid>
+      <description>演示: MongoDB CDC 导入 Elasticsearch # 下载 docker-compose.yml version: &amp;#39;2.1&amp;#39; services: mongo: image: &amp;#34;mongo:4.0-xenial&amp;#34; command: --replSet rs0 --smallfiles --oplogSize 128 ports: - &amp;#34;27017:27017&amp;#34; environment: - MONGO_INITDB_ROOT_USERNAME=mongouser - MONGO_INITDB_ROOT_PASSWORD=mongopw elasticsearch: image: elastic/elasticsearch:7.6.0 environment: - cluster.name=docker-cluster - bootstrap.memory_lock=true - &amp;#34;ES_JAVA_OPTS=-Xms512m -Xmx512m&amp;#34; - discovery.type=single-node ports: - &amp;#34;9200:9200&amp;#34; - &amp;#34;9300:9300&amp;#34; ulimits: memlock: soft: -1 hard: -1 nofile: soft: 65536 hard: 65536 kibana: image: elastic/kibana:7.6.0 ports: - &amp;#34;5601:5601&amp;#34; 进入 MongoDB 容器，初始化副本集和数据: docker-compose exec mongo /usr/bin/mongo -u mongouser -p mongopw // 1.</description>
+    </item>
+    <item>
+      <title>Db2 教程</title>
+      <link>//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/flink-sources/tutorials/db2-tutorial/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/flink-sources/tutorials/db2-tutorial/</guid>
+      <description>Demo: Db2 CDC to Elasticsearch # 1. Create docker-compose.yml file using following contents:&#xA;version: &amp;#39;2.1&amp;#39; services: db2: image: ruanhang/db2-cdc-demo:v1 privileged: true ports: - 50000:50000 environment: - LICENSE=accept - DB2INSTANCE=db2inst1 - DB2INST1_PASSWORD=admin - DBNAME=testdb - ARCHIVE_LOGS=true elasticsearch: image: elastic/elasticsearch:7.6.0 environment: - cluster.name=docker-cluster - bootstrap.memory_lock=true - &amp;#34;ES_JAVA_OPTS=-Xms512m -Xmx512m&amp;#34; - discovery.type=single-node ports: - &amp;#34;9200:9200&amp;#34; - &amp;#34;9300:9300&amp;#34; ulimits: memlock: soft: -1 hard: -1 nofile: soft: 65536 hard: 65536 kibana: image: elastic/kibana:7.6.0 ports: - &amp;#34;5601:5601&amp;#34; volumes: - /var/run/docker.</description>
+    </item>
+    <item>
+      <title>OceanBase 教程</title>
+      <link>//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/flink-sources/tutorials/oceanbase-tutorial/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/flink-sources/tutorials/oceanbase-tutorial/</guid>
+      <description>演示: OceanBase CDC 导入 Elasticsearch # 视频教程 # YouTube Bilibili 准备教程所需要的组件 # 配置并启动容器 # 配置 docker-compose.yml。&#xA;version: &amp;#39;2.1&amp;#39; services: observer: image: oceanbase/oceanbase-ce:4.0.0.0 container_name: observer network_mode: &amp;#34;host&amp;#34; oblogproxy: image: whhe/oblogproxy:1.1.0_4x container_name: oblogproxy environment: - &amp;#39;OB_SYS_USERNAME=root&amp;#39; - &amp;#39;OB_SYS_PASSWORD=pswd&amp;#39; network_mode: &amp;#34;host&amp;#34; elasticsearch: image: &amp;#39;elastic/elasticsearch:7.6.0&amp;#39; container_name: elasticsearch environment: - cluster.name=docker-cluster - bootstrap.memory_lock=true - ES_JAVA_OPTS=-Xms512m -Xmx512m - discovery.type=single-node ports: - &amp;#39;9200:9200&amp;#39; - &amp;#39;9300:9300&amp;#39; ulimits: memlock: soft: -1 hard: -1 nofile: soft: 65536 hard: 65536 kibana: image: &amp;#39;elastic/kibana:7.</description>
+    </item>
+    <item>
+      <title>Oracle 教程</title>
+      <link>//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/flink-sources/tutorials/oracle-tutorial/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/flink-sources/tutorials/oracle-tutorial/</guid>
+      <description>演示: Oracle CDC 导入 Elasticsearch # 创建docker-compose.yml文件，内容如下所示:&#xA;version: &amp;#39;2.1&amp;#39; services: oracle: image: goodboy008/oracle-19.3.0-ee:non-cdb ports: - &amp;#34;1521:1521&amp;#34; elasticsearch: image: elastic/elasticsearch:7.6.0 environment: - cluster.name=docker-cluster - bootstrap.memory_lock=true - &amp;#34;ES_JAVA_OPTS=-Xms512m -Xmx512m&amp;#34; - discovery.type=single-node ports: - &amp;#34;9200:9200&amp;#34; - &amp;#34;9300:9300&amp;#34; ulimits: memlock: soft: -1 hard: -1 nofile: soft: 65536 hard: 65536 kibana: image: elastic/kibana:7.6.0 ports: - &amp;#34;5601:5601&amp;#34; volumes: - /var/run/docker.sock:/var/run/docker.sock 该 Docker Compose 中包含的容器有:&#xA;Oracle: Oracle 19c 数据库 Elasticsearch: orders 表将和 products 表进行join，join的结果写入Elasticsearch中 Kibana: 可视化 Elasticsearch 中的数据 在 docker-compose.</description>
+    </item>
+    <item>
+      <title>PolarDB-X 教程</title>
+      <link>//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/flink-sources/tutorials/polardbx-tutorial/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/flink-sources/tutorials/polardbx-tutorial/</guid>
+      <description>演示: PolarDB-X CDC 导入 Elasticsearch # 本示例我们通过演示 PolarDB-X 借助 Flink-CDC 将数据导入至 Elasticsearch 来介绍 PolarDB-X 的增量订阅能力，你可以前往:PolarDB-X 了解更多细节。&#xA;准备教程所需要的组件 # 我们假设你运行在一台 MacOS 或者 Linux 机器上，并且已经安装 docker.&#xA;配置并启动容器 # 配置 docker-compose.yml。&#xA;version: &amp;#39;2.1&amp;#39; services: polardbx: polardbx: image: polardbx/polardb-x:2.0.1 container_name: polardbx ports: - &amp;#34;8527:8527&amp;#34; elasticsearch: image: &amp;#39;elastic/elasticsearch:7.6.0&amp;#39; container_name: elasticsearch environment: - cluster.name=docker-cluster - bootstrap.memory_lock=true - ES_JAVA_OPTS=-Xms512m -Xmx512m - discovery.type=single-node ports: - &amp;#39;9200:9200&amp;#39; - &amp;#39;9300:9300&amp;#39; ulimits: memlock: soft: -1 hard: -1 nofile: soft: 65536 hard: 65536 kibana: image: &amp;#39;elastic/kibana:7.</description>
+    </item>
+    <item>
+      <title>SqlServer 教程</title>
+      <link>//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/flink-sources/tutorials/sqlserver-tutorial/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/flink-sources/tutorials/sqlserver-tutorial/</guid>
+      <description>演示: SqlServer CDC 导入 Elasticsearch # 创建 docker-compose.yml 文件，内容如下所示：&#xA;version: &amp;#39;2.1&amp;#39; services: sqlserver: image: mcr.microsoft.com/mssql/server:2019-latest container_name: sqlserver ports: - &amp;#34;1433:1433&amp;#34; environment: - &amp;#34;MSSQL_AGENT_ENABLED=true&amp;#34; - &amp;#34;MSSQL_PID=Standard&amp;#34; - &amp;#34;ACCEPT_EULA=Y&amp;#34; - &amp;#34;SA_PASSWORD=Password!&amp;#34; elasticsearch: image: elastic/elasticsearch:7.6.0 container_name: elasticsearch environment: - cluster.name=docker-cluster - bootstrap.memory_lock=true - &amp;#34;ES_JAVA_OPTS=-Xms512m -Xmx512m&amp;#34; - discovery.type=single-node ports: - &amp;#34;9200:9200&amp;#34; - &amp;#34;9300:9300&amp;#34; ulimits: memlock: soft: -1 hard: -1 nofile: soft: 65536 hard: 65536 kibana: image: elastic/kibana:7.6.0 container_name: kibana ports: - &amp;#34;5601:5601&amp;#34; volumes: - /var/run/docker.</description>
+    </item>
+    <item>
+      <title>TiDB 教程</title>
+      <link>//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/flink-sources/tutorials/tidb-tutorial/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/flink-sources/tutorials/tidb-tutorial/</guid>
+      <description>演示: TiDB CDC 导入 Elasticsearch # 首先我们得通过 docker 来启动 TiDB 集群。&#xA;$ git clone https://github.com/pingcap/tidb-docker-compose.git 其次替换目录 tidb-docker-compose 里面的 docker-compose.yml 文件，内容如下所示：&#xA;version: &amp;#34;2.1&amp;#34; services: pd: image: pingcap/pd:v5.3.1 ports: - &amp;#34;2379:2379&amp;#34; volumes: - ./config/pd.toml:/pd.toml - ./logs:/logs command: - --client-urls=http://0.0.0.0:2379 - --peer-urls=http://0.0.0.0:2380 - --advertise-client-urls=http://pd:2379 - --advertise-peer-urls=http://pd:2380 - --initial-cluster=pd=http://pd:2380 - --data-dir=/data/pd - --config=/pd.toml - --log-file=/logs/pd.log restart: on-failure tikv: image: pingcap/tikv:v5.3.1 ports: - &amp;#34;20160:20160&amp;#34; volumes: - ./config/tikv.toml:/tikv.toml - ./logs:/logs command: - --addr=0.0.0.0:20160 - --advertise-addr=tikv:20160 - --data-dir=/data/tikv - --pd=pd:2379 - --config=/tikv.</description>
+    </item>
+    <item>
+      <title>使用 Flink CDC 构建实时数据湖</title>
+      <link>//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/flink-sources/tutorials/build-real-time-data-lake-tutorial/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/flink-sources/tutorials/build-real-time-data-lake-tutorial/</guid>
+      <description>使用 Flink CDC 构建实时数据湖 # 在 OLTP 系统中，为了解决单表数据量大的问题，通常采用分库分表的方式将单个大表进行拆分以提高系统的吞吐量。 但是为了方便数据分析，通常需要将分库分表拆分出的表在同步到数据仓库、数据湖时，再合并成一个大表。&#xA;这篇教程将展示如何使用 Flink CDC 构建实时数据湖来应对这种场景，本教程的演示基于 Docker，只涉及 SQL，无需一行 Java/Scala 代码，也无需安装 IDE，你可以很方便地在自己的电脑上完成本教程的全部内容。&#xA;接下来将以数据从 MySQL 同步到 Iceberg 为例展示整个流程，架构图如下所示：&#xA;你也可以使用不同的 source 比如 Oracle/Postgres 和 sink 比如 Hudi 来构建自己的 ETL 流程。&#xA;准备阶段 # 准备一台已经安装了 Docker 的 Linux 或者 MacOS 电脑。&#xA;准备教程所需要的组件 # 接下来的教程将以 docker-compose 的方式准备所需要的组件。&#xA;使用下面的内容创建一个 docker-compose.yml 文件：&#xA;version: &amp;#39;2.1&amp;#39; services: sql-client: user: flink:flink image: yuxialuo/flink-sql-client:1.13.2.v1 depends_on: - jobmanager - mysql environment: FLINK_JOBMANAGER_HOST: jobmanager MYSQL_HOST: mysql volumes: - shared-tmpfs:/tmp/iceberg jobmanager: user: flink:flink image: flink:1.</description>
+    </item>
+    <item>
+      <title>使用 Flink CDC 构建 Streaming ETL</title>
+      <link>//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/flink-sources/tutorials/build-streaming-etl-tutorial/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/flink-sources/tutorials/build-streaming-etl-tutorial/</guid>
+      <description>使用 Flink CDC 构建 Streaming ETL # 这篇教程将展示如何基于 Flink CDC 快速构建 MySQL 和 Postgres 的流式 ETL。本教程的演示都将在 Flink SQL CLI 中进行，只涉及 SQL，无需一行 Java/Scala 代码，也无需安装 IDE。&#xA;假设我们正在经营电子商务业务，商品和订单的数据存储在 MySQL 中，订单对应的物流信息存储在 Postgres 中。 对于订单表，为了方便进行分析，我们希望让它关联上其对应的商品和物流信息，构成一张宽表，并且实时把它写到 ElasticSearch 中。&#xA;接下来的内容将介绍如何使用 Flink Mysql/Postgres CDC 来实现这个需求，系统的整体架构如下图所示： 准备阶段 # 准备一台已经安装了 Docker 的 Linux 或者 MacOS 电脑。&#xA;准备教程所需要的组件 # 接下来的教程将以 docker-compose 的方式准备所需要的组件。&#xA;使用下面的内容创建一个 docker-compose.yml 文件：&#xA;version: &amp;#39;2.1&amp;#39; services: postgres: image: debezium/example-postgres:1.1 ports: - &amp;#34;5432:5432&amp;#34; environment: - POSTGRES_DB=postgres - POSTGRES_USER=postgres - POSTGRES_PASSWORD=postgres mysql: image: debezium/example-mysql:1.</description>
+    </item>
+  </channel>
+</rss>
