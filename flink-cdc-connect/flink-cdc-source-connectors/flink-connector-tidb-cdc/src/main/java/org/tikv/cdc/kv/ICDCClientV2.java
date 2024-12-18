@@ -4,14 +4,14 @@ import org.tikv.cdc.model.RegionFeedEvent;
 import org.tikv.common.meta.TiTableInfo;
 
 public interface ICDCClientV2 {
-  void execute(final long startTs);
+    void execute(final long startTs);
 
-  long getResolvedTs();
+    long getResolvedTs();
 
-  TiTableInfo getTableInfo(String database, String name);
+    TiTableInfo getTableInfo(String database, String name);
 
-  /** @return null if no more data */
-  RegionFeedEvent get();
+    /** @return null if no more data */
+    RegionFeedEvent get();
 
-  void close();
+    void close();
 }

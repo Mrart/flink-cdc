@@ -180,7 +180,7 @@ public class TiDBConnectorITCase extends TiDBTestBase {
 
     @Test
     public void testConsumingAllEventsTime() throws Exception {
-        initializeTidbTable("inventory_time");
+        initializeTidbTable("inventory");
 
         String sourceDDL =
                 String.format(
