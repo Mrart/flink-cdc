@@ -216,6 +216,7 @@ public class CDCEventSource
         } else {
           // insert
           after = new Serializable[fieldIndex.size()];
+          LOG.debug("Receive value is {}", event.getRawKVEntry().getValue().toByteArray());
           Object[] tiKVValueAfter =
               decodeObjects(
                   event.getRawKVEntry().getValue().toByteArray(), handle, event.getTableInfo());
