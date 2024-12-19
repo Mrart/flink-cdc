@@ -443,7 +443,6 @@ public class TiDBConnection extends JdbcConnection {
                 if (tableChange != null) {
                     ArrayList<Column> columns = new ArrayList<>(tableChange.getTable().columns());
                     columnsByTable.put(tableId, columns);
-                    System.out.println(tableChange.getTable().columns());
                 }
 
                 //                // add all included columns
