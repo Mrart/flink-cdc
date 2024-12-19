@@ -23,7 +23,7 @@ public class MockTiDBTableSource extends TiDBTableSource {
                 (String) get(tiDBTableSource, "password"),
                 (String) get(tiDBTableSource, "serverTimeZone"),
                 (Properties) get(tiDBTableSource, "dbzProperties"),
-                (Boolean) get(tiDBTableSource,"enableParallelRead"),
+                (Boolean) get(tiDBTableSource, "enableParallelRead"),
                 (Duration) get(tiDBTableSource, "heartbeatInterval"),
                 (String) get(tiDBTableSource, "pdAddresses"),
                 (String) get(tiDBTableSource, "hostMapping"),

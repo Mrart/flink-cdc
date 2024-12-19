@@ -1,4 +1,4 @@
-package org.tikv.cdc;
+package org.tikv.cdc.kv;
 
 import org.tikv.common.region.TiRegion;
 import org.tikv.kvproto.Coprocessor.KeyRange;
@@ -16,7 +16,7 @@ public class RegionStateManager {
     public static final int STATE_STOPPED = 1;
     public static final int STATE_REMOVED = 2;
 
-    static class SingleRegionInfo {
+    public static class SingleRegionInfo {
         private final TiRegion.RegionVerID verID;
         private final KeyRange span;
         private final RPCContext rpcCtx;
@@ -42,7 +42,7 @@ public class RegionStateManager {
         }
     }
 
-    static class RegionFeedState {
+    public static class RegionFeedState {
         private final SingleRegionInfo sri;
         private final long requestID;
         private Matcher matcher;
@@ -140,7 +140,7 @@ public class RegionStateManager {
         }
     }
 
-    static class SyncRegionFeedStateMap {
+    public static class SyncRegionFeedStateMap {
         private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
         private final ConcurrentHashMap<Long, RegionFeedState> statesInternal =
                 new ConcurrentHashMap<>();

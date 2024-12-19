@@ -1,5 +1,11 @@
 package org.apache.flink.cdc.connectors.tidb.source.connection;
 
+import org.apache.flink.cdc.connectors.tidb.source.config.TiDBConnectorConfig;
+import org.apache.flink.cdc.connectors.tidb.source.offset.CDCEventOffsetContext;
+import org.apache.flink.cdc.connectors.tidb.source.schema.TiDBDatabaseSchema;
+import org.apache.flink.cdc.connectors.tidb.utils.TiDBUtils;
+import org.apache.flink.util.FlinkRuntimeException;
+
 import io.debezium.connector.tidb.TiDBPartition;
 import io.debezium.jdbc.JdbcConfiguration;
 import io.debezium.jdbc.JdbcConnection;
@@ -8,11 +14,6 @@ import io.debezium.relational.TableId;
 import io.debezium.relational.Tables;
 import io.debezium.relational.history.TableChanges;
 import io.debezium.schema.SchemaChangeEvent;
-import org.apache.flink.cdc.connectors.tidb.source.config.TiDBConnectorConfig;
-import org.apache.flink.cdc.connectors.tidb.source.offset.CDCEventOffsetContext;
-import org.apache.flink.cdc.connectors.tidb.source.schema.TiDBDatabaseSchema;
-import org.apache.flink.cdc.connectors.tidb.utils.TiDBUtils;
-import org.apache.flink.util.FlinkRuntimeException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -316,11 +317,18 @@ public class TiDBConnection extends JdbcConnection {
         return tableIds;
     }
 
-    //新的readSchema
-    public void readTiDBSchema(TiDBConnectorConfig config,TiDBDatabaseSchema databaseSchema, Tables tables, String databaseCatalog, String schemaNamePattern,
-                           Tables.TableFilter tableFilter, Tables.ColumnNameFilter columnFilter, boolean removeTablesNotFoundInJdbc)
+    // 新的readSchema
+    public void readTiDBSchema(
+            TiDBConnectorConfig config,
+            TiDBDatabaseSchema databaseSchema,
+            Tables tables,
+            String databaseCatalog,
+            String schemaNamePattern,
+            Tables.TableFilter tableFilter,
+            Tables.ColumnNameFilter columnFilter,
+            boolean removeTablesNotFoundInJdbc)
             throws SQLException {
-//        LOGGER.info("tidbconnection readschema **********");
+        //        LOGGER.info("tidbconnection readschema **********");
         // Before we make any changes, get the copy of the set of table IDs ...
         Set<TableId> tableIdsBefore = new HashSet<>(tables.tableIds());
 
@@ -332,7 +340,9 @@ public class TiDBConnection extends JdbcConnection {
         final Set<TableId> tableIds = new HashSet<>();
 
         int totalTables = 0;
-        try (final ResultSet rs = metadata.getTables(databaseCatalog, schemaNamePattern, null, supportedTableTypes())) {
+        try (final ResultSet rs =
+                metadata.getTables(
+                        databaseCatalog, schemaNamePattern, null, supportedTableTypes())) {
             while (rs.next()) {
                 final String catalogName = resolveCatalogName(rs.getString(1));
                 final String schemaName = rs.getString(2);
@@ -344,8 +354,7 @@ public class TiDBConnection extends JdbcConnection {
                     if (tableFilter == null || tableFilter.isIncluded(tableId)) {
                         tableIds.add(tableId);
                     }
-                }
-                else {
+                } else {
                     TableId tableId = new TableId(catalogName, schemaName, tableName);
                     viewIds.add(tableId);
                 }
@@ -353,14 +362,33 @@ public class TiDBConnection extends JdbcConnection {
         }
 
         Map<TableId, List<Column>> columnsByTable = new HashMap<>();
-        if (totalTables == tableIds.size() ) {
-            columnsByTable = getColumnsDetailsWithTableChange(config,databaseSchema,databaseCatalog, schemaNamePattern, null, tableFilter, columnFilter, metadata, viewIds);
-//            LOGGER.info("connection readSchema:", columnsByTable);
-        }
-        else {
+        if (totalTables == tableIds.size()) {
+            columnsByTable =
+                    getColumnsDetailsWithTableChange(
+                            config,
+                            databaseSchema,
+                            databaseCatalog,
+                            schemaNamePattern,
+                            null,
+                            tableFilter,
+                            columnFilter,
+                            metadata,
+                            viewIds);
+            //            LOGGER.info("connection readSchema:", columnsByTable);
+        } else {
             for (TableId includeTable : tableIds) {
                 LOGGER.debug("Retrieving columns of table {}", includeTable);
-                Map<TableId, List<Column>> cols = getColumnsDetailsWithTableChange(config,databaseSchema,databaseCatalog, schemaNamePattern, null, tableFilter, columnFilter, metadata, viewIds);
+                Map<TableId, List<Column>> cols =
+                        getColumnsDetailsWithTableChange(
+                                config,
+                                databaseSchema,
+                                databaseCatalog,
+                                schemaNamePattern,
+                                null,
+                                tableFilter,
+                                columnFilter,
+                                metadata,
+                                viewIds);
                 columnsByTable.putAll(cols);
             }
         }
@@ -368,7 +396,8 @@ public class TiDBConnection extends JdbcConnection {
         // Read the metadata for the primary keys ...
         for (Map.Entry<TableId, List<Column>> tableEntry : columnsByTable.entrySet()) {
             // First get the primary key information, which must be done for *each* table ...
-            List<String> pkColumnNames = readPrimaryKeyOrUniqueIndexNames(metadata, tableEntry.getKey());
+            List<String> pkColumnNames =
+                    readPrimaryKeyOrUniqueIndexNames(metadata, tableEntry.getKey());
 
             // Then define the table ...
             List<Column> columns = tableEntry.getValue();
@@ -384,12 +413,20 @@ public class TiDBConnection extends JdbcConnection {
         }
     }
 
-    protected Map<TableId, List<Column>> getColumnsDetailsWithTableChange(TiDBConnectorConfig config, TiDBDatabaseSchema databaseSchema, String databaseCatalog, String schemaNamePattern,
-                                                                          String tableName, Tables.TableFilter tableFilter, Tables.ColumnNameFilter columnFilter, DatabaseMetaData metadata,
-                                                                          final Set<TableId> viewIds)
+    protected Map<TableId, List<Column>> getColumnsDetailsWithTableChange(
+            TiDBConnectorConfig config,
+            TiDBDatabaseSchema databaseSchema,
+            String databaseCatalog,
+            String schemaNamePattern,
+            String tableName,
+            Tables.TableFilter tableFilter,
+            Tables.ColumnNameFilter columnFilter,
+            DatabaseMetaData metadata,
+            final Set<TableId> viewIds)
             throws SQLException {
         Map<TableId, List<Column>> columnsByTable = new HashMap<>();
-        try (ResultSet columnMetadata = metadata.getColumns(databaseCatalog, schemaNamePattern, tableName, null)) {
+        try (ResultSet columnMetadata =
+                metadata.getColumns(databaseCatalog, schemaNamePattern, tableName, null)) {
             while (columnMetadata.next()) {
                 String catalogName = resolveCatalogName(columnMetadata.getString(1));
                 String schemaName = columnMetadata.getString(2);
@@ -397,43 +434,50 @@ public class TiDBConnection extends JdbcConnection {
                 TableId tableId = new TableId(catalogName, schemaName, metaTableName);
 
                 // exclude views and non-captured tables
-                if (viewIds.contains(tableId) ||
-                        (tableFilter != null && !tableFilter.isIncluded(tableId))) {
+                if (viewIds.contains(tableId)
+                        || (tableFilter != null && !tableFilter.isIncluded(tableId))) {
                     continue;
                 }
-                TableChanges.TableChange tableChange = readTableSchema(config,databaseSchema,tableId);
-                if (tableChange!=null){
+                TableChanges.TableChange tableChange =
+                        readTableSchema(config, databaseSchema, tableId);
+                if (tableChange != null) {
                     ArrayList<Column> columns = new ArrayList<>(tableChange.getTable().columns());
-                    columnsByTable.put(tableId,columns);
+                    columnsByTable.put(tableId, columns);
                     System.out.println(tableChange.getTable().columns());
                 }
 
-//                // add all included columns
-//                readTableColumn(columnMetadata, tableId, columnFilter).ifPresent(column -> {
-//                    columnsByTable.computeIfAbsent(tableId, t -> new ArrayList<>())
-//                            .add(column.create());
-//                });
+                //                // add all included columns
+                //                readTableColumn(columnMetadata, tableId,
+                // columnFilter).ifPresent(column -> {
+                //                    columnsByTable.computeIfAbsent(tableId, t -> new
+                // ArrayList<>())
+                //                            .add(column.create());
+                //                });
             }
         }
         return columnsByTable;
     }
 
-    private TableChanges.TableChange readTableSchema(TiDBConnectorConfig connectorConfig,TiDBDatabaseSchema databaseSchema, TableId tableId){
+    private TableChanges.TableChange readTableSchema(
+            TiDBConnectorConfig connectorConfig,
+            TiDBDatabaseSchema databaseSchema,
+            TableId tableId) {
         final Map<TableId, TableChanges.TableChange> tableChangeMap = new HashMap<>();
         String showCreateTable = SHOW_CREATE_TABLE + TiDBUtils.quote(tableId);
         final TiDBPartition partition = new TiDBPartition(connectorConfig.getLogicalName());
-        buildSchemaByShowCreateTable(connectorConfig,databaseSchema,partition, this, tableId, tableChangeMap);
-//        if (!tableChangeMap.containsKey(tableId)) {
-//            // fallback to desc table
-//            String descTable = DESC_TABLE + TiDBUtils.quote(tableId);
-//            buildSchemaByDescTable(partition, jdbc, descTable, tableId, tableChangeMap);
-//            if (!tableChangeMap.containsKey(tableId)) {
-//                throw new FlinkRuntimeException(
-//                        String.format(
-//                                "Can't obtain schema for table %s by running %s and %s ",
-//                                tableId, showCreateTable, descTable));
-//            }
-//        }
+        buildSchemaByShowCreateTable(
+                connectorConfig, databaseSchema, partition, this, tableId, tableChangeMap);
+        //        if (!tableChangeMap.containsKey(tableId)) {
+        //            // fallback to desc table
+        //            String descTable = DESC_TABLE + TiDBUtils.quote(tableId);
+        //            buildSchemaByDescTable(partition, jdbc, descTable, tableId, tableChangeMap);
+        //            if (!tableChangeMap.containsKey(tableId)) {
+        //                throw new FlinkRuntimeException(
+        //                        String.format(
+        //                                "Can't obtain schema for table %s by running %s and %s ",
+        //                                tableId, showCreateTable, descTable));
+        //            }
+        //        }
         return tableChangeMap.get(tableId);
     }
 
@@ -451,7 +495,13 @@ public class TiDBConnection extends JdbcConnection {
                     rs -> {
                         if (rs.next()) {
                             final String ddl = rs.getString(2);
-                            parseSchemaByDdl(config,databaseSchema,partition, ddl, tableId, tableChangeMap);
+                            parseSchemaByDdl(
+                                    config,
+                                    databaseSchema,
+                                    partition,
+                                    ddl,
+                                    tableId,
+                                    tableChangeMap);
                         }
                     });
         } catch (SQLException e) {

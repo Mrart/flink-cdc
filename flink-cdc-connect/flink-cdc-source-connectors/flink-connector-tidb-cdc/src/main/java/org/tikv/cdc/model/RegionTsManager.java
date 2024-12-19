@@ -1,4 +1,4 @@
-package org.tikv.cdc;
+package org.tikv.cdc.model;
 
 import java.time.Instant;
 import java.util.Comparator;

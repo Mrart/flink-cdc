@@ -154,7 +154,7 @@ public class TiDBScanFetchTask extends AbstractScanFetchTask {
 
         private static class TiDBSnapshotContext
                 extends RelationalSnapshotChangeEventSource.RelationalSnapshotContext<
-                TiDBPartition, CDCEventOffsetContext> {
+                        TiDBPartition, CDCEventOffsetContext> {
 
             public TiDBSnapshotContext(TiDBPartition partition) throws SQLException {
                 super(partition, "");
@@ -210,16 +210,16 @@ public class TiDBScanFetchTask extends AbstractScanFetchTask {
                     selectSql);
 
             try (PreparedStatement selectStatement =
-                         TiDBUtils.readTableSplitDataStatement(
-                                 jdbcConnection,
-                                 selectSql,
-                                 snapshotSplit.getSplitStart() == null,
-                                 snapshotSplit.getSplitEnd() == null,
-                                 snapshotSplit.getSplitStart(),
-                                 snapshotSplit.getSplitEnd(),
-                                 snapshotSplit.getSplitKeyType().getFieldCount(),
-                                 connectorConfig.getQueryFetchSize());
-                 ResultSet rs = selectStatement.executeQuery()) {
+                            TiDBUtils.readTableSplitDataStatement(
+                                    jdbcConnection,
+                                    selectSql,
+                                    snapshotSplit.getSplitStart() == null,
+                                    snapshotSplit.getSplitEnd() == null,
+                                    snapshotSplit.getSplitStart(),
+                                    snapshotSplit.getSplitEnd(),
+                                    snapshotSplit.getSplitKeyType().getFieldCount(),
+                                    connectorConfig.getQueryFetchSize());
+                    ResultSet rs = selectStatement.executeQuery()) {
                 ColumnUtils.ColumnArray columnArray = ColumnUtils.toArray(rs, table);
                 long rows = 0;
                 Threads.Timer logTimer = getTableScanLogTimer();

@@ -1,6 +1,5 @@
 package org.apache.flink.cdc.connectors.tidb.utils;
 
-import io.debezium.connector.mysql.MySqlValueConverters;
 import org.apache.flink.cdc.connectors.tidb.source.config.TiDBConnectorConfig;
 import org.apache.flink.cdc.connectors.tidb.source.connection.TiDBConnection;
 import org.apache.flink.cdc.connectors.tidb.source.converter.TiDBValueConverters;
@@ -11,7 +10,6 @@ import org.apache.flink.table.types.DataType;
 import org.apache.flink.table.types.logical.RowType;
 import org.apache.flink.util.FlinkRuntimeException;
 
-import io.debezium.connector.tidb.TidbTopicSelector;
 import io.debezium.jdbc.JdbcConnection;
 import io.debezium.relational.Column;
 import io.debezium.relational.TableId;
@@ -20,7 +18,6 @@ import io.debezium.schema.TopicSelector;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.time.Instant;
 import java.util.Iterator;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -239,7 +236,6 @@ public class TiDBUtils {
         return buildSplitQuery(tableId, pkRowType, isFirstSplit, isLastSplit, -1, true);
     }
 
-
     private static String buildSplitQuery(
             TableId tableId,
             RowType pkRowType,
@@ -264,8 +260,7 @@ public class TiDBUtils {
             final StringBuilder sql = new StringBuilder();
             addPrimaryKeyColumnsToCondition(pkRowType, sql, " >= ?");
             condition = sql.toString();
-        }
-        else {
+        } else {
             final StringBuilder sql = new StringBuilder();
             addPrimaryKeyColumnsToCondition(pkRowType, sql, " >= ?");
             if (isScanningData) {
@@ -281,8 +276,7 @@ public class TiDBUtils {
         if (isScanningData) {
             return buildSelectWithRowLimits(
                     tableId, limitSize, "*", Optional.ofNullable(condition), Optional.empty());
-        }
-        else {
+        } else {
             final String orderBy =
                     pkRowType.getFieldNames().stream().collect(Collectors.joining(", "));
             return buildSelectWithBoundaryRowLimits(
@@ -298,7 +292,7 @@ public class TiDBUtils {
     private static void addPrimaryKeyColumnsToCondition(
             RowType pkRowType, StringBuilder sql, String predicate) {
         for (Iterator<String> fieldNamesIt = pkRowType.getFieldNames().iterator();
-             fieldNamesIt.hasNext(); ) {
+                fieldNamesIt.hasNext(); ) {
             sql.append(fieldNamesIt.next()).append(predicate);
             if (fieldNamesIt.hasNext()) {
                 sql.append(" AND ");
@@ -332,7 +326,6 @@ public class TiDBUtils {
         return tableId.toQuotedString('`');
     }
 
-
     private static String buildSelectWithRowLimits(
             TableId tableId,
             int limit,
@@ -357,7 +350,7 @@ public class TiDBUtils {
     private static String getPrimaryKeyColumnsProjection(RowType pkRowType) {
         StringBuilder sql = new StringBuilder();
         for (Iterator<String> fieldNamesIt = pkRowType.getFieldNames().iterator();
-             fieldNamesIt.hasNext(); ) {
+                fieldNamesIt.hasNext(); ) {
             sql.append(fieldNamesIt.next());
             if (fieldNamesIt.hasNext()) {
                 sql.append(" , ");
@@ -369,7 +362,7 @@ public class TiDBUtils {
     private static String getMaxPrimaryKeyColumnsProjection(RowType pkRowType) {
         StringBuilder sql = new StringBuilder();
         for (Iterator<String> fieldNamesIt = pkRowType.getFieldNames().iterator();
-             fieldNamesIt.hasNext(); ) {
+                fieldNamesIt.hasNext(); ) {
             sql.append("MAX(" + fieldNamesIt.next() + ")");
             if (fieldNamesIt.hasNext()) {
                 sql.append(" , ");
@@ -413,32 +406,33 @@ public class TiDBUtils {
         TiDBValueConverters valueConverters = getValueConverters(config);
         TiDBDatabaseSchema schema =
                 new TiDBDatabaseSchema(
-                        config,valueConverters,topicSelector, isTableIdCaseSensitive);
-        schema.refresh(connection,config,false);
+                        config, valueConverters, topicSelector, isTableIdCaseSensitive);
+        schema.refresh(connection, config, false);
         return schema;
     }
 
-//    public static TiDBDatabaseSchema createTiDBDatabaseSchema(
-//            TiDBConnectorConfig dbzTiDBConfig, boolean isTableIdCaseSensitive) {
-//        TopicSelector<TableId> topicSelector = TidbTopicSelector.defaultSelector(dbzTiDBConfig);
-//        //    Key.KeyMapper customKeysMapper = new CustomeKeyMapper();
-//        return new TiDBDatabaseSchema(
-//                dbzTiDBConfig, topicSelector, isTableIdCaseSensitive, dbzTiDBConfig.getKeyMapper());
-//    }
+    //    public static TiDBDatabaseSchema createTiDBDatabaseSchema(
+    //            TiDBConnectorConfig dbzTiDBConfig, boolean isTableIdCaseSensitive) {
+    //        TopicSelector<TableId> topicSelector =
+    // TidbTopicSelector.defaultSelector(dbzTiDBConfig);
+    //        //    Key.KeyMapper customKeysMapper = new CustomeKeyMapper();
+    //        return new TiDBDatabaseSchema(
+    //                dbzTiDBConfig, topicSelector, isTableIdCaseSensitive,
+    // dbzTiDBConfig.getKeyMapper());
+    //    }
 
     public static TiDBDatabaseSchema createTiDBDatabaseSchema(
             TiDBConnectorConfig dbzTiDBConfig,
             TopicSelector<TableId> topicSelector,
             boolean isTableIdCaseSensitive) {
         TiDBValueConverters valueConverters = getValueConverters(dbzTiDBConfig);
-        TiDBDatabaseSchema tiDBDatabaseSchema = new TiDBDatabaseSchema(
-                dbzTiDBConfig,
-                valueConverters,
-                topicSelector,
-                isTableIdCaseSensitive);
-//        tiDBDatabaseSchema.refresh(connection, false);
+        TiDBDatabaseSchema tiDBDatabaseSchema =
+                new TiDBDatabaseSchema(
+                        dbzTiDBConfig, valueConverters, topicSelector, isTableIdCaseSensitive);
+        //        tiDBDatabaseSchema.refresh(connection, false);
         return tiDBDatabaseSchema;
     }
+
     public static long getPhysicalTimeFromTso(long tso) {
         // The first 41 bits represent the physical timestamp in milliseconds since epoch
         return tso >> 18; // Convert milliseconds to microseconds

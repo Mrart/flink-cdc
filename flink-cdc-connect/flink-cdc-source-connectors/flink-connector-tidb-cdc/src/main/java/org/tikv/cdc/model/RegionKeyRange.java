@@ -1,4 +1,4 @@
-package org.tikv.cdc;
+package org.tikv.cdc.model;
 
 import org.tikv.kvproto.Coprocessor;
 

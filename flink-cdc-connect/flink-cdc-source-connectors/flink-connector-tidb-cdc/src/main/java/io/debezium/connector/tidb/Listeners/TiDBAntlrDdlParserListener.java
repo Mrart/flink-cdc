@@ -2,7 +2,6 @@ package io.debezium.connector.tidb.Listeners;
 
 import io.debezium.antlr.AntlrDdlParserListener;
 import io.debezium.antlr.ProxyParseTreeListenerUtil;
-import io.debezium.connector.mysql.antlr.MySqlAntlrDdlParser;
 import io.debezium.connector.mysql.antlr.listener.*;
 import io.debezium.connector.tidb.TiDBAntlrDdlParser;
 import io.debezium.ddl.parser.mysql.generated.MySqlParser;
@@ -22,20 +21,17 @@ public class TiDBAntlrDdlParserListener extends MySqlParserBaseListener
         implements AntlrDdlParserListener {
     private final List<ParseTreeListener> listeners = new CopyOnWriteArrayList<>();
 
-    /**
-     * Flag for skipping phase.
-     */
+    /** Flag for skipping phase. */
     private boolean skipNodes;
 
     /**
-     * Count of skipped nodes. Each enter event during skipping phase will increase the counter
-     * and each exit event will decrease it. When counter will be decreased to 0, the skipping phase will end.
+     * Count of skipped nodes. Each enter event during skipping phase will increase the counter and
+     * each exit event will decrease it. When counter will be decreased to 0, the skipping phase
+     * will end.
      */
     private int skippedNodesCount = 0;
 
-    /**
-     * Collection of catched exceptions.
-     */
+    /** Collection of catched exceptions. */
     private final Collection<ParsingException> errors = new ArrayList<>();
 
     public TiDBAntlrDdlParserListener(TiDBAntlrDdlParser parser) {
@@ -69,8 +65,7 @@ public class TiDBAntlrDdlParserListener extends MySqlParserBaseListener
     public void enterEveryRule(ParserRuleContext ctx) {
         if (skipNodes) {
             skippedNodesCount++;
-        }
-        else {
+        } else {
             ProxyParseTreeListenerUtil.delegateEnterRule(ctx, listeners, errors);
         }
     }
@@ -81,13 +76,11 @@ public class TiDBAntlrDdlParserListener extends MySqlParserBaseListener
             if (skippedNodesCount == 0) {
                 // back in the node where skipping started
                 skipNodes = false;
-            }
-            else {
+            } else {
                 // going up in a tree, means decreasing a number of skipped nodes
                 skippedNodesCount--;
             }
-        }
-        else {
+        } else {
             ProxyParseTreeListenerUtil.delegateExitRule(ctx, listeners, errors);
         }
     }

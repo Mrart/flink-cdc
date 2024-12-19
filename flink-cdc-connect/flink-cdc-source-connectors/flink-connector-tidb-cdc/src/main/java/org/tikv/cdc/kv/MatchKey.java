@@ -1,4 +1,4 @@
-package org.tikv.cdc;
+package org.tikv.cdc.kv;
 
 import java.util.Objects;
 

@@ -90,6 +90,10 @@ public class TiDBSourceConfig extends JdbcSourceConfig {
         return hostMapping;
     }
 
+    public Properties getJdbcProperties() {
+        return this.jdbcProperties;
+    }
+
     @Override
     public TiDBConnectorConfig getDbzConnectorConfig() {
         return new TiDBConnectorConfig(this);

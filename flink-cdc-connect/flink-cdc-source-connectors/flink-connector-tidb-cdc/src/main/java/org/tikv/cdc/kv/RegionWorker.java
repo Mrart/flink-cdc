@@ -1,7 +1,12 @@
-package org.tikv.cdc;
+package org.tikv.cdc.kv;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.tikv.cdc.CDCConfig;
+import org.tikv.cdc.model.EventFeedStream;
+import org.tikv.cdc.model.RegionFeedEvent;
+import org.tikv.cdc.model.RegionKeyRange;
+import org.tikv.cdc.model.RegionStatefulEvent;
 import org.tikv.common.TiSession;
 import org.tikv.kvproto.Cdcpb;
 import org.tikv.kvproto.Coprocessor;

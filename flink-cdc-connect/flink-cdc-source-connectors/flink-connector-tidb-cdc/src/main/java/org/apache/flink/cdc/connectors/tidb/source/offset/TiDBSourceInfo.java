@@ -49,7 +49,7 @@ public class TiDBSourceInfo extends BaseSourceInfo {
 
     @Override
     protected String database() {
-//        return (tableIds != null) ? tableIds.iterator().next().catalog() : null;
+        //        return (tableIds != null) ? tableIds.iterator().next().catalog() : null;
         if (tableIds == null || tableIds.isEmpty()) {
             return databaseName;
         }

@@ -1,4 +1,4 @@
-package org.tikv.cdc;
+package org.tikv.cdc.kv;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

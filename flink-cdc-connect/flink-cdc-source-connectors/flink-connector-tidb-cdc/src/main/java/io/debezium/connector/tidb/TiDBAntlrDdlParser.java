@@ -1,14 +1,12 @@
 package io.debezium.connector.tidb;
 
-import io.debezium.connector.mysql.antlr.MySqlAntlrDdlParser;
-import io.debezium.connector.mysql.antlr.listener.MySqlAntlrDdlParserListener;
-import io.debezium.connector.tidb.Listeners.TiDBAntlrDdlParserListener;
 import org.apache.flink.cdc.connectors.tidb.source.converter.TiDBValueConverters;
 
-import io.debezium.antlr.AntlrDdlParser;
 import io.debezium.antlr.AntlrDdlParserListener;
 import io.debezium.antlr.DataTypeResolver;
 import io.debezium.connector.mysql.MySqlSystemVariables;
+import io.debezium.connector.mysql.antlr.MySqlAntlrDdlParser;
+import io.debezium.connector.tidb.Listeners.TiDBAntlrDdlParserListener;
 import io.debezium.ddl.parser.mysql.generated.MySqlLexer;
 import io.debezium.ddl.parser.mysql.generated.MySqlParser;
 import io.debezium.relational.SystemVariables;
@@ -46,7 +44,7 @@ public class TiDBAntlrDdlParser extends MySqlAntlrDdlParser {
             boolean includeComments,
             TiDBValueConverters converters,
             Tables.TableFilter tableFilter) {
-//        super(throwErrorsFromTreeWalk, includeViews, includeComments);
+        //        super(throwErrorsFromTreeWalk, includeViews, includeComments);
         systemVariables = new MySqlSystemVariables();
         this.converters = converters;
         this.tableFilter = tableFilter;
