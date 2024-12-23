@@ -1,6 +1,5 @@
 package org.apache.flink.cdc.connectors.tidb.source.fetch;
 
-import io.debezium.connector.mysql.MySqlErrorHandler;
 import org.apache.flink.cdc.connectors.base.config.JdbcSourceConfig;
 import org.apache.flink.cdc.connectors.base.dialect.JdbcDataSourceDialect;
 import org.apache.flink.cdc.connectors.base.relational.JdbcSourceEventDispatcher;
@@ -35,8 +34,6 @@ import io.debezium.schema.TopicSelector;
 import org.apache.kafka.connect.source.SourceRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.sql.SQLException;
 
 public class TiDBSourceFetchTaskContext extends JdbcSourceFetchTaskContext {
 
@@ -79,12 +76,14 @@ public class TiDBSourceFetchTaskContext extends JdbcSourceFetchTaskContext {
         // change to newSchema
         //   this.tiDBDatabaseSchema=TiDBUtils.createTiDBDatabaseSchema(connectorConfig,
         // tableIdCaseInsensitive);
-//        this.tiDBDatabaseSchema =
-//                    TiDBUtils.createTiDBDatabaseSchema(connectorConfig, topicSelector, tableIdCaseInsensitive);
+        //        this.tiDBDatabaseSchema =
+        //                    TiDBUtils.createTiDBDatabaseSchema(connectorConfig, topicSelector,
+        // tableIdCaseInsensitive);
         try {
             this.tiDBDatabaseSchema =
-                    TiDBUtils.newSchema(connection,connectorConfig,topicSelector,tableIdCaseInsensitive);
-        } catch (Exception e){
+                    TiDBUtils.newSchema(
+                            connection, connectorConfig, topicSelector, tableIdCaseInsensitive);
+        } catch (Exception e) {
             throw new RuntimeException("Failed to initialize TiDBschema", e);
         }
 
@@ -123,7 +122,6 @@ public class TiDBSourceFetchTaskContext extends JdbcSourceFetchTaskContext {
                 new DefaultChangeEventSourceMetricsFactory<>();
         this.snapshotChangeEventSourceMetrics =
                 metricsFactory.getSnapshotMetrics(tidbTaskContext, queue, metadataProvider);
-
     }
 
     public TiDBConnection getConnection() {

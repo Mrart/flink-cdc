@@ -4,10 +4,12 @@ import org.apache.flink.cdc.connectors.tidb.TiDBTestBase;
 import org.apache.flink.cdc.connectors.tidb.source.config.TiDBSourceConfig;
 import org.apache.flink.cdc.connectors.tidb.source.config.TiDBSourceConfigFactory;
 
-import io.debezium.relational.TableId;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.tikv.cdc.kv.CDCClientV2;
+import org.tikv.cdc.kv.ICDCClientV2;
+import org.tikv.cdc.model.RegionFeedEvent;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -31,14 +33,14 @@ public class CDCClientV2Test extends TiDBTestBase {
                 PD.getContainerIpAddress() + ":" + PD.getMappedPort(PD_PORT_ORIGIN));
         TiDBSourceConfig tiDBSourceConfig = configFactoryOfCustomDatabase.create(0);
         //    tiDBSourceConfig.
-        ICDCClientV2 icdcClientV2 = new CDCClientV2(getTiConfig(tiDBSourceConfig));
+        ICDCClientV2 icdcClientV2 =
+                new CDCClientV2(getTiConfig(tiDBSourceConfig), databaseName, tableName);
         try (Connection connection = getJdbcConnection("customer");
                 Statement statement = connection.createStatement()) {
             // update tidb.
             statement.execute("UPDATE customers SET address='hangzhou' WHERE id=103;");
         }
-        icdcClientV2.execute(
-                Instant.now().getEpochSecond(), new TableId(databaseName, null, tableName));
+        icdcClientV2.execute(Instant.now().getEpochSecond());
         while (true) {
             RegionFeedEvent regionFeedEvent = icdcClientV2.get();
             if (regionFeedEvent == null) {

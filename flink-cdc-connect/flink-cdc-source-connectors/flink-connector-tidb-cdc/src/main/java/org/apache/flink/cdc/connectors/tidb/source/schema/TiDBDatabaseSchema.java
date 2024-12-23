@@ -1,27 +1,22 @@
 package org.apache.flink.cdc.connectors.tidb.source.schema;
 
-import io.debezium.connector.mysql.MySqlOffsetContext;
-import io.debezium.connector.mysql.MySqlPartition;
-import io.debezium.connector.mysql.antlr.MySqlAntlrDdlParser;
-import io.debezium.connector.tidb.TiDBAntlrDdlParser;
-import io.debezium.connector.tidb.TiDBPartition;
-import io.debezium.relational.ddl.DdlChanges;
-import io.debezium.relational.ddl.DdlParser;
-import io.debezium.relational.ddl.DdlParserListener;
-import io.debezium.schema.SchemaChangeEvent;
-import io.debezium.text.MultipleParsingExceptions;
-import io.debezium.text.ParsingException;
-import io.debezium.util.SchemaNameAdjuster;
 import org.apache.flink.cdc.connectors.tidb.source.config.TiDBConnectorConfig;
 import org.apache.flink.cdc.connectors.tidb.source.connection.TiDBConnection;
 import org.apache.flink.cdc.connectors.tidb.source.converter.TiDBDefaultValueConverter;
 import org.apache.flink.cdc.connectors.tidb.source.converter.TiDBValueConverters;
-
-import io.debezium.connector.mysql.MySqlDatabaseSchema;
-import io.debezium.relational.*;
-import io.debezium.schema.TopicSelector;
-import io.debezium.util.Collect;
 import org.apache.flink.cdc.connectors.tidb.source.offset.CDCEventOffsetContext;
+
+import io.debezium.connector.tidb.TiDBAntlrDdlParser;
+import io.debezium.connector.tidb.TiDBPartition;
+import io.debezium.relational.*;
+import io.debezium.relational.ddl.DdlChanges;
+import io.debezium.relational.ddl.DdlParser;
+import io.debezium.relational.ddl.DdlParserListener;
+import io.debezium.schema.SchemaChangeEvent;
+import io.debezium.schema.TopicSelector;
+import io.debezium.text.MultipleParsingExceptions;
+import io.debezium.text.ParsingException;
+import io.debezium.util.Collect;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -62,21 +57,24 @@ public class TiDBDatabaseSchema extends RelationalDatabaseSchema {
                 config.getKeyMapper());
 
         // todo  change
-        this.ddlParser = new TiDBAntlrDdlParser(
-                true,
-                false,
-                config.isSchemaCommentsHistoryEnabled(),
-                tiDBValueConverters,
-                getTableFilter());
+        this.ddlParser =
+                new TiDBAntlrDdlParser(
+                        true,
+                        false,
+                        config.isSchemaCommentsHistoryEnabled(),
+                        tiDBValueConverters,
+                        getTableFilter());
         filters = config.getTableFilters();
         this.ddlChanges = this.ddlParser.getDdlChanges();
     }
 
-    public TiDBDatabaseSchema refresh(TiDBConnection connection,TiDBConnectorConfig config,boolean printReplicaIdentityInfo)
+    public TiDBDatabaseSchema refresh(
+            TiDBConnection connection, TiDBConnectorConfig config, boolean printReplicaIdentityInfo)
             throws SQLException {
         // read all the information from the DB
-        // connection.readSchema(tables(), null, null, getTableFilter(), null, true);
-        connection.readSchema(config,this,tables(), null, null, getTableFilter(), null, true);
+        //        connection.readSchema(tables(), null, null, getTableFilter(), null, true);
+        //        LOGGER.info("TiDBDatabaseSchema refresh **********");
+        connection.readTiDBSchema(config, this, tables(), null, null, getTableFilter(), null, true);
 
         //    if (printReplicaIdentityInfo) {
         //      // print out all the replica identity info
@@ -105,14 +103,23 @@ public class TiDBDatabaseSchema extends RelationalDatabaseSchema {
         buildAndRegisterSchema(table);
     }
 
-    public List<SchemaChangeEvent> parseSnapshotDdl(TiDBPartition partition, String ddlStatements, String databaseName,
-                                                    CDCEventOffsetContext offset, Instant sourceTime) {
+    public List<SchemaChangeEvent> parseSnapshotDdl(
+            TiDBPartition partition,
+            String ddlStatements,
+            String databaseName,
+            CDCEventOffsetContext offset,
+            Instant sourceTime) {
         LOGGER.debug("Processing snapshot DDL '{}' for database '{}'", ddlStatements, databaseName);
         return parseDdl(partition, ddlStatements, databaseName, offset, sourceTime, true);
     }
 
-    private List<SchemaChangeEvent> parseDdl(TiDBPartition partition, String ddlStatements, String databaseName,
-                                             CDCEventOffsetContext offset, Instant sourceTime, boolean snapshot) {
+    private List<SchemaChangeEvent> parseDdl(
+            TiDBPartition partition,
+            String ddlStatements,
+            String databaseName,
+            CDCEventOffsetContext offset,
+            Instant sourceTime,
+            boolean snapshot) {
         final List<SchemaChangeEvent> schemaChangeEvents = new ArrayList<>(3);
 
         if (ignoredQueryStatements.contains(ddlStatements)) {
@@ -123,59 +130,105 @@ public class TiDBDatabaseSchema extends RelationalDatabaseSchema {
             this.ddlChanges.reset();
             this.ddlParser.setCurrentSchema(databaseName);
             this.ddlParser.parse(ddlStatements, tables());
+        } catch (ParsingException | MultipleParsingExceptions e) {
+            throw e;
         }
-        catch (ParsingException | MultipleParsingExceptions e) {
-                throw e;
-        }
-        if (!ddlChanges.isEmpty()){
-            ddlChanges.getEventsByDatabase((String dbName, List<DdlParserListener.Event> events) -> {
-                final String sanitizedDbName = (dbName == null) ? "" : dbName;
-                if (acceptableDatabase(dbName)) {
-                    final Set<TableId> tableIds = new HashSet<>();
-                    events.forEach(event -> {
-                        final TableId tableId = getTableId(event);
-                        if (tableId != null) {
-                            tableIds.add(tableId);
+        if (!ddlChanges.isEmpty()) {
+            ddlChanges.getEventsByDatabase(
+                    (String dbName, List<DdlParserListener.Event> events) -> {
+                        final String sanitizedDbName = (dbName == null) ? "" : dbName;
+                        if (acceptableDatabase(dbName)) {
+                            final Set<TableId> tableIds = new HashSet<>();
+                            events.forEach(
+                                    event -> {
+                                        final TableId tableId = getTableId(event);
+                                        if (tableId != null) {
+                                            tableIds.add(tableId);
+                                        }
+                                    });
+                            events.forEach(
+                                    event -> {
+                                        final TableId tableId = getTableId(event);
+                                        offset.tableEvent(dbName, tableIds, sourceTime);
+                                        // For SET with multiple parameters
+                                        if (event instanceof DdlParserListener.TableCreatedEvent) {
+                                            emitChangeEvent(
+                                                    partition,
+                                                    offset,
+                                                    schemaChangeEvents,
+                                                    sanitizedDbName,
+                                                    event,
+                                                    tableId,
+                                                    SchemaChangeEvent.SchemaChangeEventType.CREATE,
+                                                    snapshot);
+                                        } else if (event
+                                                        instanceof
+                                                        DdlParserListener.TableAlteredEvent
+                                                || event
+                                                        instanceof
+                                                        DdlParserListener.TableIndexCreatedEvent
+                                                || event
+                                                        instanceof
+                                                        DdlParserListener.TableIndexDroppedEvent) {
+                                            emitChangeEvent(
+                                                    partition,
+                                                    offset,
+                                                    schemaChangeEvents,
+                                                    sanitizedDbName,
+                                                    event,
+                                                    tableId,
+                                                    SchemaChangeEvent.SchemaChangeEventType.ALTER,
+                                                    snapshot);
+                                        } else if (event
+                                                instanceof DdlParserListener.TableDroppedEvent) {
+                                            emitChangeEvent(
+                                                    partition,
+                                                    offset,
+                                                    schemaChangeEvents,
+                                                    sanitizedDbName,
+                                                    event,
+                                                    tableId,
+                                                    SchemaChangeEvent.SchemaChangeEventType.DROP,
+                                                    snapshot);
+                                        } else if (event
+                                                instanceof DdlParserListener.SetVariableEvent) {
+                                            // SET statement with multiple variable emits event for
+                                            // each variable. We want to emit only
+                                            // one change event
+                                            final DdlParserListener.SetVariableEvent varEvent =
+                                                    (DdlParserListener.SetVariableEvent) event;
+                                            if (varEvent.order() == 0) {
+                                                emitChangeEvent(
+                                                        partition,
+                                                        offset,
+                                                        schemaChangeEvents,
+                                                        sanitizedDbName,
+                                                        event,
+                                                        tableId,
+                                                        SchemaChangeEvent.SchemaChangeEventType
+                                                                .DATABASE,
+                                                        snapshot);
+                                            }
+                                        } else {
+                                            emitChangeEvent(
+                                                    partition,
+                                                    offset,
+                                                    schemaChangeEvents,
+                                                    sanitizedDbName,
+                                                    event,
+                                                    tableId,
+                                                    SchemaChangeEvent.SchemaChangeEventType
+                                                            .DATABASE,
+                                                    snapshot);
+                                        }
+                                    });
                         }
                     });
-                    events.forEach(event -> {
-                        final TableId tableId = getTableId(event);
-                        offset.tableEvent(dbName, tableIds, sourceTime);
-                        // For SET with multiple parameters
-                        if (event instanceof DdlParserListener.TableCreatedEvent) {
-                            emitChangeEvent(partition, offset, schemaChangeEvents, sanitizedDbName, event, tableId,
-                                    SchemaChangeEvent.SchemaChangeEventType.CREATE, snapshot);
-                        }
-                        else if (event instanceof DdlParserListener.TableAlteredEvent || event instanceof DdlParserListener.TableIndexCreatedEvent || event instanceof DdlParserListener.TableIndexDroppedEvent) {
-                            emitChangeEvent(partition, offset, schemaChangeEvents, sanitizedDbName, event, tableId,
-                                    SchemaChangeEvent.SchemaChangeEventType.ALTER, snapshot);
-                        }
-                        else if (event instanceof DdlParserListener.TableDroppedEvent) {
-                            emitChangeEvent(partition, offset, schemaChangeEvents, sanitizedDbName, event, tableId,
-                                    SchemaChangeEvent.SchemaChangeEventType.DROP, snapshot);
-                        }
-                        else if (event instanceof DdlParserListener.SetVariableEvent) {
-                            // SET statement with multiple variable emits event for each variable. We want to emit only
-                            // one change event
-                            final DdlParserListener.SetVariableEvent varEvent = (DdlParserListener.SetVariableEvent) event;
-                            if (varEvent.order() == 0) {
-                                emitChangeEvent(partition, offset, schemaChangeEvents, sanitizedDbName, event,
-                                        tableId, SchemaChangeEvent.SchemaChangeEventType.DATABASE, snapshot);
-                            }
-                        }
-                        else {
-                            emitChangeEvent(partition, offset, schemaChangeEvents, sanitizedDbName, event, tableId,
-                                    SchemaChangeEvent.SchemaChangeEventType.DATABASE, snapshot);
-                        }
-                    });
-                }
-            });
-        }
-        else {
+        } else {
             offset.databaseEvent(databaseName, sourceTime);
-            schemaChangeEvents
-                    .add(SchemaChangeEvent.ofDatabase(partition, offset, databaseName, ddlStatements, snapshot));
-
+            schemaChangeEvents.add(
+                    SchemaChangeEvent.ofDatabase(
+                            partition, offset, databaseName, ddlStatements, snapshot));
         }
         return schemaChangeEvents;
     }
@@ -189,41 +242,48 @@ public class TiDBDatabaseSchema extends RelationalDatabaseSchema {
     private TableId getTableId(DdlParserListener.Event event) {
         if (event instanceof DdlParserListener.TableEvent) {
             return ((DdlParserListener.TableEvent) event).tableId();
-        }
-        else if (event instanceof DdlParserListener.TableIndexEvent) {
+        } else if (event instanceof DdlParserListener.TableIndexEvent) {
             return ((DdlParserListener.TableIndexEvent) event).tableId();
         }
         return null;
     }
-    private void emitChangeEvent(TiDBPartition partition, CDCEventOffsetContext offset, List<SchemaChangeEvent> schemaChangeEvents,
-                                 final String sanitizedDbName, DdlParserListener.Event event, TableId tableId, SchemaChangeEvent.SchemaChangeEventType type,
-                                 boolean snapshot) {
+
+    private void emitChangeEvent(
+            TiDBPartition partition,
+            CDCEventOffsetContext offset,
+            List<SchemaChangeEvent> schemaChangeEvents,
+            final String sanitizedDbName,
+            DdlParserListener.Event event,
+            TableId tableId,
+            SchemaChangeEvent.SchemaChangeEventType type,
+            boolean snapshot) {
         SchemaChangeEvent schemaChangeEvent;
-        if (type.equals(SchemaChangeEvent.SchemaChangeEventType.ALTER) && event instanceof DdlParserListener.TableAlteredEvent
+        if (type.equals(SchemaChangeEvent.SchemaChangeEventType.ALTER)
+                && event instanceof DdlParserListener.TableAlteredEvent
                 && ((DdlParserListener.TableAlteredEvent) event).previousTableId() != null) {
-            schemaChangeEvent = SchemaChangeEvent.ofRename(
-                    partition,
-                    offset,
-                    sanitizedDbName,
-                    null,
-                    event.statement(),
-                    tableId != null ? tableFor(tableId) : null,
-                    ((DdlParserListener.TableAlteredEvent) event).previousTableId());
-        }
-        else {
-            schemaChangeEvent = SchemaChangeEvent.of(
-                    type,
-                    partition,
-                    offset,
-                    sanitizedDbName,
-                    null,
-                    event.statement(),
-                    tableId != null ? tableFor(tableId) : null,
-                    snapshot);
+            schemaChangeEvent =
+                    SchemaChangeEvent.ofRename(
+                            partition,
+                            offset,
+                            sanitizedDbName,
+                            null,
+                            event.statement(),
+                            tableId != null ? tableFor(tableId) : null,
+                            ((DdlParserListener.TableAlteredEvent) event).previousTableId());
+        } else {
+            schemaChangeEvent =
+                    SchemaChangeEvent.of(
+                            type,
+                            partition,
+                            offset,
+                            sanitizedDbName,
+                            null,
+                            event.statement(),
+                            tableId != null ? tableFor(tableId) : null,
+                            snapshot);
         }
         schemaChangeEvents.add(schemaChangeEvent);
     }
-
 
     //  private void printReplicaIdentityInfo(TiDBConnection connection, TableId tableId) {
     //    try {
@@ -385,8 +445,6 @@ public class TiDBDatabaseSchema extends RelationalDatabaseSchema {
     //        }
     //        schemaChangeEvents.add(schemaChangeEvent);
     //    }
-
-
 
     //    private List<SchemaChangeEvent> parseDdl(
     //            TiDBPartition partition,

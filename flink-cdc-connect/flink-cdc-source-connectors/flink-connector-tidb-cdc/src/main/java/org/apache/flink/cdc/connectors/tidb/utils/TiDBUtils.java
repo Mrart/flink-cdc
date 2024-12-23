@@ -1,6 +1,5 @@
 package org.apache.flink.cdc.connectors.tidb.utils;
 
-import io.debezium.connector.mysql.MySqlValueConverters;
 import org.apache.flink.cdc.connectors.tidb.source.config.TiDBConnectorConfig;
 import org.apache.flink.cdc.connectors.tidb.source.connection.TiDBConnection;
 import org.apache.flink.cdc.connectors.tidb.source.converter.TiDBValueConverters;
@@ -11,7 +10,6 @@ import org.apache.flink.table.types.DataType;
 import org.apache.flink.table.types.logical.RowType;
 import org.apache.flink.util.FlinkRuntimeException;
 
-import io.debezium.connector.tidb.TidbTopicSelector;
 import io.debezium.jdbc.JdbcConnection;
 import io.debezium.relational.Column;
 import io.debezium.relational.TableId;
@@ -408,32 +406,33 @@ public class TiDBUtils {
         TiDBValueConverters valueConverters = getValueConverters(config);
         TiDBDatabaseSchema schema =
                 new TiDBDatabaseSchema(
-                        config,valueConverters,topicSelector, isTableIdCaseSensitive);
-        schema.refresh(connection,config,false);
+                        config, valueConverters, topicSelector, isTableIdCaseSensitive);
+        schema.refresh(connection, config, false);
         return schema;
     }
 
-//    public static TiDBDatabaseSchema createTiDBDatabaseSchema(
-//            TiDBConnectorConfig dbzTiDBConfig, boolean isTableIdCaseSensitive) {
-//        TopicSelector<TableId> topicSelector = TidbTopicSelector.defaultSelector(dbzTiDBConfig);
-//        //    Key.KeyMapper customKeysMapper = new CustomeKeyMapper();
-//        return new TiDBDatabaseSchema(
-//                dbzTiDBConfig, topicSelector, isTableIdCaseSensitive, dbzTiDBConfig.getKeyMapper());
-//    }
+    //    public static TiDBDatabaseSchema createTiDBDatabaseSchema(
+    //            TiDBConnectorConfig dbzTiDBConfig, boolean isTableIdCaseSensitive) {
+    //        TopicSelector<TableId> topicSelector =
+    // TidbTopicSelector.defaultSelector(dbzTiDBConfig);
+    //        //    Key.KeyMapper customKeysMapper = new CustomeKeyMapper();
+    //        return new TiDBDatabaseSchema(
+    //                dbzTiDBConfig, topicSelector, isTableIdCaseSensitive,
+    // dbzTiDBConfig.getKeyMapper());
+    //    }
 
     public static TiDBDatabaseSchema createTiDBDatabaseSchema(
             TiDBConnectorConfig dbzTiDBConfig,
             TopicSelector<TableId> topicSelector,
             boolean isTableIdCaseSensitive) {
         TiDBValueConverters valueConverters = getValueConverters(dbzTiDBConfig);
-        TiDBDatabaseSchema tiDBDatabaseSchema = new TiDBDatabaseSchema(
-                dbzTiDBConfig,
-                valueConverters,
-                topicSelector,
-                isTableIdCaseSensitive);
-//        tiDBDatabaseSchema.refresh(connection, false);
+        TiDBDatabaseSchema tiDBDatabaseSchema =
+                new TiDBDatabaseSchema(
+                        dbzTiDBConfig, valueConverters, topicSelector, isTableIdCaseSensitive);
+        //        tiDBDatabaseSchema.refresh(connection, false);
         return tiDBDatabaseSchema;
     }
+
     public static long getPhysicalTimeFromTso(long tso) {
         // The first 41 bits represent the physical timestamp in milliseconds since epoch
         return tso >> 18; // Convert milliseconds to microseconds
