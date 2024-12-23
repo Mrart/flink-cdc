@@ -17,7 +17,7 @@ public class TiDBSourceInfoStructMaker implements SourceInfoStructMaker<TiDBSour
                         .field(TiDBSourceInfo.TIMESTAMP_KEY, Schema.INT64_SCHEMA)
                         .field(TiDBSourceInfo.DATABASE_NAME_KEY, Schema.OPTIONAL_STRING_SCHEMA)
                         .field(TiDBSourceInfo.SCHEMA_NAME_KEY, Schema.OPTIONAL_STRING_SCHEMA)
-                        .field(TiDBSourceInfo.TRANSACTION_ID_KEY, Schema.OPTIONAL_STRING_SCHEMA)
+                        .field(TiDBSourceInfo.COMMIT_VERSION_KEY, Schema.INT64_SCHEMA)
                         .build();
     }
 
@@ -31,7 +31,10 @@ public class TiDBSourceInfoStructMaker implements SourceInfoStructMaker<TiDBSour
         Struct source = new Struct(schema);
         source.put(TiDBSourceInfo.TABLE_NAME_KEY, sourceInfo.table());
         Instant timestamp = sourceInfo.timestamp();
+        long commitVersion = sourceInfo.getCommitVersion();
         source.put(TiDBSourceInfo.TIMESTAMP_KEY, timestamp != null ? timestamp.toEpochMilli() : 0);
+        // todo timestamp to commit version.
+        source.put(TiDBSourceInfo.COMMIT_VERSION_KEY, commitVersion);
         if (sourceInfo.database() != null) {
             source.put(TiDBSourceInfo.DATABASE_NAME_KEY, sourceInfo.database());
         }

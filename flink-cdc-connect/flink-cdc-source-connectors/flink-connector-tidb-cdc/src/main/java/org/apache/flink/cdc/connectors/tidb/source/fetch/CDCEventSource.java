@@ -4,6 +4,7 @@ import org.apache.flink.cdc.connectors.base.relational.JdbcSourceEventDispatcher
 import org.apache.flink.cdc.connectors.base.source.meta.split.StreamSplit;
 import org.apache.flink.cdc.connectors.tidb.source.config.TiDBConnectorConfig;
 import org.apache.flink.cdc.connectors.tidb.source.config.TiDBSourceConfig;
+import org.apache.flink.cdc.connectors.tidb.source.offset.CDCEventOffset;
 import org.apache.flink.cdc.connectors.tidb.source.offset.CDCEventOffsetContext;
 import org.apache.flink.cdc.connectors.tidb.table.utils.UriHostMapping;
 import org.apache.flink.util.function.SerializableFunction;
@@ -19,15 +20,15 @@ import io.debezium.util.Clock;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.tikv.cdc.exception.ClientException;
 import org.tikv.cdc.kv.CDCClientV2;
+import org.tikv.cdc.kv.EventListener;
 import org.tikv.cdc.model.OpType;
 import org.tikv.cdc.model.RawKVEntry;
-import org.tikv.cdc.model.RegionFeedEvent;
 import org.tikv.common.TiConfiguration;
 import org.tikv.common.key.RowKey;
 
 import java.io.Serializable;
-import java.time.Instant;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
@@ -36,7 +37,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import static org.apache.flink.cdc.connectors.tidb.source.offset.CDCEventOffset.TIMESTAMP_KEY;
 import static org.tikv.common.ConfigUtils.TIKV_GRPC_TIMEOUT;
 import static org.tikv.common.codec.TableCodec.decodeObjects;
 
@@ -47,15 +47,15 @@ public class CDCEventSource
     private final TiDBConnectorConfig connectorConfig;
     private final JdbcSourceEventDispatcher<TiDBPartition> eventDispatcher;
     private final ErrorHandler errorHandler;
-    private final TiDBStreamFetchTaskContext taskContext;
-    private final SerializableFunction<RegionFeedEvent, TableId> tableIdProvider;
+    private final TiDBSourceFetchTaskContext taskContext;
+    private final SerializableFunction<RawKVEntry, TableId> tableIdProvider;
     private final Map<TableSchema, Map<String, Integer>> fieldIndexMap = new HashMap<>();
 
     public CDCEventSource(
             TiDBConnectorConfig connectorConfig,
             JdbcSourceEventDispatcher<TiDBPartition> eventDispatcher,
             ErrorHandler errorHandler,
-            TiDBStreamFetchTaskContext taskContext,
+            TiDBSourceFetchTaskContext taskContext,
             StreamSplit split) {
         this.connectorConfig = connectorConfig;
         this.eventDispatcher = eventDispatcher;
@@ -65,7 +65,7 @@ public class CDCEventSource
         this.tableIdProvider = this::getTableId;
     }
 
-    private TableId getTableId(RegionFeedEvent event) {
+    private TableId getTableId(RawKVEntry event) {
         if (StringUtils.isBlank(event.getDbName()) || StringUtils.isBlank(event.getTableName())) {
             return null;
         }
@@ -88,10 +88,10 @@ public class CDCEventSource
                         ? offsetContext
                         : CDCEventOffsetContext.initial(this.connectorConfig);
         Set<Envelope.Operation> skippedOperations = this.connectorConfig.getSkippedOperations();
-        EnumMap<OpType, BlockingConsumer<RegionFeedEvent>> eventHandlers =
-                new EnumMap<>(OpType.class);
-        eventHandlers.put(OpType.Heatbeat, event -> LOG.trace("HEARTBEAT message: {}", event));
-        eventHandlers.put(OpType.Ddl, event -> LOG.trace("DDL message: {}", event));
+        EnumMap<OpType, BlockingConsumer<RawKVEntry>> eventHandlers = new EnumMap<>(OpType.class);
+        eventHandlers.put(
+                OpType.Heatbeat, rawKVEntry -> LOG.trace("HEARTBEAT message: {}", rawKVEntry));
+        eventHandlers.put(OpType.Ddl, rawKVEntry -> LOG.trace("DDL message: {}", rawKVEntry));
         // The tidb cdc client has already handled the transaction, so we only need to handle
         // DDL/Update/Delete/Insert;
         if (!skippedOperations.contains(Envelope.Operation.CREATE)) {
@@ -138,30 +138,32 @@ public class CDCEventSource
                                             getTiConfig(connectorConfig.getSourceConfig()),
                                             tableId.catalog(),
                                             tableId.table());
-                            cdcClientV2.execute(
-                                    Long.parseLong(
-                                            this.split
-                                                    .getStartingOffset()
-                                                    .getOffset()
-                                                    .get(TIMESTAMP_KEY)));
-                            while (true) {
-                                RegionFeedEvent raw = cdcClientV2.get();
-                                if (raw != null) {
-                                    LOG.debug("receive message.{}", raw);
-                                    try {
-                                        eventHandlers
-                                                .getOrDefault(
-                                                        raw.getRawKVEntry().getOpType(),
-                                                        skipRaw ->
-                                                                LOG.trace(
-                                                                        "Skip raw message {}",
-                                                                        skipRaw))
-                                                .accept(raw);
-                                    } catch (InterruptedException e) {
-                                        throw new RuntimeException(e);
-                                    }
-                                }
-                            }
+                            cdcClientV2.addListener(
+                                    new EventListener() {
+                                        @Override
+                                        public void notify(RawKVEntry rawKVEntry) {
+                                            if (!context.isRunning()) {
+                                                cdcClientV2.close();
+                                                return;
+                                            }
+                                            try {
+                                                eventHandlers
+                                                        .getOrDefault(
+                                                                rawKVEntry.getOpType(), event -> {})
+                                                        .accept(rawKVEntry);
+                                            } catch (Exception e) {
+                                                errorHandler.setProducerThrowable(e);
+                                            }
+                                        }
+
+                                        @Override
+                                        public void onException(ClientException e) {
+                                            LOG.error("CDC event client error.", e);
+                                            errorHandler.setProducerThrowable(e);
+                                        }
+                                    });
+                            cdcClientV2.start(
+                                    CDCEventOffset.getStartTs(this.split.getStartingOffset()));
                         });
     }
 
@@ -183,7 +185,7 @@ public class CDCEventSource
             TiDBPartition partition,
             CDCEventOffsetContext offsetContext,
             Envelope.Operation operation,
-            RegionFeedEvent event)
+            RawKVEntry event)
             throws InterruptedException {
         final TableId tableId = tableIdProvider.apply(event);
         if (tableId == null) {
@@ -195,7 +197,7 @@ public class CDCEventSource
             LOG.warn("No table schema found, skipping log message: {}", event);
             return;
         }
-        offsetContext.event(tableId, Instant.ofEpochMilli(event.getResolvedTs()));
+        offsetContext.event(tableId, event.getCrts());
 
         Map<String, Integer> fieldIndex =
                 fieldIndexMap.computeIfAbsent(
@@ -213,23 +215,20 @@ public class CDCEventSource
                                                         i -> i)));
         Serializable[] before = null;
         Serializable[] after = null;
-        final RowKey rowKey = RowKey.decode(event.getRawKVEntry().getKey().toByteArray());
+        final RowKey rowKey = RowKey.decode(event.getKey().toByteArray());
         final long handle = rowKey.getHandle();
-        switch (event.getRawKVEntry().getOpType()) {
+        switch (event.getOpType()) {
             case Delete:
                 before = new Serializable[fieldIndex.size()];
                 Object[] tikvValue =
                         decodeObjects(
-                                event.getRawKVEntry().getOldValue().toByteArray(),
-                                handle,
-                                event.getTableInfo());
+                                event.getOldValue().toByteArray(), handle, event.getTableInfo());
                 for (int i = 0; i < tikvValue.length; i++) {
                     before[i] = (Serializable) tikvValue[i];
                 }
             case Put:
-                if (event.getRawKVEntry().isUpdate()) {
-                    RawKVEntry[] rawKVEntries =
-                            event.getRawKVEntry().splitUpdateKVEntry(event.getRawKVEntry());
+                if (event.isUpdate()) {
+                    RawKVEntry[] rawKVEntries = event.splitUpdateKVEntry(event);
                     RawKVEntry deleteRawKVEntry = rawKVEntries[0];
                     before = new Serializable[fieldIndex.size()];
                     Object[] tiKVValueBefore =
@@ -255,16 +254,14 @@ public class CDCEventSource
                     after = new Serializable[fieldIndex.size()];
                     LOG.debug(
                             "Receive value is {},key:{}.dbName:{},tableName: {},tableInfo: {}",
-                            event.getRawKVEntry().getValue().toByteArray(),
-                            event.getRawKVEntry().getKey(),
+                            event.getValue().toByteArray(),
+                            event.getKey(),
                             event.getDbName(),
                             event.getTableName(),
                             event.getTableInfo());
                     Object[] tiKVValueAfter =
                             decodeObjects(
-                                    event.getRawKVEntry().getValue().toByteArray(),
-                                    handle,
-                                    event.getTableInfo());
+                                    event.getValue().toByteArray(), handle, event.getTableInfo());
                     for (int i = 0; i < tiKVValueAfter.length; i++) {
                         after[i] = (Serializable) tiKVValueAfter[i];
                     }

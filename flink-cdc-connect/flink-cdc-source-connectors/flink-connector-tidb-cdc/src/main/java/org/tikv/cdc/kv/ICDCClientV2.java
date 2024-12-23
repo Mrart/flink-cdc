@@ -1,17 +1,19 @@
 package org.tikv.cdc.kv;
 
-import org.tikv.cdc.model.RegionFeedEvent;
 import org.tikv.common.meta.TiTableInfo;
 
+import java.util.Optional;
+
 public interface ICDCClientV2 {
-    void execute(final long startTs);
+    void start(final long startTs);
 
     long getResolvedTs();
 
-    TiTableInfo getTableInfo(String database, String name);
+    Optional<TiTableInfo> getTableInfo(String database, String name);
 
-    /** @return null if no more data */
-    RegionFeedEvent get();
+    public void addListener(EventListener listener);
+
+    public boolean isRunning();
 
     void close();
 }

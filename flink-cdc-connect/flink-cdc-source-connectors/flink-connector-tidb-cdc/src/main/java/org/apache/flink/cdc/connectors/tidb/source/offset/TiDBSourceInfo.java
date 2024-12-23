@@ -14,7 +14,8 @@ import java.util.stream.Collectors;
 
 public class TiDBSourceInfo extends BaseSourceInfo {
     private final TiDBConnectorConfig config;
-    public static final String TRANSACTION_ID_KEY = "transaction_id";
+    public static final String COMMIT_VERSION_KEY = "commitVersion";
+    private long commitVersion;
     private Instant sourceTime;
     private Set<TableId> tableIds;
     private String databaseName;
@@ -32,6 +33,14 @@ public class TiDBSourceInfo extends BaseSourceInfo {
 
     public void setSourceTime(Instant sourceTime) {
         this.sourceTime = sourceTime;
+    }
+
+    public long getCommitVersion() {
+        return commitVersion;
+    }
+
+    public void setCommitVersion(long commitVersion) {
+        this.commitVersion = commitVersion;
     }
 
     public void databaseEvent(String databaseName) {

@@ -19,7 +19,7 @@ public class CDCEventOffsetUtils {
         for (String key : offsetStrMap.keySet()) {
             String value = offsetStrMap.get(key);
             if (value != null) {
-                offsetMap.put(key, Long.parseLong(value));
+                offsetMap.put(key, value);
             }
         }
         return (CDCEventOffsetContext) loader.load(offsetMap);

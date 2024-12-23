@@ -6,6 +6,7 @@ import org.apache.flink.cdc.connectors.base.relational.JdbcSourceEventDispatcher
 import org.apache.flink.cdc.connectors.base.source.meta.offset.Offset;
 import org.apache.flink.cdc.connectors.base.source.meta.split.SourceSplitBase;
 import org.apache.flink.cdc.connectors.base.source.reader.external.JdbcSourceFetchTaskContext;
+import org.apache.flink.cdc.connectors.base.utils.SourceRecordUtils;
 import org.apache.flink.cdc.connectors.tidb.source.config.TiDBConnectorConfig;
 import org.apache.flink.cdc.connectors.tidb.source.connection.TiDBConnection;
 import org.apache.flink.cdc.connectors.tidb.source.handler.TiDBSchemaChangeEventHandler;
@@ -145,6 +146,21 @@ public class TiDBSourceFetchTaskContext extends JdbcSourceFetchTaskContext {
     @Override
     public TiDBDatabaseSchema getDatabaseSchema() {
         return tiDBDatabaseSchema;
+    }
+
+    @Override
+    public boolean isRecordBetween(SourceRecord record, Object[] splitStart, Object[] splitEnd) {
+        if (this.offsetContext.isSnapshotRunning()) {
+            RowType splitKeyType =
+                    getSplitType(getDatabaseSchema().tableFor(this.getTableId(record)));
+            Object[] key =
+                    SourceRecordUtils.getSplitKey(splitKeyType, record, getSchemaNameAdjuster());
+            return SourceRecordUtils.splitKeyRangeContains(key, splitStart, splitEnd);
+        } else {
+            CDCEventOffset newOffset = new CDCEventOffset(record.sourceOffset());
+            return SourceRecordUtils.splitKeyRangeContains(
+                    new CDCEventOffset[] {newOffset}, splitStart, splitEnd);
+        }
     }
 
     @Override

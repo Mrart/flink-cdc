@@ -28,7 +28,7 @@ public class TiDBStreamFetchTask implements FetchTask<SourceSplitBase> {
             LOG.debug("execute StreamFetchTask for split: {}", split);
         }
         taskRunning = true;
-        TiDBStreamFetchTaskContext sourceFetchContext = (TiDBStreamFetchTaskContext) context;
+        TiDBSourceFetchTaskContext sourceFetchContext = (TiDBSourceFetchTaskContext) context;
         sourceFetchContext.getOffsetContext().preSnapshotCompletion();
 
         CDCEventSource CDCEventSource =

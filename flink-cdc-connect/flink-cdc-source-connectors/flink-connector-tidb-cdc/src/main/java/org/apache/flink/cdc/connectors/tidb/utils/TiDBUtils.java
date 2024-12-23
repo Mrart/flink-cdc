@@ -381,7 +381,9 @@ public class TiDBUtils {
                     rs -> {
                         if (rs.next()) {
                             final long binlogPosition = rs.getLong(2);
-                            return new CDCEventOffset(0, getPhysicalTimeFromTso(binlogPosition));
+                            return new CDCEventOffset(
+                                    String.valueOf(getPhysicalTimeFromTso(binlogPosition)),
+                                    String.valueOf(binlogPosition));
                         } else {
                             throw new FlinkRuntimeException(
                                     "Cannot read the binlog filename and position via '"
