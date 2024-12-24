@@ -4,6 +4,7 @@ import org.apache.flink.cdc.connectors.base.config.JdbcSourceConfig;
 import org.apache.flink.cdc.connectors.base.options.StartupOptions;
 
 import io.debezium.config.Configuration;
+import org.tikv.common.TiConfiguration;
 
 import java.time.Duration;
 import java.util.List;
@@ -15,7 +16,7 @@ public class TiDBSourceConfig extends JdbcSourceConfig {
     private final String pdAddresses;
 
     private final String hostMapping;
-
+    private TiConfiguration tiConfiguration;
     private final Properties jdbcProperties;
 
     public TiDBSourceConfig(
@@ -27,6 +28,7 @@ public class TiDBSourceConfig extends JdbcSourceConfig {
             String hostMapping,
             int splitSize,
             int splitMetaGroupSize,
+            TiConfiguration tiConfiguration,
             double distributionFactorUpper,
             double distributionFactorLower,
             boolean includeSchemaChanges,
@@ -76,6 +78,7 @@ public class TiDBSourceConfig extends JdbcSourceConfig {
         this.pdAddresses = pdAddresses;
         this.hostMapping = hostMapping;
         this.jdbcProperties = jdbcProperties;
+        this.tiConfiguration = tiConfiguration;
     }
 
     public String getCompatibleMode() {
@@ -94,6 +97,9 @@ public class TiDBSourceConfig extends JdbcSourceConfig {
         return this.jdbcProperties;
     }
 
+    public TiConfiguration getTiConfiguration(){
+        return this.tiConfiguration;
+    }
     @Override
     public TiDBConnectorConfig getDbzConnectorConfig() {
         return new TiDBConnectorConfig(this);

@@ -8,6 +8,7 @@ import org.apache.flink.cdc.connectors.tidb.TiKVSnapshotEventDeserializationSche
 import org.apache.flink.cdc.connectors.tidb.source.config.TiDBSourceConfigFactory;
 import org.apache.flink.cdc.connectors.tidb.source.offset.CDCEventOffsetFactory;
 import org.apache.flink.cdc.debezium.DebeziumDeserializationSchema;
+import org.tikv.common.TiConfiguration;
 
 import java.time.Duration;
 import java.util.Properties;
@@ -99,6 +100,7 @@ public class TiDBSourceBuilder<T> {
         return this;
     }
 
+
     public TiDBSourceBuilder<T> pdAddresses(String pdAddresses) {
         this.configFactory.pdAddresses(pdAddresses);
         return this;
@@ -163,6 +165,11 @@ public class TiDBSourceBuilder<T> {
     public TiDBSourceBuilder<T> changeEventDeserializer(
             TiKVChangeEventDeserializationSchema<T> changeEventDeserializationSchema) {
         this.changeEventDeserializationSchema = changeEventDeserializationSchema;
+        return this;
+    }
+
+    public TiDBSourceBuilder<T> tiConfiguration(TiConfiguration tiConfiguration){
+        this.configFactory.tiConfiguration(tiConfiguration);
         return this;
     }
 

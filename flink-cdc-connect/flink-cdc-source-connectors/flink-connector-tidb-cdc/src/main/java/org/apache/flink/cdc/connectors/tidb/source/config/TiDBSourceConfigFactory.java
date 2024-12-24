@@ -3,6 +3,7 @@ package org.apache.flink.cdc.connectors.tidb.source.config;
 import org.apache.flink.cdc.connectors.base.config.JdbcSourceConfigFactory;
 
 import io.debezium.config.Configuration;
+import org.tikv.common.TiConfiguration;
 
 import java.util.Properties;
 
@@ -18,7 +19,7 @@ public class TiDBSourceConfigFactory extends JdbcSourceConfigFactory {
     private String pdAddresses;
 
     private String hostMapping;
-
+    private TiConfiguration tiConfiguration;
     private Properties tikvProperties;
     private Properties jdbcProperties;
 
@@ -51,6 +52,12 @@ public class TiDBSourceConfigFactory extends JdbcSourceConfigFactory {
         this.jdbcProperties = jdbcProperties;
         return this;
     }
+
+    public JdbcSourceConfigFactory tiConfiguration(TiConfiguration tiConfiguration) {
+        this.tiConfiguration= tiConfiguration;
+        return this;
+    }
+
 
     @Override
     public TiDBSourceConfig create(int subtask) {
@@ -92,6 +99,7 @@ public class TiDBSourceConfigFactory extends JdbcSourceConfigFactory {
                 hostMapping,
                 splitSize,
                 splitMetaGroupSize,
+                tiConfiguration,
                 distributionFactorUpper,
                 distributionFactorLower,
                 includeSchemaChanges,

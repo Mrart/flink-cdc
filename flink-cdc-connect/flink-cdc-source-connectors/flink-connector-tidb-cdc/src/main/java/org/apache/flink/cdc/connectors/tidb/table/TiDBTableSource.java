@@ -143,6 +143,7 @@ public class TiDBTableSource implements ScanTableSource, SupportsReadingMetadata
 
     @Override
     public ScanRuntimeProvider getScanRuntimeProvider(ScanContext scanContext) {
+
         // TIDB source  builder
         final TiConfiguration tiConf =
                 TiDBSourceOptions.getTiConfiguration(pdAddresses, hostMapping, options);
@@ -204,6 +205,7 @@ public class TiDBTableSource implements ScanTableSource, SupportsReadingMetadata
                 TiDBSourceBuilder.TiDBIncrementalSource.<RowData>builder()
                         .hostname(hostName)
                         .port(port)
+                        .tiConfiguration(tiConf)
                         .databaseList(database)
                         .tableList(database + "\\." + tableName)
                         .username(username)
