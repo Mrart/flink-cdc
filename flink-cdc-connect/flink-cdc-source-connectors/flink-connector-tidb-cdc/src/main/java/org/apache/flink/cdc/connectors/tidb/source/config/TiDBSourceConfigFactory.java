@@ -54,10 +54,9 @@ public class TiDBSourceConfigFactory extends JdbcSourceConfigFactory {
     }
 
     public JdbcSourceConfigFactory tiConfiguration(TiConfiguration tiConfiguration) {
-        this.tiConfiguration= tiConfiguration;
+        this.tiConfiguration = tiConfiguration;
         return this;
     }
-
 
     @Override
     public TiDBSourceConfig create(int subtask) {

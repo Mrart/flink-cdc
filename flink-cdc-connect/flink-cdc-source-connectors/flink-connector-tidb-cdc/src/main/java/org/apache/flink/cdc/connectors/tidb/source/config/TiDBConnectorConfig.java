@@ -7,12 +7,15 @@ import io.debezium.config.Configuration;
 import io.debezium.config.EnumeratedValue;
 import io.debezium.config.Field;
 import io.debezium.connector.SourceInfoStructMaker;
+import io.debezium.connector.mysql.MySqlConnectorConfig;
 import io.debezium.jdbc.JdbcValueConverters;
 import io.debezium.relational.ColumnFilterMode;
 import io.debezium.relational.RelationalDatabaseConnectorConfig;
 import io.debezium.relational.TableId;
 import io.debezium.relational.Tables;
 import org.apache.kafka.common.config.ConfigDef;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.math.BigDecimal;
 import java.util.Arrays;
@@ -20,6 +23,8 @@ import java.util.Collections;
 import java.util.List;
 
 public class TiDBConnectorConfig extends RelationalDatabaseConnectorConfig {
+    private static final Logger LOGGER = LoggerFactory.getLogger(MySqlConnectorConfig.class);
+
     protected static final String LOGICAL_NAME = "tidb_cdc_connector";
     protected static final int DEFAULT_SNAPSHOT_FETCH_SIZE = Integer.MIN_VALUE;
     private final boolean readOnlyConnection = true;
@@ -199,5 +204,224 @@ public class TiDBConnectorConfig extends RelationalDatabaseConnectorConfig {
 
     public boolean isReadOnlyConnection() {
         return readOnlyConnection;
+    }
+
+    public static enum SecureConnectionMode implements EnumeratedValue {
+        /** Establish an unencrypted connection. */
+        DISABLED("disabled"),
+
+        /**
+         * Establish a secure (encrypted) connection if the server supports secure connections. Fall
+         * back to an unencrypted connection otherwise.
+         */
+        PREFERRED("preferred"),
+        /**
+         * Establish a secure connection if the server supports secure connections. The connection
+         * attempt fails if a secure connection cannot be established.
+         */
+        REQUIRED("required"),
+        /**
+         * Like REQUIRED, but additionally verify the server TLS certificate against the configured
+         * Certificate Authority (CA) certificates. The connection attempt fails if no valid
+         * matching CA certificates are found.
+         */
+        VERIFY_CA("verify_ca"),
+        /**
+         * Like VERIFY_CA, but additionally verify that the server certificate matches the host to
+         * which the connection is attempted.
+         */
+        VERIFY_IDENTITY("verify_identity");
+
+        private final String value;
+
+        private SecureConnectionMode(String value) {
+            this.value = value;
+        }
+
+        @Override
+        public String getValue() {
+            return value;
+        }
+
+        /**
+         * Determine if the supplied value is one of the predefined options.
+         *
+         * @param value the configuration property value; may not be null
+         * @return the matching option, or null if no match is found
+         */
+        public static TiDBConnectorConfig.SecureConnectionMode parse(String value) {
+            if (value == null) {
+                return null;
+            }
+            value = value.trim();
+            for (TiDBConnectorConfig.SecureConnectionMode option :
+                    TiDBConnectorConfig.SecureConnectionMode.values()) {
+                if (option.getValue().equalsIgnoreCase(value)) {
+                    return option;
+                }
+            }
+            return null;
+        }
+
+        /**
+         * Determine if the supplied value is one of the predefined options.
+         *
+         * @param value the configuration property value; may not be null
+         * @param defaultValue the default value; may be null
+         * @return the matching option, or null if no match is found and the non-null default is
+         *     invalid
+         */
+        public static TiDBConnectorConfig.SecureConnectionMode parse(
+                String value, String defaultValue) {
+            TiDBConnectorConfig.SecureConnectionMode mode = parse(value);
+            if (mode == null && defaultValue != null) {
+                mode = parse(defaultValue);
+            }
+            return mode;
+        }
+    }
+
+    public static final Field SSL_MODE =
+            Field.create("database.ssl.mode")
+                    .withDisplayName("SSL mode")
+                    .withEnum(
+                            MySqlConnectorConfig.SecureConnectionMode.class,
+                            MySqlConnectorConfig.SecureConnectionMode.DISABLED)
+                    .withGroup(Field.createGroupEntry(Field.Group.CONNECTION_ADVANCED_SSL, 0))
+                    .withWidth(ConfigDef.Width.MEDIUM)
+                    .withImportance(ConfigDef.Importance.MEDIUM)
+                    .withDescription(
+                            "Whether to use an encrypted connection to MySQL. Options include"
+                                    + "'disabled' (the default) to use an unencrypted connection; "
+                                    + "'preferred' to establish a secure (encrypted) connection if the server supports secure connections, "
+                                    + "but fall back to an unencrypted connection otherwise; "
+                                    + "'required' to use a secure (encrypted) connection, and fail if one cannot be established; "
+                                    + "'verify_ca' like 'required' but additionally verify the server TLS certificate against the configured Certificate Authority "
+                                    + "(CA) certificates, or fail if no valid matching CA certificates are found; or"
+                                    + "'verify_identity' like 'verify_ca' but additionally verify that the server certificate matches the host to which the connection is attempted.");
+
+    public static final Field SSL_KEYSTORE =
+            Field.create("database.ssl.keystore")
+                    .withDisplayName("SSL Keystore")
+                    .withType(ConfigDef.Type.STRING)
+                    .withGroup(Field.createGroupEntry(Field.Group.CONNECTION_ADVANCED_SSL, 1))
+                    .withWidth(ConfigDef.Width.LONG)
+                    .withImportance(ConfigDef.Importance.MEDIUM)
+                    .withDescription(
+                            "The location of the key store file. "
+                                    + "This is optional and can be used for two-way authentication between the client and the MySQL Server.");
+
+    public static final Field SSL_KEYSTORE_PASSWORD =
+            Field.create("database.ssl.keystore.password")
+                    .withDisplayName("SSL Keystore Password")
+                    .withType(ConfigDef.Type.PASSWORD)
+                    .withGroup(Field.createGroupEntry(Field.Group.CONNECTION_ADVANCED_SSL, 2))
+                    .withWidth(ConfigDef.Width.MEDIUM)
+                    .withImportance(ConfigDef.Importance.MEDIUM)
+                    .withDescription(
+                            "The password for the key store file. "
+                                    + "This is optional and only needed if 'database.ssl.keystore' is configured.");
+
+    public static final Field SSL_TRUSTSTORE =
+            Field.create("database.ssl.truststore")
+                    .withDisplayName("SSL Truststore")
+                    .withType(ConfigDef.Type.STRING)
+                    .withGroup(Field.createGroupEntry(Field.Group.CONNECTION_ADVANCED_SSL, 3))
+                    .withWidth(ConfigDef.Width.LONG)
+                    .withImportance(ConfigDef.Importance.MEDIUM)
+                    .withDescription(
+                            "The location of the trust store file for the server certificate verification.");
+
+    public static final Field SSL_TRUSTSTORE_PASSWORD =
+            Field.create("database.ssl.truststore.password")
+                    .withDisplayName("SSL Truststore Password")
+                    .withType(ConfigDef.Type.PASSWORD)
+                    .withGroup(Field.createGroupEntry(Field.Group.CONNECTION_ADVANCED_SSL, 4))
+                    .withWidth(ConfigDef.Width.MEDIUM)
+                    .withImportance(ConfigDef.Importance.MEDIUM)
+                    .withDescription(
+                            "The password for the trust store file. "
+                                    + "Used to check the integrity of the truststore, and unlock the truststore.");
+
+    public static final Field CONNECTION_TIMEOUT_MS =
+            Field.create("connect.timeout.ms")
+                    .withDisplayName("Connection Timeout (ms)")
+                    .withType(ConfigDef.Type.INT)
+                    .withGroup(Field.createGroupEntry(Field.Group.CONNECTION_ADVANCED, 1))
+                    .withWidth(ConfigDef.Width.SHORT)
+                    .withImportance(ConfigDef.Importance.MEDIUM)
+                    .withDescription(
+                            "Maximum time to wait after trying to connect to the database before timing out, given in milliseconds. Defaults to 30 seconds (30,000 ms).")
+                    .withDefault(30 * 1000)
+                    .withValidation(Field::isPositiveInteger);
+
+    public static final Field EVENT_DESERIALIZATION_FAILURE_HANDLING_MODE =
+            Field.create("event.deserialization.failure.handling.mode")
+                    .withDisplayName("Event deserialization failure handling")
+                    .withEnum(
+                            EventProcessingFailureHandlingMode.class,
+                            EventProcessingFailureHandlingMode.FAIL)
+                    .withGroup(Field.createGroupEntry(Field.Group.CONNECTOR, 21))
+                    .withValidation(
+                            TiDBConnectorConfig
+                                    ::validateEventDeserializationFailureHandlingModeNotSet)
+                    .withWidth(ConfigDef.Width.SHORT)
+                    .withImportance(ConfigDef.Importance.MEDIUM)
+                    .withDescription(
+                            "Specify how failures during deserialization of binlog events (i.e. when encountering a corrupted event) should be handled, including:"
+                                    + "'fail' (the default) an exception indicating the problematic event and its binlog position is raised, causing the connector to be stopped; "
+                                    + "'warn' the problematic event and its binlog position will be logged and the event will be skipped;"
+                                    + "'ignore' the problematic event will be skipped.");
+
+    public static final Field INCONSISTENT_SCHEMA_HANDLING_MODE =
+            Field.create("inconsistent.schema.handling.mode")
+                    .withDisplayName("Inconsistent schema failure handling")
+                    .withEnum(
+                            EventProcessingFailureHandlingMode.class,
+                            EventProcessingFailureHandlingMode.FAIL)
+                    .withGroup(Field.createGroupEntry(Field.Group.ADVANCED, 2))
+                    .withValidation(
+                            TiDBConnectorConfig::validateInconsistentSchemaHandlingModeNotIgnore)
+                    .withWidth(ConfigDef.Width.SHORT)
+                    .withImportance(ConfigDef.Importance.MEDIUM)
+                    .withDescription(
+                            "Specify how binlog events that belong to a table missing from internal schema representation (i.e. internal representation is not consistent with database) should be handled, including:"
+                                    + "'fail' (the default) an exception indicating the problematic event and its binlog position is raised, causing the connector to be stopped; "
+                                    + "'warn' the problematic event and its binlog position will be logged and the event will be skipped;"
+                                    + "'skip' the problematic event will be skipped.");
+
+    private static int validateEventDeserializationFailureHandlingModeNotSet(
+            Configuration config, Field field, Field.ValidationOutput problems) {
+        final String modeName =
+                config.asMap().get(EVENT_DESERIALIZATION_FAILURE_HANDLING_MODE.name());
+        if (modeName != null) {
+            LOGGER.warn(
+                    "Configuration option '{}' is renamed to '{}'",
+                    EVENT_DESERIALIZATION_FAILURE_HANDLING_MODE.name(),
+                    EVENT_PROCESSING_FAILURE_HANDLING_MODE.name());
+            if (EventProcessingFailureHandlingMode.OBSOLETE_NAME_FOR_SKIP_FAILURE_HANDLING.equals(
+                    modeName)) {
+                LOGGER.warn(
+                        "Value '{}' of configuration option '{}' is deprecated and should be replaced with '{}'",
+                        EventProcessingFailureHandlingMode.OBSOLETE_NAME_FOR_SKIP_FAILURE_HANDLING,
+                        EVENT_DESERIALIZATION_FAILURE_HANDLING_MODE.name(),
+                        EventProcessingFailureHandlingMode.SKIP.getValue());
+            }
+        }
+        return 0;
+    }
+
+    private static int validateInconsistentSchemaHandlingModeNotIgnore(
+            Configuration config, Field field, Field.ValidationOutput problems) {
+        final String modeName = config.getString(INCONSISTENT_SCHEMA_HANDLING_MODE);
+        if (EventProcessingFailureHandlingMode.OBSOLETE_NAME_FOR_SKIP_FAILURE_HANDLING.equals(
+                modeName)) {
+            LOGGER.warn(
+                    "Value '{}' of configuration option '{}' is deprecated and should be replaced with '{}'",
+                    EventProcessingFailureHandlingMode.OBSOLETE_NAME_FOR_SKIP_FAILURE_HANDLING,
+                    INCONSISTENT_SCHEMA_HANDLING_MODE.name(),
+                    EventProcessingFailureHandlingMode.SKIP.getValue());
+        }
+        return 0;
     }
 }

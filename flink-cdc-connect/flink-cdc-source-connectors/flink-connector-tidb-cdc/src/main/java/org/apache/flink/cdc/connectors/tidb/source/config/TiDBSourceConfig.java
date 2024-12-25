@@ -97,11 +97,16 @@ public class TiDBSourceConfig extends JdbcSourceConfig {
         return this.jdbcProperties;
     }
 
-    public TiConfiguration getTiConfiguration(){
+    public TiConfiguration getTiConfiguration() {
         return this.tiConfiguration;
     }
+
     @Override
     public TiDBConnectorConfig getDbzConnectorConfig() {
         return new TiDBConnectorConfig(this);
+    }
+
+    public StartupOptions getStartupOptions() {
+        return startupOptions;
     }
 }

@@ -5,6 +5,7 @@ import org.apache.flink.cdc.common.configuration.Configuration;
 import org.apache.flink.cdc.common.factories.DataSourceFactory;
 import org.apache.flink.cdc.common.factories.FactoryHelper;
 import org.apache.flink.cdc.common.source.DataSource;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -14,7 +15,6 @@ import java.util.Set;
 import static org.apache.flink.cdc.connectors.tidb.source.TiDBDataSourceOptions.*;
 import static org.apache.flink.cdc.debezium.table.DebeziumOptions.DEBEZIUM_OPTIONS_PREFIX;
 import static org.apache.flink.cdc.debezium.utils.JdbcUrlUtils.PROPERTIES_PREFIX;
-
 
 public class TiDBDataSourceFactory implements DataSourceFactory {
 
@@ -28,9 +28,6 @@ public class TiDBDataSourceFactory implements DataSourceFactory {
                 .validateExcept(PROPERTIES_PREFIX, DEBEZIUM_OPTIONS_PREFIX);
 
         final Configuration config = context.getFactoryConfiguration();
-
-
-
 
         return null;
     }

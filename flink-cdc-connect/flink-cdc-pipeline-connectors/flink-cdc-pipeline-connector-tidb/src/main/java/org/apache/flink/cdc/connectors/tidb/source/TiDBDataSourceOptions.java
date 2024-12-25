@@ -13,7 +13,7 @@ public class TiDBDataSourceOptions {
                     .noDefaultValue()
                     .withDescription("IP address or hostname of the MySQL database server.");
 
-    public static final ConfigOption<Integer>TiDB_PORT =
+    public static final ConfigOption<Integer> TiDB_PORT =
             ConfigOptions.key("port")
                     .intType()
                     .defaultValue(4000)
@@ -50,7 +50,6 @@ public class TiDBDataSourceOptions {
                     .noDefaultValue()
                     .withDescription(
                             "List of full names of tables, separated by commas, e.g. \"db1.table1, db2.table2\".");
-
 
     public static final ConfigOption<String> TABLE_NAME =
             ConfigOptions.key("table-name")
@@ -90,7 +89,6 @@ public class TiDBDataSourceOptions {
                     .noDefaultValue()
                     .withDescription(
                             "TiKV cluster's host-mapping used to configure public IP and intranet IP mapping. When the TiKV cluster is running on the intranet, you can map a set of intranet IPs to public IPs for an outside Flink cluster to access. The format is {Intranet IP1}:{Public IP1};{Intranet IP2}:{Public IP2}, e.g. 192.168.0.2:8.8.8.8;192.168.0.3:9.9.9.9.");
-
 
     public static final ConfigOption<String> JDBC_DRIVER =
             ConfigOptions.key("jdbc.driver")

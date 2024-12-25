@@ -63,7 +63,7 @@ public class TiDBConnectionUtils {
         // dbzTiDBConfig.getConfig().getBoolean(TiDBConnectorConfig.ENABLE_TIME_ADJUSTER)
         boolean timeAdjusterEnabled =
                 dbzTiDBConfig.getConfig().getBoolean(dbzTiDBConfig.ENABLE_TIME_ADJUSTER);
-        ;
+
         return new TiDBValueConverters(
                 decimalMode,
                 timePrecisionMode,

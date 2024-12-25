@@ -10,6 +10,7 @@ import org.apache.flink.table.types.DataType;
 import org.apache.flink.table.types.logical.RowType;
 import org.apache.flink.util.FlinkRuntimeException;
 
+import io.debezium.config.Configuration;
 import io.debezium.jdbc.JdbcConnection;
 import io.debezium.relational.Column;
 import io.debezium.relational.TableId;
@@ -20,6 +21,7 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.Iterator;
 import java.util.Optional;
+import java.util.Properties;
 import java.util.stream.Collectors;
 
 import static org.apache.flink.cdc.connectors.tidb.utils.TiDBConnectionUtils.getValueConverters;
@@ -436,5 +438,11 @@ public class TiDBUtils {
     public static long getPhysicalTimeFromTso(long tso) {
         // The first 41 bits represent the physical timestamp in milliseconds since epoch
         return tso >> 18; // Convert milliseconds to microseconds
+    }
+
+    public static TiDBConnection createMySqlConnection(
+            Configuration dbzConfiguration, Properties jdbcProperties) {
+        return new TiDBConnection(
+                new TiDBConnection.TiDBConnectionConfiguration(dbzConfiguration, jdbcProperties));
     }
 }
