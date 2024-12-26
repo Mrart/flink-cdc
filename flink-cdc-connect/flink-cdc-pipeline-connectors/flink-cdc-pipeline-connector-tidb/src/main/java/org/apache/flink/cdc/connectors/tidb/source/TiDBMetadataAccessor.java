@@ -1,6 +1,5 @@
 package org.apache.flink.cdc.connectors.tidb.source;
 
-import io.debezium.connector.tidb.TiDBPartition;
 import org.apache.flink.cdc.common.annotation.Internal;
 import org.apache.flink.cdc.common.event.TableId;
 import org.apache.flink.cdc.common.schema.Schema;
@@ -8,9 +7,10 @@ import org.apache.flink.cdc.common.source.MetadataAccessor;
 import org.apache.flink.cdc.connectors.tidb.source.config.TiDBSourceConfig;
 import org.apache.flink.cdc.connectors.tidb.utils.TiDBSchemaUtils;
 
+import io.debezium.connector.tidb.TiDBPartition;
+
 import javax.annotation.Nullable;
-import java.sql.SQLException;
-import java.util.Collections;
+
 import java.util.List;
 
 /** {@link MetadataAccessor} for {@link TiDBMetadataAccessor}. */
@@ -21,12 +21,11 @@ public class TiDBMetadataAccessor implements MetadataAccessor {
 
     private final TiDBPartition tiDBPartition;
 
-    public TiDBMetadataAccessor(
-            TiDBSourceConfig tiDBSourceConfig) {
+    public TiDBMetadataAccessor(TiDBSourceConfig tiDBSourceConfig) {
         this.tiDBSourceConfig = tiDBSourceConfig;
-        this.tiDBPartition = new TiDBPartition(tiDBSourceConfig.getDbzConnectorConfig().getLogicalName());
+        this.tiDBPartition =
+                new TiDBPartition(tiDBSourceConfig.getDbzConnectorConfig().getLogicalName());
     }
-
 
     @Override
     public List<String> listNamespaces() {
@@ -40,11 +39,11 @@ public class TiDBMetadataAccessor implements MetadataAccessor {
 
     @Override
     public List<TableId> listTables(@Nullable String namespace, @Nullable String dbName) {
-        return TiDBSchemaUtils.listTables(tiDBSourceConfig,dbName);
+        return TiDBSchemaUtils.listTables(tiDBSourceConfig, dbName);
     }
 
     @Override
-    public Schema getTableSchema(TableId tableId) throws SQLException {
-        return TiDBSchemaUtils.getTableSchema(tiDBSourceConfig,tiDBPartition,tableId);
+    public Schema getTableSchema(TableId tableId) {
+        return TiDBSchemaUtils.getTableSchema(tiDBSourceConfig, tiDBPartition, tableId);
     }
 }

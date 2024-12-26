@@ -1,5 +1,6 @@
 package org.apache.flink.cdc.connectors.tidb.source;
 
+import org.apache.flink.cdc.common.annotation.Internal;
 import org.apache.flink.cdc.common.annotation.VisibleForTesting;
 import org.apache.flink.cdc.common.event.Event;
 import org.apache.flink.cdc.common.source.DataSource;
@@ -10,14 +11,16 @@ import org.apache.flink.cdc.connectors.base.config.SourceConfig;
 import org.apache.flink.cdc.connectors.base.source.meta.split.SourceRecords;
 import org.apache.flink.cdc.connectors.base.source.meta.split.SourceSplitState;
 import org.apache.flink.cdc.connectors.base.source.metrics.SourceReaderMetrics;
-import org.apache.flink.cdc.connectors.tidb.source.reader.TiDBPipelineRecordEmitter;
 import org.apache.flink.cdc.connectors.tidb.source.config.TiDBSourceConfig;
 import org.apache.flink.cdc.connectors.tidb.source.config.TiDBSourceConfigFactory;
 import org.apache.flink.cdc.connectors.tidb.source.offset.CDCEventOffsetFactory;
+import org.apache.flink.cdc.connectors.tidb.source.reader.TiDBPipelineRecordEmitter;
 import org.apache.flink.cdc.debezium.DebeziumDeserializationSchema;
 import org.apache.flink.cdc.debezium.table.DebeziumChangelogMode;
 import org.apache.flink.connector.base.source.reader.RecordEmitter;
 
+/** A {@link DataSource} for Postgres cdc connector. */
+@Internal
 public class TiDBDataSource implements DataSource {
 
     private final TiDBSourceConfig tiDBSourceConfig;
@@ -36,13 +39,13 @@ public class TiDBDataSource implements DataSource {
                         DebeziumChangelogMode.ALL, tiDBSourceConfig.isIncludeSchemaChanges());
         CDCEventOffsetFactory cdcEventOffsetFactory = new CDCEventOffsetFactory();
         TiDBDialect tiDBDialect = new TiDBDialect(tiDBSourceConfig);
-        TiDBSourceBuilder.TiDBIncrementalSource<Event> tiDBPipelineSource = new TiDBPipelineSource<>(
-                tiDBSourceConfigFactory,
-                tiDBEventDeserializer,
-                cdcEventOffsetFactory,
-                tiDBDialect,
-                tiDBSourceConfig
-        );
+        TiDBSourceBuilder.TiDBIncrementalSource<Event> tiDBPipelineSource =
+                new TiDBPipelineSource<>(
+                        tiDBSourceConfigFactory,
+                        tiDBEventDeserializer,
+                        cdcEventOffsetFactory,
+                        tiDBDialect,
+                        tiDBSourceConfig);
         return FlinkSourceProvider.of(tiDBPipelineSource);
     }
 

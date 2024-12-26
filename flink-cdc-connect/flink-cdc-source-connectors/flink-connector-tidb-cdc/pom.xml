@@ -70,8 +70,8 @@ limitations under the License.
             <groupId>org.tikv</groupId>
             <artifactId>tikv-client-java</artifactId>
             <version>${tikv.version}</version>
-            <scope>system</scope>
-            <systemPath>/Users/grace/Env/apache-maven-3.6.3/org/tikv/tikv-client-java/3.3.4-SNAPSHOT/tikv-client-java-3.3.4-SNAPSHOT.jar</systemPath>
+<!--            <scope>system</scope>-->
+<!--            <systemPath>/Users/grace/Env/apache-maven-3.6.3/org/tikv/tikv-client-java/3.3.4-SNAPSHOT/tikv-client-java-3.3.4-SNAPSHOT.jar</systemPath>-->
         </dependency>
 
         <dependency>

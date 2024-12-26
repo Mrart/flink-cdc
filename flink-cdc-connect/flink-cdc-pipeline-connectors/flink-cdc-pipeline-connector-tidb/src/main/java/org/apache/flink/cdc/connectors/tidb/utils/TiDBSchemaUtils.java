@@ -1,6 +1,5 @@
 package org.apache.flink.cdc.connectors.tidb.utils;
 
-import io.debezium.connector.tidb.TiDBPartition;
 import org.apache.flink.cdc.common.event.TableId;
 import org.apache.flink.cdc.common.schema.Column;
 import org.apache.flink.cdc.common.schema.Schema;
@@ -9,6 +8,7 @@ import org.apache.flink.cdc.connectors.tidb.source.config.TiDBSourceConfig;
 import org.apache.flink.cdc.connectors.tidb.source.connection.TiDBConnection;
 import org.apache.flink.cdc.connectors.tidb.source.schema.TiDBSchema;
 
+import io.debezium.connector.tidb.TiDBPartition;
 import io.debezium.jdbc.JdbcConnection;
 import io.debezium.relational.Table;
 import io.debezium.relational.history.TableChanges;
@@ -23,6 +23,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/** Utilities for converting from debezium {@link Table} types to {@link Schema}. */
 public class TiDBSchemaUtils {
     private static final Logger LOG = LoggerFactory.getLogger(TiDBSchemaUtils.class);
 
@@ -106,14 +107,13 @@ public class TiDBSchemaUtils {
         return "`" + dbOrTableName + "`";
     }
 
-
     public static Schema getTableSchema(
-                    TiDBSourceConfig tiDBSourceConfig,
-                    TiDBPartition tiDBPartition,
-                    TableId tableId) throws SQLException {
+            TiDBSourceConfig tiDBSourceConfig, TiDBPartition tiDBPartition, TableId tableId) {
         // fetch table schemas
         try (TiDBConnection jdbc = getTiDBDialect(tiDBSourceConfig).openJdbcConnection()) {
             return getTableSchema(tiDBPartition, tableId, tiDBSourceConfig, jdbc);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -125,7 +125,8 @@ public class TiDBSchemaUtils {
         // fetch table schemas
         TiDBSchema tiDBSchema =
                 new TiDBSchema(tiDBSourceConfig, TiDBConnectionUtils.isTableIdCaseSensitive(jdbc));
-        TableChanges.TableChange tableSchema = tiDBSchema.getTableSchema(jdbc, toDbzTableId(tableId));
+        TableChanges.TableChange tableSchema =
+                tiDBSchema.getTableSchema(jdbc, toDbzTableId(tableId));
         return toSchema(tableSchema.getTable());
     }
 

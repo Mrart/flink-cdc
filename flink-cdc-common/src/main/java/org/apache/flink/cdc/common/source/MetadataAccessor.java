@@ -67,5 +67,5 @@ public interface MetadataAccessor {
      * @param tableId The {@link TableId} of the given table.
      * @return The {@link Schema} of the table.
      */
-    Schema getTableSchema(TableId tableId) throws SQLException;
+    Schema getTableSchema(TableId tableId);
 }

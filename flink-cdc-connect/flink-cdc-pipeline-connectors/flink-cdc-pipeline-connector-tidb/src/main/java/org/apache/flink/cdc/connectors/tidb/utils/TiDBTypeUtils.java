@@ -7,8 +7,9 @@ import org.apache.flink.cdc.common.types.DataTypes;
 
 import io.debezium.relational.Column;
 
+/** A utility class for converting TiDB types to Flink types. */
 public class TiDBTypeUtils {
-    // ------ MySQL Type ------
+    // ------ TiDB Type ------
     // https://dev.mysql.com/doc/refman/8.0/en/data-types.html
     private static final String BIT = "BIT";
     /*

@@ -14,6 +14,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+/** Event deserializer for {@link TiDBDataSource}. */
 public class TiDBEventDeserializer extends DebeziumEventDeserializationSchema {
 
     private static final long serialVersionUID = 1L;

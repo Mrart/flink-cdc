@@ -5,6 +5,7 @@ import org.apache.flink.cdc.common.configuration.ConfigOptions;
 
 import java.time.Duration;
 
+/** Configurations for {@link TiDBDataSource}. */
 public class TiDBDataSourceOptions {
 
     public static final ConfigOption<String> HOSTNAME =

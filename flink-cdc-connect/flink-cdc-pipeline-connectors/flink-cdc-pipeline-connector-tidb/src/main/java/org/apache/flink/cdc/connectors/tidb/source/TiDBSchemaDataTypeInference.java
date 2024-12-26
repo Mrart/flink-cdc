@@ -8,6 +8,7 @@ import io.debezium.data.geometry.Geometry;
 import io.debezium.data.geometry.Point;
 import org.apache.kafka.connect.data.Schema;
 
+/** {@link DataType} inference for TiDB debezium {@link Schema}. */
 public class TiDBSchemaDataTypeInference extends DebeziumSchemaDataTypeInference {
     private static final long serialVersionUID = 1L;
 

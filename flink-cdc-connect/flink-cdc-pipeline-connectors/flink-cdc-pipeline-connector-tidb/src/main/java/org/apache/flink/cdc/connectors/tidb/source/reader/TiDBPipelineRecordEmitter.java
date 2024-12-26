@@ -15,9 +15,9 @@ import org.apache.flink.cdc.connectors.tidb.source.connection.TiDBConnection;
 import org.apache.flink.cdc.connectors.tidb.utils.TableDiscoveryUtils;
 import org.apache.flink.cdc.connectors.tidb.utils.TiDBSchemaUtils;
 import org.apache.flink.cdc.debezium.DebeziumDeserializationSchema;
+import org.apache.flink.connector.base.source.reader.RecordEmitter;
 
 import io.debezium.relational.TableId;
-import org.apache.flink.connector.base.source.reader.RecordEmitter;
 import org.apache.kafka.connect.source.SourceRecord;
 
 import java.sql.SQLException;
@@ -65,7 +65,8 @@ public class TiDBPipelineRecordEmitter<T> extends IncrementalSourceRecordEmitter
                                 jdbc,
                                 tiDBSourceConfig.getTableFilters());
                 for (TableId tableId : capturedTableIds) {
-                    Schema tableSchema = TiDBSchemaUtils.getTableSchema(tableId,tiDBSourceConfig,jdbc);
+                    Schema tableSchema =
+                            TiDBSchemaUtils.getTableSchema(tableId, tiDBSourceConfig, jdbc);
                     createTableEventCache.add(
                             new CreateTableEvent(
                                     org.apache.flink.cdc.common.event.TableId.tableId(
