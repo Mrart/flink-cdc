@@ -23,6 +23,7 @@ import org.apache.flink.cdc.common.schema.Schema;
 
 import javax.annotation.Nullable;
 
+import java.sql.SQLException;
 import java.util.List;
 
 /**
@@ -66,5 +67,5 @@ public interface MetadataAccessor {
      * @param tableId The {@link TableId} of the given table.
      * @return The {@link Schema} of the table.
      */
-    Schema getTableSchema(TableId tableId);
+    Schema getTableSchema(TableId tableId) throws SQLException;
 }

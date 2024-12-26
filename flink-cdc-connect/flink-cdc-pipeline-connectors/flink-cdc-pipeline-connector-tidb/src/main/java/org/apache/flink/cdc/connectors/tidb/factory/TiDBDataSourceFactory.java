@@ -1,8 +1,10 @@
 package org.apache.flink.cdc.connectors.tidb.factory;
 
+import org.apache.flink.cdc.common.annotation.Internal;
 import org.apache.flink.cdc.common.configuration.ConfigOption;
 import org.apache.flink.cdc.common.configuration.Configuration;
 import org.apache.flink.cdc.common.factories.DataSourceFactory;
+import org.apache.flink.cdc.common.factories.Factory;
 import org.apache.flink.cdc.common.factories.FactoryHelper;
 import org.apache.flink.cdc.common.source.DataSource;
 
@@ -16,6 +18,8 @@ import static org.apache.flink.cdc.connectors.tidb.source.TiDBDataSourceOptions.
 import static org.apache.flink.cdc.debezium.table.DebeziumOptions.DEBEZIUM_OPTIONS_PREFIX;
 import static org.apache.flink.cdc.debezium.utils.JdbcUrlUtils.PROPERTIES_PREFIX;
 
+/** A {@link Factory} to create {@link TiDBDataSourceFactory}. */
+@Internal
 public class TiDBDataSourceFactory implements DataSourceFactory {
 
     private static final Logger LOG = LoggerFactory.getLogger(TiDBDataSourceFactory.class);

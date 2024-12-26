@@ -1,5 +1,6 @@
 package org.apache.flink.cdc.connectors.tidb.utils;
 
+import io.debezium.connector.tidb.TiDBPartition;
 import org.apache.flink.cdc.common.event.TableId;
 import org.apache.flink.cdc.common.schema.Column;
 import org.apache.flink.cdc.common.schema.Schema;
@@ -105,13 +106,27 @@ public class TiDBSchemaUtils {
         return "`" + dbOrTableName + "`";
     }
 
+
     public static Schema getTableSchema(
-            TiDBSourceConfig tiDBSourceConfig, io.debezium.relational.TableId tableId)
-            throws SQLException {
+                    TiDBSourceConfig tiDBSourceConfig,
+                    TiDBPartition tiDBPartition,
+                    TableId tableId) throws SQLException {
         // fetch table schemas
         try (TiDBConnection jdbc = getTiDBDialect(tiDBSourceConfig).openJdbcConnection()) {
-            return getTableSchema(tableId, tiDBSourceConfig, jdbc);
+            return getTableSchema(tiDBPartition, tableId, tiDBSourceConfig, jdbc);
         }
+    }
+
+    public static Schema getTableSchema(
+            TiDBPartition tiDBPartition,
+            TableId tableId,
+            TiDBSourceConfig tiDBSourceConfig,
+            TiDBConnection jdbc) {
+        // fetch table schemas
+        TiDBSchema tiDBSchema =
+                new TiDBSchema(tiDBSourceConfig, TiDBConnectionUtils.isTableIdCaseSensitive(jdbc));
+        TableChanges.TableChange tableSchema = tiDBSchema.getTableSchema(jdbc, toDbzTableId(tableId));
+        return toSchema(tableSchema.getTable());
     }
 
     public static Schema getTableSchema(

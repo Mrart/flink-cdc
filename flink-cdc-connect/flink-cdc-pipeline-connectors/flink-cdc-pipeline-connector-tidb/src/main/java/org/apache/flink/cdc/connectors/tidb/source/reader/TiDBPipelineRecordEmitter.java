@@ -1,4 +1,4 @@
-package org.apache.flink.cdc.connectors.tidb.reader;
+package org.apache.flink.cdc.connectors.tidb.source.reader;
 
 import org.apache.flink.api.connector.source.SourceOutput;
 import org.apache.flink.cdc.common.event.CreateTableEvent;
@@ -17,6 +17,7 @@ import org.apache.flink.cdc.connectors.tidb.utils.TiDBSchemaUtils;
 import org.apache.flink.cdc.debezium.DebeziumDeserializationSchema;
 
 import io.debezium.relational.TableId;
+import org.apache.flink.connector.base.source.reader.RecordEmitter;
 import org.apache.kafka.connect.source.SourceRecord;
 
 import java.sql.SQLException;
@@ -27,6 +28,7 @@ import java.util.Set;
 
 import static org.apache.flink.cdc.connectors.base.source.meta.wartermark.WatermarkEvent.isLowWatermarkEvent;
 
+/** The {@link RecordEmitter} implementation for pipeline oracle connector. */
 public class TiDBPipelineRecordEmitter<T> extends IncrementalSourceRecordEmitter<T> {
     private final TiDBSourceConfig tiDBSourceConfig;
     private final TiDBDialect tiDBDialect;
@@ -63,7 +65,7 @@ public class TiDBPipelineRecordEmitter<T> extends IncrementalSourceRecordEmitter
                                 jdbc,
                                 tiDBSourceConfig.getTableFilters());
                 for (TableId tableId : capturedTableIds) {
-                    Schema tableSchema = TiDBSchemaUtils.getTableSchema(tiDBSourceConfig, tableId);
+                    Schema tableSchema = TiDBSchemaUtils.getTableSchema(tableId,tiDBSourceConfig,jdbc);
                     createTableEventCache.add(
                             new CreateTableEvent(
                                     org.apache.flink.cdc.common.event.TableId.tableId(
