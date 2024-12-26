@@ -69,5 +69,8 @@ CLASSPATH=${CLASSPATH#:}
 LOG=$FLINK_CDC_LOG/flink-cdc-cli-$HOSTNAME.log
 LOG_SETTINGS=(-Dlog.file="$LOG" -Dlog4j.configuration=file:"$FLINK_CDC_CONF"/log4j-cli.properties -Dlog4j.configurationFile=file:"$FLINK_CDC_CONF"/log4j-cli.properties)
 
+# Copy log4j.properties to flink cdc conf
+cp $FLINK_HOME/conf/log4j.properties $FLINK_CDC_CONF/log4j-cli.properties
+
 # JAVA_RUN should have been setup in config.sh
 exec "$JAVA_RUN" -classpath "$CLASSPATH" "${LOG_SETTINGS[@]}" org.apache.flink.cdc.cli.CliFrontend "$@"
