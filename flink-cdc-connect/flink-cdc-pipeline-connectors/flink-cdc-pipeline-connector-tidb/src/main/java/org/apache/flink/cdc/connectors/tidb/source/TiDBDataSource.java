@@ -26,8 +26,7 @@ public class TiDBDataSource implements DataSource {
     private final TiDBSourceConfig tiDBSourceConfig;
     private final TiDBSourceConfigFactory tiDBSourceConfigFactory;
 
-    public TiDBDataSource(
-            TiDBSourceConfig tiDBSourceConfig, TiDBSourceConfigFactory tiDBSourceConfigFactory) {
+    public TiDBDataSource(TiDBSourceConfigFactory tiDBSourceConfigFactory) {
         this.tiDBSourceConfig = tiDBSourceConfigFactory.create(0);
         this.tiDBSourceConfigFactory = tiDBSourceConfigFactory;
     }

@@ -70,7 +70,7 @@ public class TiDBPipelineRecordEmitter<T> extends IncrementalSourceRecordEmitter
                     createTableEventCache.add(
                             new CreateTableEvent(
                                     org.apache.flink.cdc.common.event.TableId.tableId(
-                                            tableId.schema(), tableId.table()),
+                                            tableId.catalog(), tableId.table()),
                                     tableSchema));
                 }
             } catch (SQLException e) {
@@ -108,7 +108,7 @@ public class TiDBPipelineRecordEmitter<T> extends IncrementalSourceRecordEmitter
         output.collect(
                 new CreateTableEvent(
                         org.apache.flink.cdc.common.event.TableId.tableId(
-                                tableId.schema(), tableId.table()),
+                                tableId.catalog(), tableId.table()),
                         schema));
     }
 }

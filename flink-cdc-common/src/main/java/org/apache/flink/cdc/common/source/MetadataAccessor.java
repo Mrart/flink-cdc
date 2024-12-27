@@ -23,7 +23,6 @@ import org.apache.flink.cdc.common.schema.Schema;
 
 import javax.annotation.Nullable;
 
-import java.sql.SQLException;
 import java.util.List;
 
 /**
