@@ -25,7 +25,7 @@ CREATE TABLE products (
   id INTEGER NOT NULL AUTO_INCREMENT PRIMARY KEY,
   name VARCHAR(255) NOT NULL DEFAULT 'flink',
   description VARCHAR(512),
-  weight FLOAT(6)
+  weight decimal(10,3)
 );
 ALTER TABLE products AUTO_INCREMENT = 101;
 

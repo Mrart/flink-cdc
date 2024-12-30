@@ -2,6 +2,7 @@ package org.apache.flink.cdc.pipeline.tests;
 
 import org.apache.flink.cdc.common.test.utils.TestUtils;
 import org.apache.flink.cdc.pipeline.tests.utils.PipelineTestEnvironment;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.ClassRule;
@@ -29,12 +30,7 @@ import java.util.stream.Collectors;
 
 import static org.junit.Assert.assertNotNull;
 
-/**
- * ClassName: PostgreE2eITCase
- * Package: org.apache.flink.cdc.pipeline.tests
- * Description:
- *
- */
+/** ClassName: PostgreE2eITCase Package: org.apache.flink.cdc.pipeline.tests Description: */
 public class PostgresE2eITCase extends PipelineTestEnvironment {
     private static final Logger LOG = LoggerFactory.getLogger(PostgresE2eITCase.class);
 
@@ -76,11 +72,9 @@ public class PostgresE2eITCase extends PipelineTestEnvironment {
                             "max_replication_slots=20")
                     .withReuse(true);
 
-
-
     @Before
     public void before() throws Exception {
-        super.before();  // 启动flink容器
+        super.before(); // 启动flink容器
         initializePostgresTable("postgres_inventory");
         overrideFlinkProperties(FLINK_PROPERTIES);
     }
@@ -91,7 +85,7 @@ public class PostgresE2eITCase extends PipelineTestEnvironment {
     }
 
     @Test
-    public void testSyncWholeDatabase() throws Exception{
+    public void testSyncWholeDatabase() throws Exception {
         String pipelineJob =
                 String.format(
                         "source:\n"
@@ -124,9 +118,6 @@ public class PostgresE2eITCase extends PipelineTestEnvironment {
         LOG.info("Pipeline job is running");
     }
 
-
-
-
     /**
      * Executes a JDBC statement using the default jdbc config without autocommitting the
      * connection.
@@ -141,20 +132,20 @@ public class PostgresE2eITCase extends PipelineTestEnvironment {
             throw new RuntimeException(e);
         }
         try (Connection connection = getPgJdbcConnection();
-             Statement statement = connection.createStatement()) {
+                Statement statement = connection.createStatement()) {
             final List<String> statements =
                     Arrays.stream(
-                            Files.readAllLines(Paths.get(ddlTestFile.toURI())).stream()
-                                    .map(String::trim)
-                                    .filter(x -> !x.startsWith("--") && !x.isEmpty())
-                                    .map(
-                                            x -> {
-                                                final Matcher m =
-                                                        COMMENT_PATTERN.matcher(x);
-                                                return m.matches() ? m.group(1) : x;
-                                            })
-                                    .collect(Collectors.joining("\n"))
-                                    .split(";"))
+                                    Files.readAllLines(Paths.get(ddlTestFile.toURI())).stream()
+                                            .map(String::trim)
+                                            .filter(x -> !x.startsWith("--") && !x.isEmpty())
+                                            .map(
+                                                    x -> {
+                                                        final Matcher m =
+                                                                COMMENT_PATTERN.matcher(x);
+                                                        return m.matches() ? m.group(1) : x;
+                                                    })
+                                            .collect(Collectors.joining("\n"))
+                                            .split(";"))
                             .collect(Collectors.toList());
             for (String stmt : statements) {
                 statement.execute(stmt);
@@ -168,5 +159,4 @@ public class PostgresE2eITCase extends PipelineTestEnvironment {
         return DriverManager.getConnection(
                 POSTGRES.getJdbcUrl(), POSTGRES.getUsername(), POSTGRES.getPassword());
     }
-
 }
