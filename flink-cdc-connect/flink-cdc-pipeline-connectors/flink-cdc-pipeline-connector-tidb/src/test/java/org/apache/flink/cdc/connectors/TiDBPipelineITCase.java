@@ -43,7 +43,7 @@ public class TiDBPipelineITCase extends TiDBTestBase {
 
     @Test
     @Ignore
-    public void testConsumingScanEvents() throws Exception {
+    public void testSnapshotStartMode() throws Exception {
         initializeTidbTable("inventory_pipeline");
         final DataType dataType =
                 DataTypes.ROW(
@@ -91,6 +91,12 @@ public class TiDBPipelineITCase extends TiDBTestBase {
         assertThat(actual.subList(0, expectedSnapshot.size()))
                 .containsExactlyInAnyOrder(expectedSnapshot.toArray(new Event[0]));
     }
+
+
+
+
+
+
 
     private static void waitForSinkSize(String sinkName, int expectedSize)
             throws InterruptedException {
