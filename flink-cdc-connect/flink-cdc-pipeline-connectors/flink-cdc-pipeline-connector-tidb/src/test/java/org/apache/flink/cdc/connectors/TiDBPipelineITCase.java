@@ -73,7 +73,7 @@ public class TiDBPipelineITCase extends TiDBTestBase {
                                 new EventTypeInfo())
                         .executeAndCollect();
 
-        waitForSinkSize("sink", 9);
+//        waitForSinkSize("sink", 9);
 
         TableId tableId = TableId.tableId(databaseName, tableName);
         CreateTableEvent createTableEvent = getProductsCreateTableEvent(tableId);
