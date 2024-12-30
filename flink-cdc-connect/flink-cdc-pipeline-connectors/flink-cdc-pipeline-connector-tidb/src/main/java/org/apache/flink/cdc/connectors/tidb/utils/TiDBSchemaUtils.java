@@ -161,6 +161,6 @@ public class TiDBSchemaUtils {
 
     public static Column toColumn(io.debezium.relational.Column column) {
         return Column.physicalColumn(
-                column.name(), TiDBTypeUtils.fromDbzColumn(column), column.comment());
+                column.name(), TiDBTypeUtils.fromDbzColumn(column), column.comment(),column.defaultValueExpression().orElse(null));
     }
 }

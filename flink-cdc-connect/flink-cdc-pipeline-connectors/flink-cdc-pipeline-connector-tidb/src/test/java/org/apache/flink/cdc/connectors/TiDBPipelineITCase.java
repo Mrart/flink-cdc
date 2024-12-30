@@ -42,7 +42,7 @@ public class TiDBPipelineITCase extends TiDBTestBase {
     @Test
     @Ignore
     public void testConsumingScanEvents() throws Exception {
-        initializeTidbTable("inventory");
+        initializeTidbTable("inventory_pipeline");
         final DataType dataType =
                 DataTypes.ROW(
                         DataTypes.FIELD("id", DataTypes.BIGINT()),
@@ -129,18 +129,10 @@ public class TiDBPipelineITCase extends TiDBTestBase {
         return new CreateTableEvent(
                 tableId,
                 Schema.newBuilder()
-                        .physicalColumn(
-                                "id", org.apache.flink.cdc.common.types.DataTypes.INT().notNull())
-                        .physicalColumn(
-                                "name",
-                                org.apache.flink.cdc.common.types.DataTypes.VARCHAR(255).notNull(),
-                                null,
-                                "flink")
-                        .physicalColumn(
-                                "description",
-                                org.apache.flink.cdc.common.types.DataTypes.VARCHAR(512))
-                        .physicalColumn(
-                                "weight", org.apache.flink.cdc.common.types.DataTypes.FLOAT())
+                        .physicalColumn("id", org.apache.flink.cdc.common.types.DataTypes.INT().notNull())
+                        .physicalColumn("name", org.apache.flink.cdc.common.types.DataTypes.VARCHAR(255).notNull(), null, "flink")
+                        .physicalColumn("description", org.apache.flink.cdc.common.types.DataTypes.VARCHAR(512))
+                        .physicalColumn("weight", org.apache.flink.cdc.common.types.DataTypes.FLOAT())
                         .primaryKey(Collections.singletonList("id"))
                         .build());
     }
@@ -149,10 +141,10 @@ public class TiDBPipelineITCase extends TiDBTestBase {
         RowType rowType =
                 RowType.of(
                         new org.apache.flink.cdc.common.types.DataType[] {
-                            org.apache.flink.cdc.common.types.DataTypes.INT().notNull(),
-                            org.apache.flink.cdc.common.types.DataTypes.VARCHAR(255).notNull(),
-                            org.apache.flink.cdc.common.types.DataTypes.VARCHAR(512),
-                            org.apache.flink.cdc.common.types.DataTypes.FLOAT()
+                                org.apache.flink.cdc.common.types.DataTypes.INT().notNull(),
+                                org.apache.flink.cdc.common.types.DataTypes.VARCHAR(255).notNull(),
+                                org.apache.flink.cdc.common.types.DataTypes.VARCHAR(512),
+                                org.apache.flink.cdc.common.types.DataTypes.FLOAT()
                         },
                         new String[] {"id", "name", "description", "weight"});
         BinaryRecordDataGenerator generator = new BinaryRecordDataGenerator(rowType);
@@ -162,92 +154,92 @@ public class TiDBPipelineITCase extends TiDBTestBase {
                         tableId,
                         generator.generate(
                                 new Object[] {
-                                    101,
-                                    BinaryStringData.fromString("scooter"),
-                                    BinaryStringData.fromString("Small 2-wheel scooter"),
-                                    3.14f
+                                        101,
+                                        BinaryStringData.fromString("scooter"),
+                                        BinaryStringData.fromString("Small 2-wheel scooter"),
+                                        3.14f
                                 })));
         snapshotExpected.add(
                 DataChangeEvent.insertEvent(
                         tableId,
                         generator.generate(
                                 new Object[] {
-                                    102,
-                                    BinaryStringData.fromString("car battery"),
-                                    BinaryStringData.fromString("12V car battery"),
-                                    8.1f
+                                        102,
+                                        BinaryStringData.fromString("car battery"),
+                                        BinaryStringData.fromString("12V car battery"),
+                                        8.1f
                                 })));
         snapshotExpected.add(
                 DataChangeEvent.insertEvent(
                         tableId,
                         generator.generate(
                                 new Object[] {
-                                    103,
-                                    BinaryStringData.fromString("12-pack drill bits"),
-                                    BinaryStringData.fromString(
-                                            "12-pack of drill bits with sizes ranging from #40 to #3"),
-                                    0.8f
+                                        103,
+                                        BinaryStringData.fromString("12-pack drill bits"),
+                                        BinaryStringData.fromString(
+                                                "12-pack of drill bits with sizes ranging from #40 to #3"),
+                                        0.8f
                                 })));
         snapshotExpected.add(
                 DataChangeEvent.insertEvent(
                         tableId,
                         generator.generate(
                                 new Object[] {
-                                    104,
-                                    BinaryStringData.fromString("hammer"),
-                                    BinaryStringData.fromString("12oz carpenter's hammer"),
-                                    0.75f
+                                        104,
+                                        BinaryStringData.fromString("hammer"),
+                                        BinaryStringData.fromString("12oz carpenter's hammer"),
+                                        0.75f
                                 })));
         snapshotExpected.add(
                 DataChangeEvent.insertEvent(
                         tableId,
                         generator.generate(
                                 new Object[] {
-                                    105,
-                                    BinaryStringData.fromString("hammer"),
-                                    BinaryStringData.fromString("14oz carpenter's hammer"),
-                                    0.875f
+                                        105,
+                                        BinaryStringData.fromString("hammer"),
+                                        BinaryStringData.fromString("14oz carpenter's hammer"),
+                                        0.875f
                                 })));
         snapshotExpected.add(
                 DataChangeEvent.insertEvent(
                         tableId,
                         generator.generate(
                                 new Object[] {
-                                    106,
-                                    BinaryStringData.fromString("hammer"),
-                                    BinaryStringData.fromString("16oz carpenter's hammer"),
-                                    1.0f
+                                        106,
+                                        BinaryStringData.fromString("hammer"),
+                                        BinaryStringData.fromString("16oz carpenter's hammer"),
+                                        1.0f
                                 })));
         snapshotExpected.add(
                 DataChangeEvent.insertEvent(
                         tableId,
                         generator.generate(
                                 new Object[] {
-                                    107,
-                                    BinaryStringData.fromString("rocks"),
-                                    BinaryStringData.fromString("box of assorted rocks"),
-                                    5.3f
+                                        107,
+                                        BinaryStringData.fromString("rocks"),
+                                        BinaryStringData.fromString("box of assorted rocks"),
+                                        5.3f
                                 })));
         snapshotExpected.add(
                 DataChangeEvent.insertEvent(
                         tableId,
                         generator.generate(
                                 new Object[] {
-                                    108,
-                                    BinaryStringData.fromString("jacket"),
-                                    BinaryStringData.fromString(
-                                            "water resistent black wind breaker"),
-                                    0.1f
+                                        108,
+                                        BinaryStringData.fromString("jacket"),
+                                        BinaryStringData.fromString(
+                                                "water resistent black wind breaker"),
+                                        0.1f
                                 })));
         snapshotExpected.add(
                 DataChangeEvent.insertEvent(
                         tableId,
                         generator.generate(
                                 new Object[] {
-                                    109,
-                                    BinaryStringData.fromString("spare tire"),
-                                    BinaryStringData.fromString("24 inch spare tire"),
-                                    22.2f
+                                        109,
+                                        BinaryStringData.fromString("spare tire"),
+                                        BinaryStringData.fromString("24 inch spare tire"),
+                                        22.2f
                                 })));
         return snapshotExpected;
     }
