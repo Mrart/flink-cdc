@@ -20,7 +20,6 @@ import java.sql.Statement;
 import java.time.Instant;
 import java.util.Optional;
 
-import static org.apache.flink.cdc.connectors.tidb.source.config.TiDBSourceOptions.getTiConfig;
 
 public class CDCClientV2Test extends TiDBTestBase {
     private static final Logger LOGGER = LoggerFactory.getLogger(CDCClientV2Test.class);
@@ -38,7 +37,7 @@ public class CDCClientV2Test extends TiDBTestBase {
         TiDBSourceConfig tiDBSourceConfig = configFactoryOfCustomDatabase.create(0);
         //    tiDBSourceConfig.
         CDCClientV2 icdcClientV2 =
-                new CDCClientV2(getTiConfig(tiDBSourceConfig), databaseName, tableName);
+                new CDCClientV2(tiDBSourceConfig.getTiConfiguration(), databaseName, tableName);
         try (Connection connection = getJdbcConnection(databaseName);
                 Statement statement = connection.createStatement()) {
             // update tidb.

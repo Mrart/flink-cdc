@@ -35,7 +35,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import static org.apache.flink.cdc.connectors.tidb.source.config.TiDBSourceOptions.getTiConfig;
+import static org.apache.flink.cdc.connectors.tidb.source.config.TiDBSourceOptions.getTiConfiguration;
 import static org.tikv.common.codec.TableCodec.decodeObjects;
 
 public class CDCEventSource
@@ -120,7 +120,7 @@ public class CDCEventSource
                   () -> {
                     CDCClientV2 cdcClientV2 =
                         new CDCClientV2(
-                            getTiConfig(connectorConfig.getSourceConfig()),
+                            connectorConfig.getSourceConfig().getTiConfiguration(),
                             tableId.catalog(),
                             tableId.table());
                     cdcClientV2.addListener(
