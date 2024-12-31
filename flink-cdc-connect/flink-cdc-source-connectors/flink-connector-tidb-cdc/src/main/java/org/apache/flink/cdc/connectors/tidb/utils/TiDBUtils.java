@@ -3,6 +3,7 @@ package org.apache.flink.cdc.connectors.tidb.utils;
 import io.debezium.config.Configuration;
 import io.debezium.jdbc.JdbcConnection;
 import io.debezium.relational.Column;
+import io.debezium.relational.Table;
 import io.debezium.relational.TableId;
 import io.debezium.schema.TopicSelector;
 import org.apache.flink.cdc.connectors.tidb.source.config.TiDBConnectorConfig;
@@ -11,6 +12,7 @@ import org.apache.flink.cdc.connectors.tidb.source.converter.TiDBValueConverters
 import org.apache.flink.cdc.connectors.tidb.source.offset.CDCEventOffset;
 import org.apache.flink.cdc.connectors.tidb.source.schema.TiDBDatabaseSchema;
 import org.apache.flink.table.api.DataTypes;
+import org.apache.flink.table.api.ValidationException;
 import org.apache.flink.table.types.DataType;
 import org.apache.flink.table.types.logical.RowType;
 import org.apache.flink.util.FlinkRuntimeException;
@@ -19,12 +21,15 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.stream.Collectors;
 
 import static org.apache.flink.cdc.connectors.tidb.table.utils.TSOUtils.TSOToTimeStamp;
 import static org.apache.flink.cdc.connectors.tidb.utils.TiDBConnectionUtils.getValueConverters;
+import static org.apache.flink.table.api.DataTypes.FIELD;
+import static org.apache.flink.table.api.DataTypes.ROW;
 
 public class TiDBUtils {
   private static final String BIT = "BIT";
@@ -433,5 +438,24 @@ public class TiDBUtils {
       Configuration dbzConfiguration, Properties jdbcProperties) {
     return new TiDBConnection(
         new TiDBConnection.TiDBConnectionConfiguration(dbzConfiguration, jdbcProperties));
+  }
+
+  public static RowType getSplitType(Table table) {
+    List<Column> primaryKeys = table.primaryKeyColumns();
+    if (primaryKeys.isEmpty()) {
+      throw new ValidationException(
+          String.format(
+              "Incremental snapshot for tables requires primary key,"
+                  + " but table %s doesn't have primary key.",
+              table.id()));
+    }
+
+    // use first field in primary key as the split key
+    return getSplitType(primaryKeys.get(0));
+  }
+
+  public static RowType getSplitType(Column splitColumn) {
+    return (RowType)
+        ROW(FIELD(splitColumn.name(), TiDBUtils.fromDbzColumn(splitColumn))).getLogicalType();
   }
 }
