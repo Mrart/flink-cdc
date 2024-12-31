@@ -1,5 +1,6 @@
 package org.apache.flink.cdc.connectors.tidb.utils;
 
+import com.esotericsoftware.minlog.Log;
 import io.debezium.jdbc.JdbcConnection;
 import io.debezium.relational.RelationalTableFilters;
 import io.debezium.relational.TableId;
@@ -26,6 +27,7 @@ public class TableDiscoveryUtils {
                 allTableIds.stream()
                         .filter(t -> tableFilters.dataCollectionFilter().isIncluded(t))
                         .collect(Collectors.toSet());
+        LOG.info("listTables include paramaters：database:{}",database);
         LOG.info(
                 "TiDB captured tables : {} .",
                 capturedTables.stream().map(TableId::toString).collect(Collectors.joining(",")));

@@ -20,7 +20,6 @@ import java.sql.Statement;
 import java.time.Instant;
 import java.util.Optional;
 
-
 public class CDCClientV2Test extends TiDBTestBase {
     private static final Logger LOGGER = LoggerFactory.getLogger(CDCClientV2Test.class);
     private static final String databaseName = "customer";

@@ -11,28 +11,25 @@ import org.apache.flink.cdc.common.schema.Selectors;
 import org.apache.flink.cdc.common.source.DataSource;
 import org.apache.flink.cdc.connectors.base.options.StartupOptions;
 import org.apache.flink.cdc.connectors.tidb.source.TiDBDataSource;
-
 import org.apache.flink.cdc.connectors.tidb.source.config.TiDBSourceConfigFactory;
 import org.apache.flink.cdc.connectors.tidb.source.config.TiDBSourceOptions;
 import org.apache.flink.cdc.connectors.tidb.utils.TiDBSchemaUtils;
-import org.apache.flink.configuration.ReadableConfig;
 import org.apache.flink.table.api.ValidationException;
 import org.apache.flink.table.catalog.ObjectPath;
-import org.apache.flink.table.catalog.ResolvedSchema;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tikv.common.TiConfiguration;
 
 import javax.annotation.Nullable;
+
 import java.time.Duration;
 import java.util.*;
 import java.util.stream.Collectors;
 
-
 import static org.apache.flink.cdc.connectors.tidb.source.TiDBDataSourceOptions.*;
 import static org.apache.flink.cdc.debezium.table.DebeziumOptions.DEBEZIUM_OPTIONS_PREFIX;
 import static org.apache.flink.cdc.debezium.utils.JdbcUrlUtils.PROPERTIES_PREFIX;
-import static org.apache.flink.cdc.debezium.utils.ResolvedSchemaUtils.getPhysicalSchema;
 
 /** A {@link Factory} to create {@link TiDBDataSource}. */
 @Internal
@@ -49,12 +46,10 @@ public class TiDBDataSourceFactory implements DataSourceFactory {
 
         final Configuration config = context.getFactoryConfiguration();
 
-
         String hostname = config.get(HOSTNAME);
         String username = config.get(USERNAME);
         String password = config.get(PASSWORD);
         String databaseName = config.get(DATABASE_NAME);
-
 
         String tablesExclude = config.get(TABLES_EXCLUDE);
         String tables = config.get(TABLES);
@@ -77,15 +72,18 @@ public class TiDBDataSourceFactory implements DataSourceFactory {
         double distributionFactorLower = config.get(SPLIT_KEY_EVEN_DISTRIBUTION_FACTOR_LOWER_BOUND);
 
         Map<String, String> configMap = config.toMap();
-        Map<String,String> tidbOption = TiKVOptions.getTiKVOptions(configMap);
+        Map<String, String> tidbOption = TiKVOptions.getTiKVOptions(configMap);
 
         StartupOptions startupOptions = getStartupOptions(config);
         final TiConfiguration tiConf =
                 TiDBSourceOptions.getTiConfiguration(pdAddresses, hostMapping, tidbOption);
 
         TiDBSourceConfigFactory configFactory = new TiDBSourceConfigFactory();
-        configFactory.tiConfiguration(tiConf).username(username).password(password)
-                .databaseList(".*")
+        configFactory
+                .tiConfiguration(tiConf)
+                .username(username)
+                .password(password)
+                .databaseList(databaseName)
                 .tableList(".*")
                 .port(port)
                 .serverTimeZone(serverTimeZone)
@@ -100,7 +98,6 @@ public class TiDBDataSourceFactory implements DataSourceFactory {
                 .startupOptions(startupOptions)
                 .splitSize(splitSize)
                 .splitMetaGroupSize(splitMetaGroupSize);
-
 
         List<TableId> tableIds = TiDBSchemaUtils.listTables(configFactory.create(0), databaseName);
         Selectors selectors = new Selectors.SelectorsBuilder().includeTables(tables).build();
@@ -172,7 +169,6 @@ public class TiDBDataSourceFactory implements DataSourceFactory {
         return options;
     }
 
-
     private static final String START_MODE_VALUE_INITIAL = "initial";
     private static final String START_MODE_VALUE_LATEST_OFFSET = "latest-offset";
     private static final String START_MODE_VALUE_SNAPSHOT = "snapshot";
@@ -229,6 +225,7 @@ public class TiDBDataSourceFactory implements DataSourceFactory {
             return options.keySet().stream().anyMatch(k -> k.startsWith(TIKV_OPTIONS_PREFIX));
         }
     }
+
     private static List<ObjectPath> getChunkKeyColumnTableList(
             List<TableId> tableIds, Selectors selectors) {
         return tableIds.stream()
@@ -244,5 +241,4 @@ public class TiDBDataSourceFactory implements DataSourceFactory {
                 .map(TableId::toString)
                 .collect(Collectors.toList());
     }
-
 }
