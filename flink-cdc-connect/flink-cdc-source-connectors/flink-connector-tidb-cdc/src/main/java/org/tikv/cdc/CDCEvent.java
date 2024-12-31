@@ -19,6 +19,7 @@ package org.tikv.cdc;
 
 import org.tikv.kvproto.Cdcpb.Event.Row;
 
+@Deprecated
 class CDCEvent {
     enum CDCEventType {
         ROW,

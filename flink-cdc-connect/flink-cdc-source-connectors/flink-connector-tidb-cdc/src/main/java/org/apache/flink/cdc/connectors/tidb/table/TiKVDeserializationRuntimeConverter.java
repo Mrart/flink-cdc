@@ -26,6 +26,7 @@ import java.io.Serializable;
  * Runtime converter that converts objects of TiKV into objects of Flink Table & SQL internal data
  * structures.
  */
+@Deprecated
 @FunctionalInterface
 public interface TiKVDeserializationRuntimeConverter extends Serializable {
     Object convert(Object object, TiTableInfo tableInfo, DataType dataType) throws Exception;

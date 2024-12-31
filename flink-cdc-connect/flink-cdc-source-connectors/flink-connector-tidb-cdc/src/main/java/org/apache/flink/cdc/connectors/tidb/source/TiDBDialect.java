@@ -13,8 +13,8 @@ import org.apache.flink.cdc.connectors.tidb.source.config.TiDBSourceConfig;
 import org.apache.flink.cdc.connectors.tidb.source.connection.TiDBConnection;
 import org.apache.flink.cdc.connectors.tidb.source.connection.TiDBConnectionPoolFactory;
 import org.apache.flink.cdc.connectors.tidb.source.fetch.TiDBScanFetchTask;
-import org.apache.flink.cdc.connectors.tidb.source.fetch.TiDBSourceFetchTaskContext;
 import org.apache.flink.cdc.connectors.tidb.source.fetch.TiDBStreamFetchTask;
+import org.apache.flink.cdc.connectors.tidb.source.fetch.TiDBStreamFetchTaskContext;
 import org.apache.flink.cdc.connectors.tidb.source.schema.TiDBSchema;
 import org.apache.flink.cdc.connectors.tidb.source.splitter.TiDBChunkSplitter;
 import org.apache.flink.cdc.connectors.tidb.utils.TableDiscoveryUtils;
@@ -77,7 +77,7 @@ public class TiDBDialect implements JdbcDataSourceDialect {
 
     @Override
     public FetchTask.Context createFetchTaskContext(JdbcSourceConfig sourceConfig) {
-        return new TiDBSourceFetchTaskContext(sourceConfig, this, openJdbcConnection());
+        return new TiDBStreamFetchTaskContext(sourceConfig, this, openJdbcConnection());
     }
 
     @Override

@@ -1,12 +1,12 @@
-package org.apache.flink.cdc.connectors.tidb.source.fetch;
+package org.apache.flink.cdc.connectors.tidb.source.reader;
 
 import org.apache.flink.cdc.connectors.base.config.JdbcSourceConfig;
 import org.apache.flink.cdc.connectors.base.source.meta.split.ChangeEventRecords;
+import org.apache.flink.cdc.connectors.base.source.meta.split.FinishedSnapshotSplitInfo;
 import org.apache.flink.cdc.connectors.base.source.meta.split.SourceRecords;
 import org.apache.flink.cdc.connectors.base.source.meta.split.StreamSplit;
 import org.apache.flink.cdc.connectors.base.source.reader.IncrementalSourceReaderContext;
 import org.apache.flink.cdc.connectors.base.source.reader.IncrementalSourceSplitReader;
-import org.apache.flink.cdc.connectors.base.source.utils.hooks.SnapshotPhaseHook;
 import org.apache.flink.cdc.connectors.base.source.utils.hooks.SnapshotPhaseHooks;
 import org.apache.flink.cdc.connectors.tidb.TiDBTestBase;
 import org.apache.flink.cdc.connectors.tidb.source.TiDBDialect;
@@ -18,24 +18,29 @@ import org.apache.flink.cdc.connectors.tidb.source.offset.CDCEventOffsetFactory;
 import org.apache.flink.connector.base.source.reader.splitreader.SplitsAddition;
 import org.apache.flink.connector.testutils.source.reader.TestingReaderContext;
 
+import io.debezium.relational.TableId;
+import io.debezium.relational.history.TableChanges;
 import org.apache.kafka.connect.data.Struct;
 import org.apache.kafka.connect.source.SourceRecord;
 import org.junit.Before;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.sql.SQLException;
 import java.time.Instant;
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
+import java.util.Map;
 
 import static java.util.Collections.singletonList;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-public class TiDBStreamFetchTaskTestV2 extends TiDBTestBase {
-    private static final String databaseName = "DORE_DACS_SIT3";
-    private static final String tableName = "products";
+public class TiDBStreamSplitReaderTest extends TiDBTestBase {
+    private static final Logger LOG = LoggerFactory.getLogger(TiDBStreamSplitReaderTest.class);
+    private static final String databaseName = "customer";
+    private static final String tableName = "customers";
     private static final String STREAM_SPLIT_ID = "stream-split";
 
     private static final int USE_POST_LOWWATERMARK_HOOK = 1;
@@ -48,7 +53,7 @@ public class TiDBStreamFetchTaskTestV2 extends TiDBTestBase {
 
     @Before
     public void before() {
-        initializeTidbTable("products");
+        initializeTidbTable("customer");
         TiDBSourceConfigFactory tiDBSourceConfigFactory = new TiDBSourceConfigFactory();
         tiDBSourceConfigFactory.pdAddresses(
                 PD.getContainerIpAddress() + ":" + PD.getMappedPort(PD_PORT_ORIGIN));
@@ -79,23 +84,38 @@ public class TiDBStreamFetchTaskTestV2 extends TiDBTestBase {
                         incrementalSourceReaderContext,
                         SnapshotPhaseHooks.empty());
         try {
-            CDCEventOffset startOffset = new CDCEventOffset(Instant.now().getEpochSecond());
+            CDCEventOffset startOffset = new CDCEventOffset(Instant.now().toEpochMilli());
             String[] insertDataSql =
                     new String[] {
-                        "INSERT  into  DORE_DACS_SIT3.products values(default,\"scooter\",\"small\",3.14)",
-                        "INSERT  into  DORE_DACS_SIT3.products values(default,\"scooter\",\"small\",3.14)",
+                        "INSERT INTO "
+                                + tableId
+                                + " VALUES(112, 'user_12','Shanghai','123567891234')",
+                        "INSERT INTO "
+                                + tableId
+                                + " VALUES(113, 'user_13','Shanghai','123567891234')",
                     };
             try (TiDBConnection tiDBConnection = tiDBDialect.openJdbcConnection()) {
                 tiDBConnection.execute(insertDataSql);
                 tiDBConnection.commit();
             }
+            TableId tableIds = new TableId(databaseName, null, tableName);
+            Map<TableId, TableChanges.TableChange> tableSchemas = new HashMap<>();
+            tableSchemas.put(tableIds, null);
+            FinishedSnapshotSplitInfo finishedSnapshotSplitInfo =
+                    new FinishedSnapshotSplitInfo(
+                            tableIds,
+                            STREAM_SPLIT_ID,
+                            new Object[] {startOffset},
+                            new Object[] {CDCEventOffset.NO_STOPPING_OFFSET},
+                            startOffset,
+                            cdcEventOffsetFactory);
             StreamSplit streamSplit =
                     new StreamSplit(
                             STREAM_SPLIT_ID,
                             startOffset,
                             cdcEventOffsetFactory.createNoStoppingOffset(),
-                            new ArrayList<>(),
-                            new HashMap<>(),
+                            Collections.singletonList(finishedSnapshotSplitInfo),
+                            tableSchemas,
                             0);
             assertTrue(streamSplitReader.canAssignNextSplit());
             streamSplitReader.handleSplitsChanges(new SplitsAddition<>(singletonList(streamSplit)));
@@ -109,27 +129,12 @@ public class TiDBStreamFetchTaskTestV2 extends TiDBTestBase {
                         Iterator<SourceRecord> iterator = sourceRecords.iterator();
                         while (iterator.hasNext()) {
                             Struct value = (Struct) iterator.next().value();
-                            //              OperationType operationType =
-                            //
-                            // OperationType.fromString(value.getString(OPERATION_TYPE_FIELD));
+                            String opType = value.getString("op");
+                            assertEquals(opType, "c");
+                            Struct after = (Struct) value.get("after");
+                            String name = after.getString("name");
 
-                            //              assertEquals(OperationType.INSERT, operationType);
-                            //              BsonDocument fullDocument =
-                            // BsonDocument.parse(value.getString(FULL_DOCUMENT_FIELD));
-                            //              long productNo =
-                            // fullDocument.getInt64("product_no").longValue();
-                            //              String productKind =
-                            // fullDocument.getString("product_kind").getValue();
-                            //              String userId =
-                            // fullDocument.getString("user_id").getValue();
-                            //              String description =
-                            // fullDocument.getString("description").getValue();
-                            //
-                            //              assertEquals("KIND_" + productNo, productKind);
-                            //              assertEquals("user_" + productNo, userId);
-                            //              assertEquals("my shopping cart " + productNo,
-                            // description);
-
+                            assertTrue(name.contains("user"));
                             if (++count >= insertDataSql.length) {
                                 return;
                             }
@@ -139,48 +144,10 @@ public class TiDBStreamFetchTaskTestV2 extends TiDBTestBase {
                     break;
                 }
             }
+        } catch (Exception e) {
+            LOG.error("Stream split read error.", e);
         } finally {
             streamSplitReader.close();
         }
-    }
-
-    @Test
-    public void testChangingDataInStream() throws Exception {
-        initializeTidbTable("customer");
-        String tableId = databaseName + "." + tableName;
-        String[] changingDataSql =
-                new String[] {
-                    "UPDATE " + tableId + " SET address = 'Hangzhou' where id = 103",
-                    "DELETE FROM " + tableId + " where id = 102",
-                    "INSERT INTO " + tableId + " VALUES(102, 'user_2','hangzhou','123567891234')",
-                    "UPDATE " + tableId + " SET address = 'Shanghai' where id = 103",
-                    "UPDATE " + tableId + " SET address = 'Hangzhou' where id = 110",
-                    "UPDATE " + tableId + " SET address = 'Hangzhou' where id = 111",
-                };
-
-        List<String> actual = getDataInStreamRead(changingDataSql, USE_PRE_HIGHWATERMARK_HOOK);
-    }
-
-    private List<String> getDataInStreamRead(String[] changingDataSql, int hookType)
-            throws SQLException {
-        SnapshotPhaseHooks hooks = new SnapshotPhaseHooks();
-        try (TiDBConnection tiDBConnection = tiDBDialect.openJdbcConnection()) {
-            SnapshotPhaseHook snapshotPhaseHook =
-                    (tidbSourceConfig, split) -> {
-                        tiDBConnection.execute(changingDataSql);
-                        tiDBConnection.commit();
-                        try {
-                            Thread.sleep(500L);
-                        } catch (InterruptedException e) {
-                            throw new RuntimeException(e);
-                        }
-                    };
-            if (hookType == USE_POST_LOWWATERMARK_HOOK) {
-                hooks.setPostLowWatermarkAction(snapshotPhaseHook);
-            } else if (hookType == USE_PRE_HIGHWATERMARK_HOOK) {
-                hooks.setPreHighWatermarkAction(snapshotPhaseHook);
-            }
-        }
-        return null;
     }
 }

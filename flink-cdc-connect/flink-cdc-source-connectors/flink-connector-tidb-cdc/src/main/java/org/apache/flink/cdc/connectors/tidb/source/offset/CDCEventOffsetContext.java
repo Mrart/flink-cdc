@@ -29,7 +29,6 @@ public class CDCEventOffsetContext implements OffsetContext {
     private final TransactionContext transactionContext;
     private final IncrementalSnapshotContext<TableId> incrementalSnapshotContext;
     private boolean snapshotCompleted;
-    private long currentTimestamp;
     private long restartEventsToSkip = 0;
 
     public CDCEventOffsetContext(
@@ -59,7 +58,7 @@ public class CDCEventOffsetContext implements OffsetContext {
             map.put(EVENTS_TO_SKIP_KEY, String.valueOf(restartEventsToSkip));
         }
         if (sourceInfo.timestamp() != null) {
-            map.put(TIMESTAMP_KEY, String.valueOf(sourceInfo.timestamp().getEpochSecond()));
+            map.put(TIMESTAMP_KEY, sourceInfo.timestamp().toEpochMilli());
         }
         return map;
     }
@@ -95,13 +94,20 @@ public class CDCEventOffsetContext implements OffsetContext {
     public void markLastSnapshotRecord() {}
 
     @Override
-    public void preSnapshotStart() {}
+    public void preSnapshotStart() {
+        sourceInfo.setSnapshot(SnapshotRecord.TRUE);
+        snapshotCompleted = false;
+    }
 
     @Override
-    public void preSnapshotCompletion() {}
+    public void preSnapshotCompletion() {
+        snapshotCompleted = true;
+    }
 
     @Override
-    public void postSnapshotCompletion() {}
+    public void postSnapshotCompletion() {
+        sourceInfo.setSnapshot(SnapshotRecord.FALSE);
+    }
 
     @Override
     public void event(DataCollectionId collectionId, Instant timestamp) {
@@ -129,9 +135,6 @@ public class CDCEventOffsetContext implements OffsetContext {
                         : new SignalBasedIncrementalSnapshotContext<>(),
                 tiDBSourceInfo);
     }
-    //  public static CDCEventOffsetContext initial(TiDBConnectorConfig config){
-    //    new CDCEventOffsetContext(config,)
-    //  }
 
     public static CDCEventOffsetContext initial(TiDBConnectorConfig config) {
         final CDCEventOffsetContext offset =
@@ -141,7 +144,7 @@ public class CDCEventOffsetContext implements OffsetContext {
     }
 
     public void setBinlogStartPoint() {
-        this.currentTimestamp = System.currentTimeMillis();
+        this.sourceInfo.setSourceTime(Instant.now());
     }
 
     public static class Loader implements OffsetContext.Loader<CDCEventOffsetContext> {

@@ -31,6 +31,7 @@ import java.io.Serializable;
  *
  * @param <T> The type created by the deserialization schema.
  */
+@Deprecated
 @PublicEvolving
 public interface TiKVSnapshotEventDeserializationSchema<T>
         extends Serializable, ResultTypeQueryable<T> {

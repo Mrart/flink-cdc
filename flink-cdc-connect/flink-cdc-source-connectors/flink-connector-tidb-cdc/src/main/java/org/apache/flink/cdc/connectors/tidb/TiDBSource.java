@@ -23,6 +23,7 @@ import org.apache.flink.streaming.api.functions.source.RichParallelSourceFunctio
 import org.tikv.common.TiConfiguration;
 
 /** A builder to build a SourceFunction which can read snapshot and continue to read CDC events. */
+@Deprecated
 public class TiDBSource {
 
     public static <T> Builder<T> builder() {

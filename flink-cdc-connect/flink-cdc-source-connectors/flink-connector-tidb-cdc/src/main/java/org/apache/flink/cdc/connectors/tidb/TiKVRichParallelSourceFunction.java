@@ -65,6 +65,7 @@ import java.util.concurrent.TimeUnit;
  * The source implementation for TiKV that read snapshot events first and then read the change
  * event.
  */
+@Deprecated
 public class TiKVRichParallelSourceFunction<T> extends RichParallelSourceFunction<T>
         implements CheckpointListener, CheckpointedFunction, ResultTypeQueryable<T> {
 

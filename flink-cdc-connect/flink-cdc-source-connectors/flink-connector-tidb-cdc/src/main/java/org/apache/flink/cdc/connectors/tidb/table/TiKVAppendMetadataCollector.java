@@ -25,6 +25,7 @@ import org.apache.flink.util.Collector;
 import java.io.Serializable;
 
 /** Emits a row with physical fields and metadata fields. */
+@Deprecated
 public class TiKVAppendMetadataCollector implements Collector<RowData>, Serializable {
 
     private static final long serialVersionUID = 1L;

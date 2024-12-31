@@ -25,6 +25,7 @@ import org.tikv.kvproto.Kvrpcpb;
 import java.io.Serializable;
 
 /** A converter converts TiKV Row metadata into Flink internal data structures. */
+@Deprecated
 @FunctionalInterface
 @Internal
 public interface TiKVMetadataConverter extends Serializable {

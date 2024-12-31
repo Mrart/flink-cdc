@@ -47,6 +47,7 @@ import java.util.function.Consumer;
  * Copied from https://github.com/tikv/client-java project to fix
  * https://github.com/tikv/client-java/issues/600 for 3.2.0 version.
  */
+@Deprecated
 public class CDCClient implements AutoCloseable {
     private static final Logger LOGGER = LoggerFactory.getLogger(CDCClient.class);
 

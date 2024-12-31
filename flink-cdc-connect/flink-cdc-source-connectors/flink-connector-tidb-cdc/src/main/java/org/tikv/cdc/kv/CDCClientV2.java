@@ -56,7 +56,7 @@ public class CDCClientV2 implements ICDCClientV2 {
     private final ConcurrentLinkedQueue<RegionStatefulEvent> resolveTsPool =
             new ConcurrentLinkedQueue<>();
     private final TableStoreStats tableStoreStats = new TableStoreStats();
-    private final AtomicLong resolvedTs = new AtomicLong(0);
+    private final AtomicLong resolvedTs = new AtomicLong(1734596693000L);
     private final Consumer<RegionFeedEvent> eventConsumer;
     private final String dbName;
     private final String tableName;

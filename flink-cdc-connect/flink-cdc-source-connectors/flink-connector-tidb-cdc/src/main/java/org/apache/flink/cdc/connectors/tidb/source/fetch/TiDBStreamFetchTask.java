@@ -12,7 +12,6 @@ public class TiDBStreamFetchTask implements FetchTask<SourceSplitBase> {
     private final StreamSplit split;
     private volatile boolean taskRunning = false;
     private volatile boolean stopped = false;
-    private long resolvedTs; // tidb ResolvedTs ts;
 
     public TiDBStreamFetchTask(StreamSplit split) {
         this.split = split;
@@ -29,7 +28,8 @@ public class TiDBStreamFetchTask implements FetchTask<SourceSplitBase> {
             LOG.debug("execute StreamFetchTask for split: {}", split);
         }
         taskRunning = true;
-        TiDBSourceFetchTaskContext sourceFetchContext = (TiDBSourceFetchTaskContext) context;
+        TiDBStreamFetchTaskContext sourceFetchContext = (TiDBStreamFetchTaskContext) context;
+        sourceFetchContext.getOffsetContext().preSnapshotCompletion();
 
         CDCEventSource CDCEventSource =
                 new CDCEventSource(

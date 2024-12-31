@@ -17,7 +17,6 @@ public class TiDBSourceInfo extends BaseSourceInfo {
     public static final String TRANSACTION_ID_KEY = "transaction_id";
     private Instant sourceTime;
     private Set<TableId> tableIds;
-    private String transactionId;
     private String databaseName;
 
     public TiDBSourceInfo(TiDBConnectorConfig config) {
@@ -78,9 +77,5 @@ public class TiDBSourceInfo extends BaseSourceInfo {
                         .filter(Objects::nonNull)
                         .map(TableId::table)
                         .collect(Collectors.joining(","));
-    }
-
-    public String transactionId() {
-        return transactionId;
     }
 }

@@ -52,6 +52,7 @@ import java.util.stream.Collectors;
  * Copied from https://github.com/tikv/client-java project to fix
  * https://github.com/tikv/client-java/issues/600 for 3.2.0 version.
  */
+@Deprecated
 public class RegionCDCClient implements AutoCloseable, StreamObserver<ChangeDataEvent> {
     private static final Logger LOGGER = LoggerFactory.getLogger(RegionCDCClient.class);
     private static final Set<LogType> ALLOWED_LOGTYPE =

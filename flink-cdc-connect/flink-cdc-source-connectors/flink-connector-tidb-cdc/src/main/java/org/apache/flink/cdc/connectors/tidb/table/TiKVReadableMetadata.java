@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /** Defines the supported metadata columns for {@link TiDBTableSource}. */
+@Deprecated
 public class TiKVReadableMetadata {
 
     private final String key;

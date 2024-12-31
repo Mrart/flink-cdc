@@ -6,6 +6,7 @@ import org.apache.flink.cdc.connectors.base.relational.JdbcSourceEventDispatcher
 import org.apache.flink.cdc.connectors.base.source.meta.offset.Offset;
 import org.apache.flink.cdc.connectors.base.source.meta.split.SourceSplitBase;
 import org.apache.flink.cdc.connectors.base.source.reader.external.JdbcSourceFetchTaskContext;
+import org.apache.flink.cdc.connectors.base.utils.SourceRecordUtils;
 import org.apache.flink.cdc.connectors.tidb.source.config.TiDBConnectorConfig;
 import org.apache.flink.cdc.connectors.tidb.source.connection.TiDBConnection;
 import org.apache.flink.cdc.connectors.tidb.source.handler.TiDBSchemaChangeEventHandler;
@@ -35,7 +36,7 @@ import org.apache.kafka.connect.source.SourceRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class TiDBSourceFetchTaskContext extends JdbcSourceFetchTaskContext {
+public class TiDBStreamFetchTaskContext extends JdbcSourceFetchTaskContext {
 
     private static final Logger LOG = LoggerFactory.getLogger(TiDBSourceFetchTaskContext.class);
 
@@ -52,7 +53,7 @@ public class TiDBSourceFetchTaskContext extends JdbcSourceFetchTaskContext {
     private ErrorHandler errorHandler;
     private EventMetadataProvider metadataProvider;
 
-    public TiDBSourceFetchTaskContext(
+    public TiDBStreamFetchTaskContext(
             JdbcSourceConfig sourceConfig,
             JdbcDataSourceDialect dataSourceDialect,
             TiDBConnection connection) {
@@ -78,7 +79,7 @@ public class TiDBSourceFetchTaskContext extends JdbcSourceFetchTaskContext {
                     TiDBUtils.newSchema(
                             connection, connectorConfig, topicSelector, tableIdCaseInsensitive);
         } catch (Exception e) {
-            throw new RuntimeException("Failed to initialize TiDBSchema", e);
+            throw new RuntimeException("Failed to initialize TiDBschema", e);
         }
 
         this.tiDBPartition = new TiDBPartition(connectorConfig.getLogicalName());
@@ -96,8 +97,6 @@ public class TiDBSourceFetchTaskContext extends JdbcSourceFetchTaskContext {
                                 () ->
                                         tidbTaskContext.configureLoggingContext(
                                                 "tidb-cdc-connector-task"))
-                        // do not buffer any element, we use signal event
-                        // .buffering()
                         .build();
 
         this.dispatcher =
@@ -177,6 +176,13 @@ public class TiDBSourceFetchTaskContext extends JdbcSourceFetchTaskContext {
         return (TiDBConnectorConfig) super.getDbzConnectorConfig();
     }
 
+    @Override
+    public boolean isRecordBetween(SourceRecord record, Object[] splitStart, Object[] splitEnd) {
+        CDCEventOffset newOffset = new CDCEventOffset(record.sourceOffset());
+        return SourceRecordUtils.splitKeyRangeContains(
+                new CDCEventOffset[] {newOffset}, splitStart, splitEnd);
+    }
+
     public SnapshotChangeEventSourceMetrics<TiDBPartition> getSnapshotChangeEventSourceMetrics() {
         return snapshotChangeEventSourceMetrics;
     }
@@ -188,11 +194,10 @@ public class TiDBSourceFetchTaskContext extends JdbcSourceFetchTaskContext {
                         ? new CDCEventOffsetFactory()
                                 .createInitialOffset() // get an offset for starting snapshot
                         : sourceSplitBase.asStreamSplit().getStartingOffset();
-
         return CDCEventOffsetUtils.getCDCEventOffsetContext(loader, offset);
     }
 
-    public TiDBSourceFetchTaskContext getTaskContext() {
+    public TiDBStreamFetchTaskContext getTaskContext() {
         return this;
     }
 }

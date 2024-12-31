@@ -47,7 +47,7 @@ public class CDCEventSource
     private final TiDBConnectorConfig connectorConfig;
     private final JdbcSourceEventDispatcher<TiDBPartition> eventDispatcher;
     private final ErrorHandler errorHandler;
-    private final TiDBSourceFetchTaskContext taskContext;
+    private final TiDBStreamFetchTaskContext taskContext;
     private final SerializableFunction<RegionFeedEvent, TableId> tableIdProvider;
     private final Map<TableSchema, Map<String, Integer>> fieldIndexMap = new HashMap<>();
 
@@ -55,7 +55,7 @@ public class CDCEventSource
             TiDBConnectorConfig connectorConfig,
             JdbcSourceEventDispatcher<TiDBPartition> eventDispatcher,
             ErrorHandler errorHandler,
-            TiDBSourceFetchTaskContext taskContext,
+            TiDBStreamFetchTaskContext taskContext,
             StreamSplit split) {
         this.connectorConfig = connectorConfig;
         this.eventDispatcher = eventDispatcher;

@@ -35,9 +35,6 @@ public class TiDBSourceInfoStructMaker implements SourceInfoStructMaker<TiDBSour
         if (sourceInfo.database() != null) {
             source.put(TiDBSourceInfo.DATABASE_NAME_KEY, sourceInfo.database());
         }
-        if (sourceInfo.transactionId() != null) {
-            source.put(TiDBSourceInfo.TRANSACTION_ID_KEY, sourceInfo.transactionId());
-        }
         return source;
     }
 }

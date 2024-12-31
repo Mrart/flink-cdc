@@ -13,6 +13,7 @@ import io.debezium.data.Envelope;
 import org.apache.kafka.connect.data.Struct;
 import org.apache.kafka.connect.source.SourceRecord;
 
+@Deprecated
 public enum TiDBReadableMetadata {
     /** Name of the table that contain the row. */
     TABLE_NAME(
