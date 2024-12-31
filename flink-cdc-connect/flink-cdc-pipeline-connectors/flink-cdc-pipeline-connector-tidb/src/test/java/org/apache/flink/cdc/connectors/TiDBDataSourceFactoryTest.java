@@ -30,12 +30,13 @@ public class TiDBDataSourceFactoryTest extends TiDBTestBase {
 
         Map<String, String> options = new HashMap<>();
         options.put(HOSTNAME.key(),TIDB.getHost());
-        options.put(TiDB_PORT.key(),String.valueOf(TIDB_PORT));
+        options.put(TiDB_PORT.key(),String.valueOf(TIDB.getMappedPort(TIDB_PORT)));
         options.put(USERNAME.key(),TiDBTestBase.TIDB_USER);
         options.put(PASSWORD.key(),TiDBTestBase.TIDB_PASSWORD);
         options.put(TABLE_LIST.key(),this.databaseName + "." + this.tableName);
         options.put(DATABASE_NAME.key(),databaseName);
-
+        options.put(TABLES.key(), databaseName+ ".prod\\.*");
+         options.put(PD_ADDRESSES.key(),    PD.getContainerIpAddress() + ":" + PD.getMappedPort(PD_PORT_ORIGIN));
         Factory.Context context = new MockContext(Configuration.fromMap(options));
 
         TiDBDataSourceFactory tiDBDataSourceFactory = new TiDBDataSourceFactory();

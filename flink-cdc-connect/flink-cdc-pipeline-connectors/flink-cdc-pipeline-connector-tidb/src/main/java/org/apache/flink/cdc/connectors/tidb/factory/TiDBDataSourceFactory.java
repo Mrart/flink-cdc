@@ -140,7 +140,7 @@ public class TiDBDataSourceFactory implements DataSourceFactory {
         options.add(PASSWORD);
         options.add(PD_ADDRESSES);
         options.add(TiDB_PORT);
-
+        options.add(TABLES);
         return options;
     }
 
