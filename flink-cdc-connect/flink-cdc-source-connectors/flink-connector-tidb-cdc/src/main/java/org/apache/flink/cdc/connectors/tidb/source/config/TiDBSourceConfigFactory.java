@@ -23,37 +23,37 @@ public class TiDBSourceConfigFactory extends JdbcSourceConfigFactory {
     private Properties tikvProperties;
     private Properties jdbcProperties;
 
-    public JdbcSourceConfigFactory compatibleMode(String compatibleMode) {
+    public TiDBSourceConfigFactory compatibleMode(String compatibleMode) {
         this.compatibleMode = compatibleMode;
         return this;
     }
 
-    public JdbcSourceConfigFactory driverClassName(String driverClassName) {
+    public TiDBSourceConfigFactory driverClassName(String driverClassName) {
         this.driverClassName = driverClassName;
         return this;
     }
 
-    public JdbcSourceConfigFactory pdAddresses(String pdAddresses) {
+    public TiDBSourceConfigFactory pdAddresses(String pdAddresses) {
         this.pdAddresses = pdAddresses;
         return this;
     }
 
-    public JdbcSourceConfigFactory hostMapping(String hostMapping) {
+    public TiDBSourceConfigFactory hostMapping(String hostMapping) {
         this.hostMapping = hostMapping;
         return this;
     }
 
-    public JdbcSourceConfigFactory tikvProperties(Properties tikvProperties) {
+    public TiDBSourceConfigFactory tikvProperties(Properties tikvProperties) {
         this.tikvProperties = tikvProperties;
         return this;
     }
 
-    public JdbcSourceConfigFactory jdbcProperties(Properties jdbcProperties) {
+    public TiDBSourceConfigFactory jdbcProperties(Properties jdbcProperties) {
         this.jdbcProperties = jdbcProperties;
         return this;
     }
 
-    public JdbcSourceConfigFactory tiConfiguration(TiConfiguration tiConfiguration) {
+    public TiDBSourceConfigFactory tiConfiguration(TiConfiguration tiConfiguration) {
         this.tiConfiguration = tiConfiguration;
         return this;
     }
