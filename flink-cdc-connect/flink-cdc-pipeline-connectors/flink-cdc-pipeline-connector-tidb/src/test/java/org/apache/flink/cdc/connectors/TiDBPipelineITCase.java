@@ -85,6 +85,7 @@ public class TiDBPipelineITCase extends TiDBTestBase {
         //        try (Connection connection = getJdbcConnection("inventory");
         //             Statement statement = connection.createStatement()){
         //        }
+
         List<Event> actual =
                 fetchResultsExcept(
                         eventDataStreamSource, expectedSnapshot.size(), createTableEvent);
