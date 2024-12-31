@@ -12,13 +12,13 @@ public class TiDBDataSourceOptions {
             ConfigOptions.key("hostname")
                     .stringType()
                     .noDefaultValue()
-                    .withDescription("IP address or hostname of the MySQL database server.");
+                    .withDescription("IP address or hostname of the TiDB database server.");
 
     public static final ConfigOption<Integer> TiDB_PORT =
             ConfigOptions.key("port")
                     .intType()
                     .defaultValue(4000)
-                    .withDescription("Integer port number of the MySQL database server.");
+                    .withDescription("Integer port number of the TiDB database server.");
 
     public static final ConfigOption<String> USERNAME =
             ConfigOptions.key("username")
@@ -163,7 +163,7 @@ public class TiDBDataSourceOptions {
                                     + "(1) source can be parallel during snapshot reading, \n"
                                     + "(2) source can perform checkpoints in the chunk granularity during snapshot reading, \n"
                                     + "(3) source doesn't need to acquire global read lock (FLUSH TABLES WITH READ LOCK) before snapshot reading.\n"
-                                    + "For MySQL, if you would like the source run in parallel, each parallel reader should have an unique server id, "
+                                    + "For TiDB, if you would like the source run in parallel, each parallel reader should have an unique server id, "
                                     + "so the 'server-id' must be a range like '5400-6400', and the range must be larger than the parallelism.");
 
     public static final ConfigOption<Integer> SCAN_INCREMENTAL_SNAPSHOT_CHUNK_SIZE =
@@ -192,7 +192,7 @@ public class TiDBDataSourceOptions {
                     .stringType()
                     .noDefaultValue()
                     .withDescription(
-                            "Table names of the MySQL tables to Exclude. Regular expressions are supported. "
+                            "Table names of the TiDB tables to Exclude. Regular expressions are supported. "
                                     + "It is important to note that the dot (.) is treated as a delimiter for database and table names. "
                                     + "If there is a need to use a dot (.) in a regular expression to match any character, "
                                     + "it is necessary to escape the dot with a backslash."
@@ -203,7 +203,7 @@ public class TiDBDataSourceOptions {
                     .stringType()
                     .noDefaultValue()
                     .withDescription(
-                            "Table names of the MySQL tables to monitor. Regular expressions are supported. "
+                            "Table names of the TiDB tables to monitor. Regular expressions are supported. "
                                     + "It is important to note that the dot (.) is treated as a delimiter for database and table names. "
                                     + "If there is a need to use a dot (.) in a regular expression to match any character, "
                                     + "it is necessary to escape the dot with a backslash."
