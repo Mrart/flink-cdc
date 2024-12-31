@@ -93,12 +93,6 @@ public class TiDBPipelineITCase extends TiDBTestBase {
                 .containsExactlyInAnyOrder(expectedSnapshot.toArray(new Event[0]));
     }
 
-
-
-
-
-
-
     private static void waitForSinkSize(String sinkName, int expectedSize)
             throws InterruptedException {
         while (sinkSize(sinkName) < expectedSize) {
