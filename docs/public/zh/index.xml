@@ -1,0 +1,312 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Apache Flink CDC</title>
+    <link>//localhost:1313/flink/flink-cdc-docs-master/zh/</link>
+    <description>Recent content on Apache Flink CDC</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>zh</language>
+    <atom:link href="//localhost:1313/flink/flink-cdc-docs-master/zh/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Data Pipeline</title>
+      <link>//localhost:1313/flink/flink-cdc-docs-master/zh/docs/core-concept/data-pipeline/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>//localhost:1313/flink/flink-cdc-docs-master/zh/docs/core-concept/data-pipeline/</guid>
+      <description>Definition # Since events in Flink CDC flow from the upstream to the downstream in a pipeline manner, the whole ETL task is referred as a Data Pipeline.&#xA;Parameters # A pipeline corresponds to a chain of operators in Flink.&#xA;To describe a Data Pipeline, the following parts are required:&#xA;source sink pipeline the following parts are optional:&#xA;route transform Example # Only required # We could use following yaml file to define a concise Data Pipeline describing synchronize all tables under MySQL app_db database to Doris :</description>
+    </item>
+    <item>
+      <title>MongoDB 教程</title>
+      <link>//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/flink-sources/tutorials/mongodb-tutorial/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/flink-sources/tutorials/mongodb-tutorial/</guid>
+      <description>演示: MongoDB CDC 导入 Elasticsearch # 下载 docker-compose.yml version: &amp;#39;2.1&amp;#39; services: mongo: image: &amp;#34;mongo:4.0-xenial&amp;#34; command: --replSet rs0 --smallfiles --oplogSize 128 ports: - &amp;#34;27017:27017&amp;#34; environment: - MONGO_INITDB_ROOT_USERNAME=mongouser - MONGO_INITDB_ROOT_PASSWORD=mongopw elasticsearch: image: elastic/elasticsearch:7.6.0 environment: - cluster.name=docker-cluster - bootstrap.memory_lock=true - &amp;#34;ES_JAVA_OPTS=-Xms512m -Xmx512m&amp;#34; - discovery.type=single-node ports: - &amp;#34;9200:9200&amp;#34; - &amp;#34;9300:9300&amp;#34; ulimits: memlock: soft: -1 hard: -1 nofile: soft: 65536 hard: 65536 kibana: image: elastic/kibana:7.6.0 ports: - &amp;#34;5601:5601&amp;#34; 进入 MongoDB 容器，初始化副本集和数据: docker-compose exec mongo /usr/bin/mongo -u mongouser -p mongopw // 1.</description>
+    </item>
+    <item>
+      <title>MySQL 同步到 Doris</title>
+      <link>//localhost:1313/flink/flink-cdc-docs-master/zh/docs/get-started/quickstart/mysql-to-doris/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>//localhost:1313/flink/flink-cdc-docs-master/zh/docs/get-started/quickstart/mysql-to-doris/</guid>
+      <description>Streaming ELT 同步 MySQL 到 Doris # 这篇教程将展示如何基于 Flink CDC 快速构建 MySQL 到 Doris 的 Streaming ELT 作业，包含整库同步、表结构变更同步和分库分表同步的功能。 本教程的演示都将在 Flink CDC CLI 中进行，无需一行 Java/Scala 代码，也无需安装 IDE。&#xA;准备阶段 # 准备一台已经安装了 Docker 的 Linux 或者 MacOS 电脑。&#xA;准备 Flink Standalone 集群 # 下载 Flink 1.18.0，解压后得到 flink-1.18.0 目录。 使用下面的命令跳转至 Flink 目录下，并且设置 FLINK_HOME 为 flink-1.18.0 所在目录。&#xA;cd flink-1.18.0 通过在 conf/flink-conf.yaml 配置文件追加下列参数开启 checkpoint，每隔 3 秒做一次 checkpoint。&#xA;execution.checkpointing.interval: 3000 使用下面的命令启动 Flink 集群。&#xA;./bin/start-cluster.sh 启动成功的话，可以在 http://localhost:8081/访问到 Flink Web UI，如下所示：</description>
+    </item>
+    <item>
+      <title>Standalone</title>
+      <link>//localhost:1313/flink/flink-cdc-docs-master/zh/docs/deployment/standalone/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>//localhost:1313/flink/flink-cdc-docs-master/zh/docs/deployment/standalone/</guid>
+      <description>Introduction # Standalone mode is Flink’s simplest deployment mode. This short guide will show you how to download the latest stable version of Flink, install, and run it. You will also run an example Flink CDC job and view it in the web UI.&#xA;Preparation # Flink runs on all UNIX-like environments, i.e. Linux, Mac OS X, and Cygwin (for Windows).&#xA;You can refer overview to check supported versions and download the binary release of Flink, then extract the archive:</description>
+    </item>
+    <item>
+      <title>概览</title>
+      <link>//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/flink-sources/overview/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/flink-sources/overview/</guid>
+      <description>Flink Sources 连接器 # Flink CDC sources is a set of source connectors for Apache Flink®, ingesting changes from different databases using change data capture (CDC). Some CDC sources integrate Debezium as the engine to capture data changes. So it can fully leverage the ability of Debezium. See more about what is Debezium.&#xA;You can also read tutorials about how to use these sources.&#xA;Supported Connectors # Connector Database Driver mongodb-cdc MongoDB: 3.</description>
+    </item>
+    <item>
+      <title>概览</title>
+      <link>//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/pipeline-connectors/overview/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/pipeline-connectors/overview/</guid>
+      <description>Pipeline Connectors # Flink CDC 提供了可用于 YAML 作业的 Pipeline Source 和 Sink 连接器来与外部系统交互。您可以直接使用这些连接器，只需将 JAR 文件添加到您的 Flink CDC 环境中，并在您的 YAML Pipeline 定义中指定所需的连接器。&#xA;Supported Connectors # 连接器 类型 支持的外部系统 Apache Doris Sink Apache Doris: 1.2.x, 2.x.x Kafka Sink Kafka MySQL Source MySQL: 5.6, 5.7, 8.0.x RDS MySQL: 5.6, 5.7, 8.0.x PolarDB MySQL: 5.6, 5.7, 8.0.x Aurora MySQL: 5.6, 5.7, 8.0.x MariaDB: 10.x PolarDB X: 2.0.1 Paimon Sink Paimon: 0.6, 0.7, 0.8 StarRocks Sink StarRocks: 2.</description>
+    </item>
+    <item>
+      <title>理解 Flink CDC API</title>
+      <link>//localhost:1313/flink/flink-cdc-docs-master/zh/docs/developer-guide/understand-flink-cdc-api/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>//localhost:1313/flink/flink-cdc-docs-master/zh/docs/developer-guide/understand-flink-cdc-api/</guid>
+      <description>Understand Flink CDC API # If you are planning to build your own Flink CDC connectors, or considering contributing to Flink CDC, you might want to hava a deeper look at the APIs of Flink CDC. This document will go through some important concepts and interfaces in order to help you with your development.&#xA;Event # An event under the context of Flink CDC is a special kind of record in Flink&amp;rsquo;s data stream.</description>
+    </item>
+    <item>
+      <title>通用FAQ</title>
+      <link>//localhost:1313/flink/flink-cdc-docs-master/zh/docs/faq/faq/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>//localhost:1313/flink/flink-cdc-docs-master/zh/docs/faq/faq/</guid>
+      <description>通用FAQ # Q1: 为啥没法下载 flink-sql-connector-mysql-cdc-2.2-SNAPSHOT.jar ，maven 仓库为啥没有 xxx-SNAPSHOT 依赖？ # 和主流的 maven 项目版本管理相同，xxx-SNAPSHOT 版本都是对应开发分支的代码，需要用户自己下载源码并编译对应的jar， 用户应该使用已经 release 过的版本，比如 flink-sql-connector-mysql-cdc-2.1.0.jar，release 过的版本maven中心仓库才会有。&#xA;Q2: 什么时候使用 flink-sql-connector-xxx.jar，什么时候使用 flink-connector-xxx.jar，两者有啥区别? # Flink CDC 项目中各个connector的依赖管理和Flink 项目中 connector 保持一致。flink-sql-connector-xx 是胖包，除了connector的代码外，还把 connector 依赖的所有三方包 shade 后打入，提供给 SQL 作业使用，用户只需要在 lib目录下添加该胖包即可。flink-connector-xx 只有该 connector 的代码，不包含其所需的依赖，提供 datastream 作业使用，用户需要自己管理所需的三方包依赖，有冲突的依赖需要自己做 exclude, shade 处理。&#xA;Q3: 为啥把包名从 com.alibaba.ververica 改成 org.apache.flink? 为啥 maven 仓库里找不到 2.x 版本？ # Flink CDC 项目 从 2.0.0 版本将 group id 从com.alibaba.ververica 改成 com.ververica, 自 3.</description>
+    </item>
+    <item>
+      <title>项目介绍</title>
+      <link>//localhost:1313/flink/flink-cdc-docs-master/zh/docs/get-started/introduction/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>//localhost:1313/flink/flink-cdc-docs-master/zh/docs/get-started/introduction/</guid>
+      <description>欢迎使用 Flink CDC 🎉 # Flink CDC 是一个基于流的数据集成工具，旨在为用户提供一套功能更加全面的编程接口（API）。 该工具使得用户能够以 YAML 配置文件的形式，优雅地定义其 ETL（Extract, Transform, Load）流程，并协助用户自动化生成定制化的 Flink 算子并且提交 Flink 作业。 Flink CDC 在任务提交过程中进行了优化，并且增加了一些高级特性，如表结构变更自动同步（Schema Evolution）、数据转换（Data Transformation）、整库同步（Full Database Synchronization）以及 精确一次（Exactly-once）语义。&#xA;Flink CDC 深度集成并由 Apache Flink 驱动，提供以下核心功能：&#xA;✅ 端到端的数据集成框架 ✅ 为数据集成的用户提供了易于构建作业的 API ✅ 支持在 Source 和 Sink 中处理多个表 ✅ 整库同步 ✅具备表结构变更自动同步的能力（Schema Evolution）， 如何使用 Flink CDC # Flink CDC 提供了基于 YAML 格式的用户 API，更适合于数据集成场景。以下是一个 YAML 文件的示例，它定义了一个数据管道(Pipeline)，该Pipeline从 MySQL 捕获实时变更，并将它们同步到 Apache Doris：&#xA;source: type: mysql hostname: localhost port: 3306 username: root password: 123456 tables: app_db.</description>
+    </item>
+    <item>
+      <title>Data Source</title>
+      <link>//localhost:1313/flink/flink-cdc-docs-master/zh/docs/core-concept/data-source/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>//localhost:1313/flink/flink-cdc-docs-master/zh/docs/core-concept/data-source/</guid>
+      <description>Definition # Data Source is used to access metadata and read the changed data from external systems.&#xA;A Data Source can read data from multiple tables simultaneously.&#xA;Parameters # To describe a data source, the follows are required:&#xA;parameter meaning optional/required type The type of the source, such as mysql. required name The name of the source, which is user-defined (a default value provided). optional configurations of Data Source Configurations to build the Data Source e.</description>
+    </item>
+    <item>
+      <title>Db2 教程</title>
+      <link>//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/flink-sources/tutorials/db2-tutorial/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/flink-sources/tutorials/db2-tutorial/</guid>
+      <description>Demo: Db2 CDC to Elasticsearch # 1. Create docker-compose.yml file using following contents:&#xA;version: &amp;#39;2.1&amp;#39; services: db2: image: ruanhang/db2-cdc-demo:v1 privileged: true ports: - 50000:50000 environment: - LICENSE=accept - DB2INSTANCE=db2inst1 - DB2INST1_PASSWORD=admin - DBNAME=testdb - ARCHIVE_LOGS=true elasticsearch: image: elastic/elasticsearch:7.6.0 environment: - cluster.name=docker-cluster - bootstrap.memory_lock=true - &amp;#34;ES_JAVA_OPTS=-Xms512m -Xmx512m&amp;#34; - discovery.type=single-node ports: - &amp;#34;9200:9200&amp;#34; - &amp;#34;9300:9300&amp;#34; ulimits: memlock: soft: -1 hard: -1 nofile: soft: 65536 hard: 65536 kibana: image: elastic/kibana:7.6.0 ports: - &amp;#34;5601:5601&amp;#34; volumes: - /var/run/docker.</description>
+    </item>
+    <item>
+      <title>MySQL</title>
+      <link>//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/flink-sources/mysql-cdc/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/flink-sources/mysql-cdc/</guid>
+      <description>MySQL CDC 连接器 # MySQL CDC 连接器允许从 MySQL 数据库读取快照数据和增量数据。本文描述了如何设置 MySQL CDC 连接器来对 MySQL 数据库运行 SQL 查询。&#xA;支持的数据库 # Connector Database Driver mysql-cdc MySQL: 5.6, 5.7, 8.0.x RDS MySQL: 5.6, 5.7, 8.0.x PolarDB MySQL: 5.6, 5.7, 8.0.x Aurora MySQL: 5.6, 5.7, 8.0.x MariaDB: 10.x PolarDB X: 2.0.1 JDBC Driver: 8.0.27 依赖 # 为了设置 MySQL CDC 连接器，下表提供了使用构建自动化工具（如 Maven 或 SBT ）和带有 SQL JAR 包的 SQL 客户端的两个项目的依赖关系信息。&#xA;Maven dependency # &amp;lt;dependency&amp;gt; &amp;lt;groupId&amp;gt;org.apache.flink&amp;lt;/groupId&amp;gt; &amp;lt;artifactId&amp;gt;flink-connector-mysql-cdc&amp;lt;/artifactId&amp;gt; &amp;lt;!</description>
+    </item>
+    <item>
+      <title>MySQL</title>
+      <link>//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/pipeline-connectors/mysql/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/pipeline-connectors/mysql/</guid>
+      <description>MySQL Connector # MySQL CDC Pipeline 连接器允许从 MySQL 数据库读取快照数据和增量数据，并提供端到端的整库数据同步能力。 本文描述了如何设置 MySQL CDC Pipeline 连接器。&#xA;依赖配置 # 由于 MySQL Connector 采用的 GPLv2 协议与 Flink CDC 项目不兼容，我们无法在 jar 包中提供 MySQL 连接器。 您可能需要手动配置以下依赖，并在提交 YAML 作业时使用 Flink CDC CLI 的 --jar 参数将其传入：&#xA;依赖名称 说明 mysql:mysql-connector-java:8.0.27 用于连接到 MySQL 数据库。 示例 # 从 MySQL 读取数据同步到 Doris 的 Pipeline 可以定义如下：&#xA;source: type: mysql name: MySQL Source hostname: 127.0.0.1 port: 3306 username: admin password: pass tables: adb.\.*, bdb.</description>
+    </item>
+    <item>
+      <title>MySQL 同步到 StarRocks</title>
+      <link>//localhost:1313/flink/flink-cdc-docs-master/zh/docs/get-started/quickstart/mysql-to-starrocks/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>//localhost:1313/flink/flink-cdc-docs-master/zh/docs/get-started/quickstart/mysql-to-starrocks/</guid>
+      <description>Streaming ELT 同步 MySQL 到 StarRocks # 这篇教程将展示如何基于 Flink CDC 快速构建 MySQL 到 StarRocks 的 Streaming ELT 作业，包含整库同步、表结构变更同步和分库分表同步的功能。&#xA;本教程的演示都将在 Flink CDC CLI 中进行，无需一行 Java/Scala 代码，也无需安装 IDE。&#xA;准备阶段 # 准备一台已经安装了 Docker 的 Linux 或者 MacOS 电脑。&#xA;准备 Flink Standalone 集群 # 下载 Flink 1.18.0 ，解压后得到 flink-1.18.0 目录。&#xA;使用下面的命令跳转至 Flink 目录下，并且设置 FLINK_HOME 为 flink-1.18.0 所在目录。&#xA;cd flink-1.18.0 通过在 conf/flink-conf.yaml 配置文件追加下列参数开启 checkpoint，每隔 3 秒做一次 checkpoint。&#xA;execution.checkpointing.interval: 3000 使用下面的命令启动 Flink 集群。&#xA;./bin/start-cluster.sh 启动成功的话，可以在 http://localhost:8081/ 访问到 Flink Web UI，如下所示：</description>
+    </item>
+    <item>
+      <title>YARN</title>
+      <link>//localhost:1313/flink/flink-cdc-docs-master/zh/docs/deployment/yarn/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>//localhost:1313/flink/flink-cdc-docs-master/zh/docs/deployment/yarn/</guid>
+      <description>Introduction # Apache Hadoop YARN is a resource provider popular with many data processing frameworks. Flink services are submitted to YARN&amp;rsquo;s ResourceManager, which spawns containers on machines managed by YARN NodeManagers. Flink deploys its JobManager and TaskManager instances into such containers.&#xA;Flink can dynamically allocate and de-allocate TaskManager resources depending on the number of processing slots required by the job(s) running on the JobManager.&#xA;Preparation # This Getting Started section assumes a functional YARN environment, starting from version 2.</description>
+    </item>
+    <item>
+      <title>向 Flink CDC 提交贡献</title>
+      <link>//localhost:1313/flink/flink-cdc-docs-master/zh/docs/developer-guide/contribute-to-flink-cdc/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>//localhost:1313/flink/flink-cdc-docs-master/zh/docs/developer-guide/contribute-to-flink-cdc/</guid>
+      <description>社区贡献 # Flink CDC 由开放和友好的社区开发而来，欢迎任何想要提供帮助的贡献者。有以下一些方式可以让贡献者和社区交流和做出贡献，包括提问，提交发现的 Bug报告，提议新的功能，加入社区邮件列表的讨论，贡献代码或文档，改进项目网站，发版前测试和编写Blog等。&#xA;你想要贡献什么？ # Flink CDC 社区的贡献不仅限于为项目贡献代码，下面列举了一些可以在社区贡献的内容。&#xA;贡献方式 更多信息 提交BUG 为了提交问题，您需要首先在 Flink jira 建立对应的issue，并在Component/s选择Flink CDC。然后在问题描述中详细描述遇到的问题的信息，如果可能的话，最好提供一下能够复现问题的操作步骤。 贡献代码 请阅读 贡献代码指导 代码评审 请阅读 代码评审指导 用户支持 通过 Flink 用户邮件列表 来帮助回复用户问题，在 Flink jira 可以查询到最新的已知问题。 如果还有其他问题，可以通过 Flink Dev 邮件列表寻求帮助。&#xA;贡献代码指导 Flink CDC 项目通过众多贡献者的代码贡献来维护，改进和拓展，欢迎各种形式的社区贡献。&#xA;在 Flink CDC 社区可以自由的在任何时间提出自己的问题，通过社区 Dev 邮件列表进行交流或在任何感兴趣的 issue 下评论和讨论。&#xA;如果您想要为 Flink CDC 贡献代码，可以通过如下的方式。&#xA;首先在 Flink jira 的想要负责的 issue 下评论（最好在评论中解释下对于这个问题的理解，和后续的设计，如果可能的话也可以提供下 POC 的代码）。 在这个 issue 被分配给你后，开始进行开发实现（提交信息请遵循[FLINK-xxx][xxx] xxxxxxx的格式）。 开发完成后可以向 Flink CDC 项目提交 PR（请确保 Clone 的项目 committer 有操作权限）。 找到一个开发者帮忙评审代码，评审前请确保 CI 通过。 Flink committer 确认代码贡献满足全部要求后，代码会被合并到代码仓库。 代码评审指导 每一次的代码评审需要检查如下一些方面的内容。</description>
+    </item>
+    <item>
+      <title>Data Sink</title>
+      <link>//localhost:1313/flink/flink-cdc-docs-master/zh/docs/core-concept/data-sink/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>//localhost:1313/flink/flink-cdc-docs-master/zh/docs/core-concept/data-sink/</guid>
+      <description>Definition # Data Sink is used to apply schema changes and write change data to external systems. A Data Sink can write to multiple tables simultaneously.&#xA;Parameters # To describe a data sink, the follows are required:&#xA;parameter meaning optional/required type The type of the sink, such as doris or starrocks. required name The name of the sink, which is user-defined (a default value provided). optional configurations of Data Sink Configurations to build the Data Sink e.</description>
+    </item>
+    <item>
+      <title>Kubernetes</title>
+      <link>//localhost:1313/flink/flink-cdc-docs-master/zh/docs/deployment/kubernetes/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>//localhost:1313/flink/flink-cdc-docs-master/zh/docs/deployment/kubernetes/</guid>
+      <description>Introduction # Kubernetes is a popular container-orchestration system for automating computer application deployment, scaling, and management. Flink&amp;rsquo;s native Kubernetes integration allows you to directly deploy Flink on a running Kubernetes cluster. Moreover, Flink is able to dynamically allocate and de-allocate TaskManagers depending on the required resources because it can directly talk to Kubernetes.&#xA;Apache Flink also provides a Kubernetes operator for managing Flink clusters on Kubernetes. It supports both standalone and native deployment mode and greatly simplifies deployment, configuration and the life cycle management of Flink resources on Kubernetes.</description>
+    </item>
+    <item>
+      <title>OceanBase 教程</title>
+      <link>//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/flink-sources/tutorials/oceanbase-tutorial/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/flink-sources/tutorials/oceanbase-tutorial/</guid>
+      <description>演示: OceanBase CDC 导入 Elasticsearch # 视频教程 # YouTube Bilibili 准备教程所需要的组件 # 配置并启动容器 # 配置 docker-compose.yml。&#xA;version: &amp;#39;2.1&amp;#39; services: observer: image: oceanbase/oceanbase-ce:4.0.0.0 container_name: observer network_mode: &amp;#34;host&amp;#34; oblogproxy: image: whhe/oblogproxy:1.1.0_4x container_name: oblogproxy environment: - &amp;#39;OB_SYS_USERNAME=root&amp;#39; - &amp;#39;OB_SYS_PASSWORD=pswd&amp;#39; network_mode: &amp;#34;host&amp;#34; elasticsearch: image: &amp;#39;elastic/elasticsearch:7.6.0&amp;#39; container_name: elasticsearch environment: - cluster.name=docker-cluster - bootstrap.memory_lock=true - ES_JAVA_OPTS=-Xms512m -Xmx512m - discovery.type=single-node ports: - &amp;#39;9200:9200&amp;#39; - &amp;#39;9300:9300&amp;#39; ulimits: memlock: soft: -1 hard: -1 nofile: soft: 65536 hard: 65536 kibana: image: &amp;#39;elastic/kibana:7.</description>
+    </item>
+    <item>
+      <title>Oracle</title>
+      <link>//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/flink-sources/oracle-cdc/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/flink-sources/oracle-cdc/</guid>
+      <description>Oracle CDC Connector # The Oracle CDC connector allows for reading snapshot data and incremental data from Oracle database. This document describes how to setup the Oracle CDC connector to run SQL queries against Oracle databases.&#xA;Dependencies # In order to setup the Oracle CDC connector, the following table provides dependency information for both projects using a build automation tool (such as Maven or SBT) and SQL Client with SQL JAR bundles.</description>
+    </item>
+    <item>
+      <title>Paimon</title>
+      <link>//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/pipeline-connectors/paimon/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/pipeline-connectors/paimon/</guid>
+      <description>Paimon Pipeline 连接器 # Paimon Pipeline 连接器可以用作 Pipeline 的 Data Sink，将数据写入Paimon。 本文档介绍如何设置 Paimon Pipeline 连接器。&#xA;连接器的功能 # 自动建表 表结构变更同步 数据实时同步 如何创建 Pipeline # 从 MySQL 读取数据同步到 Paimon 的 Pipeline 可以定义如下：&#xA;source: type: mysql name: MySQL Source hostname: 127.0.0.1 port: 3306 username: admin password: pass tables: adb.\.*, bdb.user_table_[0-9]+, [app|web].order_\.* server-id: 5401-5404 sink: type: paimon name: Paimon Sink catalog.properties.metastore: filesystem catalog.properties.warehouse: /path/warehouse pipeline: name: MySQL to Paimon Pipeline parallelism: 2 Pipeline 连接器配置项 # Option Required Default Type Description type required (none) String 指定要使用的连接器, 这里需要设置成 &#39;paimon&#39;.</description>
+    </item>
+    <item>
+      <title>许可证</title>
+      <link>//localhost:1313/flink/flink-cdc-docs-master/zh/docs/developer-guide/licenses/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>//localhost:1313/flink/flink-cdc-docs-master/zh/docs/developer-guide/licenses/</guid>
+      <description> 许可证 # Flink CDC 使用的是 Apache License 2.0 许可。&#xA;如果对于 Flink CDC 的许可证有问题，可以通过邮件列表联系我们。&#xA;Apache Software Foundation # 您可以通过以下一些链接了解更多关于 ASF 的信息。&#xA;Apache Software Foundation License Events Security SponSprShip Thanks Privacy </description>
+    </item>
+    <item>
+      <title>Kafka</title>
+      <link>//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/pipeline-connectors/kafka/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/pipeline-connectors/kafka/</guid>
+      <description>Kafka Pipeline 连接器 # Kafka Pipeline 连接器可以用作 Pipeline 的 Data Sink，将数据写入Kafka。 本文档介绍如何设置 Kafka Pipeline 连接器。&#xA;连接器的功能 # 自动建表 表结构变更同步 数据实时同步 如何创建 Pipeline # 从 MySQL 读取数据同步到 Kafka 的 Pipeline 可以定义如下：&#xA;source: type: mysql name: MySQL Source hostname: 127.0.0.1 port: 3306 username: admin password: pass tables: adb.\.*, bdb.user_table_[0-9]+, [app|web].order_\.* server-id: 5401-5404 sink: type: kafka name: Kafka Sink properties.bootstrap.servers: PLAINTEXT://localhost:62510 pipeline: name: MySQL to Kafka Pipeline parallelism: 2 Pipeline 连接器配置项 # Option Required Default Type Description type required (none) String 指定要使用的连接器, 这里需要设置成 &#39;kafka&#39;。 name optional (none) String Sink 的名称。 value.</description>
+    </item>
+    <item>
+      <title>Oracle 教程</title>
+      <link>//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/flink-sources/tutorials/oracle-tutorial/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/flink-sources/tutorials/oracle-tutorial/</guid>
+      <description>演示: Oracle CDC 导入 Elasticsearch # 创建docker-compose.yml文件，内容如下所示:&#xA;version: &amp;#39;2.1&amp;#39; services: oracle: image: goodboy008/oracle-19.3.0-ee:non-cdb ports: - &amp;#34;1521:1521&amp;#34; elasticsearch: image: elastic/elasticsearch:7.6.0 environment: - cluster.name=docker-cluster - bootstrap.memory_lock=true - &amp;#34;ES_JAVA_OPTS=-Xms512m -Xmx512m&amp;#34; - discovery.type=single-node ports: - &amp;#34;9200:9200&amp;#34; - &amp;#34;9300:9300&amp;#34; ulimits: memlock: soft: -1 hard: -1 nofile: soft: 65536 hard: 65536 kibana: image: elastic/kibana:7.6.0 ports: - &amp;#34;5601:5601&amp;#34; volumes: - /var/run/docker.sock:/var/run/docker.sock 该 Docker Compose 中包含的容器有:&#xA;Oracle: Oracle 19c 数据库 Elasticsearch: orders 表将和 products 表进行join，join的结果写入Elasticsearch中 Kibana: 可视化 Elasticsearch 中的数据 在 docker-compose.</description>
+    </item>
+    <item>
+      <title>SQL Server</title>
+      <link>//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/flink-sources/sqlserver-cdc/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/flink-sources/sqlserver-cdc/</guid>
+      <description>SQLServer CDC Connector # The SQLServer CDC connector allows for reading snapshot data and incremental data from SQLServer database. This document describes how to setup the SQLServer CDC connector to run SQL queries against SQLServer databases.&#xA;Dependencies # In order to setup the SQLServer CDC connector, the following table provides dependency information for both projects using a build automation tool (such as Maven or SBT) and SQL Client with SQL JAR bundles.</description>
+    </item>
+    <item>
+      <title>Table ID</title>
+      <link>//localhost:1313/flink/flink-cdc-docs-master/zh/docs/core-concept/table-id/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>//localhost:1313/flink/flink-cdc-docs-master/zh/docs/core-concept/table-id/</guid>
+      <description>Definition # When connecting to external systems, it is necessary to establish a mapping relationship with the storage objects of the external system. This is what Table Id refers to.&#xA;Example # To be compatible with most external systems, the Table Id is represented by a 3-tuple : (namespace, schemaName, tableName).&#xA;Connectors should establish the mapping between Table Id and storage objects in external systems.&#xA;The following table lists the parts in table Id of different data systems:</description>
+    </item>
+    <item>
+      <title>Doris</title>
+      <link>//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/pipeline-connectors/doris/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/pipeline-connectors/doris/</guid>
+      <description>Doris Connector # 本文介绍了Pipeline Doris Connector的使用。&#xA;示例 # source: type: values name: ValuesSource sink: type: doris name: Doris Sink fenodes: 127.0.0.1:8030 username: root password: &amp;#34;&amp;#34; table.create.properties.replication_num: 1 pipeline: parallelism: 1 连接器配置项 # Option Required Default Type Description type required (none) String 指定要使用的Sink, 这里是 &#39;doris&#39;. name optional (none) String PipeLine的名称 fenodes required (none) String Doris集群FE的Http地址, 比如 127.0.0.1:8030 benodes optional (none) String Doris集群BE的Http地址, 比如 127.0.0.1:8040 jdbc-url optional (none) String Doris集群的JDBC地址，比如：jdbc:mysql://127.0.0.1:9030/db username required (none) String Doris集群的用户名 password optional (none) String Doris集群的密码 auto-redirect optional false String 是否通过FE重定向写入，直连BE写入 sink.</description>
+    </item>
+    <item>
+      <title>PolarDB-X 教程</title>
+      <link>//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/flink-sources/tutorials/polardbx-tutorial/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/flink-sources/tutorials/polardbx-tutorial/</guid>
+      <description>演示: PolarDB-X CDC 导入 Elasticsearch # 本示例我们通过演示 PolarDB-X 借助 Flink-CDC 将数据导入至 Elasticsearch 来介绍 PolarDB-X 的增量订阅能力，你可以前往:PolarDB-X 了解更多细节。&#xA;准备教程所需要的组件 # 我们假设你运行在一台 MacOS 或者 Linux 机器上，并且已经安装 docker.&#xA;配置并启动容器 # 配置 docker-compose.yml。&#xA;version: &amp;#39;2.1&amp;#39; services: polardbx: polardbx: image: polardbx/polardb-x:2.0.1 container_name: polardbx ports: - &amp;#34;8527:8527&amp;#34; elasticsearch: image: &amp;#39;elastic/elasticsearch:7.6.0&amp;#39; container_name: elasticsearch environment: - cluster.name=docker-cluster - bootstrap.memory_lock=true - ES_JAVA_OPTS=-Xms512m -Xmx512m - discovery.type=single-node ports: - &amp;#39;9200:9200&amp;#39; - &amp;#39;9300:9300&amp;#39; ulimits: memlock: soft: -1 hard: -1 nofile: soft: 65536 hard: 65536 kibana: image: &amp;#39;elastic/kibana:7.</description>
+    </item>
+    <item>
+      <title>Postgres</title>
+      <link>//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/flink-sources/postgres-cdc/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/flink-sources/postgres-cdc/</guid>
+      <description>Postgres CDC Connector # The Postgres CDC connector allows for reading snapshot data and incremental data from PostgreSQL database. This document describes how to setup the Postgres CDC connector to run SQL queries against PostgreSQL databases.&#xA;Dependencies # In order to setup the Postgres CDC connector, the following table provides dependency information for both projects using a build automation tool (such as Maven or SBT) and SQL Client with SQL JAR bundles.</description>
+    </item>
+    <item>
+      <title>Transform</title>
+      <link>//localhost:1313/flink/flink-cdc-docs-master/zh/docs/core-concept/transform/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>//localhost:1313/flink/flink-cdc-docs-master/zh/docs/core-concept/transform/</guid>
+      <description>Definition # Transform module helps users delete and expand data columns based on the data columns in the table. What&amp;rsquo;s more, it also helps users filter some unnecessary data during the synchronization process.&#xA;Parameters # To describe a transform rule, the following parameters can be used:&#xA;Parameter Meaning Optional/Required source-table Source table id, supports regular expressions required projection Projection rule, supports syntax similar to the select clause in SQL optional filter Filter rule, supports syntax similar to the where clause in SQL optional primary-keys Sink table primary keys, separated by commas optional partition-keys Sink table partition keys, separated by commas optional table-options used to the configure table creation statement when automatically creating tables optional description Transform rule description optional Multiple rules can be declared in one single pipeline YAML file.</description>
+    </item>
+    <item>
+      <title>MongoDB</title>
+      <link>//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/flink-sources/mongodb-cdc/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/flink-sources/mongodb-cdc/</guid>
+      <description>MongoDB CDC 连接器 # MongoDB CDC 连接器允许从 MongoDB 读取快照数据和增量数据。 本文档描述了如何设置 MongoDB CDC 连接器以针对 MongoDB 运行 SQL 查询。&#xA;依赖 # 为了设置 MongoDB CDC 连接器, 下表提供了使用构建自动化工具（如 Maven 或 SBT ）和带有 SQLJar 捆绑包的 SQLClient 的两个项目的依赖关系信息。&#xA;Maven dependency # &amp;lt;dependency&amp;gt; &amp;lt;groupId&amp;gt;org.apache.flink&amp;lt;/groupId&amp;gt; &amp;lt;artifactId&amp;gt;flink-connector-mongodb-cdc&amp;lt;/artifactId&amp;gt; &amp;lt;!-- 请使用已发布的版本依赖，snapshot 版本的依赖需要本地自行编译。 --&amp;gt; &amp;lt;version&amp;gt;3.2-SNAPSHOT&amp;lt;/version&amp;gt; &amp;lt;/dependency&amp;gt; SQL Client JAR # 下载链接仅适用于稳定版本。&#xA;下载 flink-sql-connector-mongodb-cdc-3.0.1.jar， 把它放在 &amp;lt;FLINK_HOME&amp;gt;/lib/.&#xA;注意: 参考 flink-sql-connector-mongodb-cdc， 当前已发布的版本将在 Maven 中央仓库中提供。&#xA;设置 MongoDB # 可用性 # MongoDB 版本&#xA;MongoDB 版本 &amp;gt;= 3.</description>
+    </item>
+    <item>
+      <title>Route</title>
+      <link>//localhost:1313/flink/flink-cdc-docs-master/zh/docs/core-concept/route/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>//localhost:1313/flink/flink-cdc-docs-master/zh/docs/core-concept/route/</guid>
+      <description>Definition # Route specifies the rule of matching a list of source-table and mapping to sink-table. The most typical scenario is the merge of sub-databases and sub-tables, routing multiple upstream source tables to the same sink table.&#xA;Parameters # To describe a route, the follows are required:&#xA;parameter meaning optional/required source-table Source table id, supports regular expressions required sink-table Sink table id, supports regular expressions required description Routing rule description(a default value provided) optional A route module can contain a list of source-table/sink-table rules.</description>
+    </item>
+    <item>
+      <title>SqlServer 教程</title>
+      <link>//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/flink-sources/tutorials/sqlserver-tutorial/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/flink-sources/tutorials/sqlserver-tutorial/</guid>
+      <description>演示: SqlServer CDC 导入 Elasticsearch # 创建 docker-compose.yml 文件，内容如下所示：&#xA;version: &amp;#39;2.1&amp;#39; services: sqlserver: image: mcr.microsoft.com/mssql/server:2019-latest container_name: sqlserver ports: - &amp;#34;1433:1433&amp;#34; environment: - &amp;#34;MSSQL_AGENT_ENABLED=true&amp;#34; - &amp;#34;MSSQL_PID=Standard&amp;#34; - &amp;#34;ACCEPT_EULA=Y&amp;#34; - &amp;#34;SA_PASSWORD=Password!&amp;#34; elasticsearch: image: elastic/elasticsearch:7.6.0 container_name: elasticsearch environment: - cluster.name=docker-cluster - bootstrap.memory_lock=true - &amp;#34;ES_JAVA_OPTS=-Xms512m -Xmx512m&amp;#34; - discovery.type=single-node ports: - &amp;#34;9200:9200&amp;#34; - &amp;#34;9300:9300&amp;#34; ulimits: memlock: soft: -1 hard: -1 nofile: soft: 65536 hard: 65536 kibana: image: elastic/kibana:7.6.0 container_name: kibana ports: - &amp;#34;5601:5601&amp;#34; volumes: - /var/run/docker.</description>
+    </item>
+    <item>
+      <title>StarRocks</title>
+      <link>//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/pipeline-connectors/starrocks/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/pipeline-connectors/starrocks/</guid>
+      <description>StarRocks Connector # StarRocks Pipeline 连接器可以用作 Pipeline 的 Data Sink，将数据写入StarRocks。 本文档介绍如何设置 StarRocks Pipeline 连接器。&#xA;连接器的功能 # 自动建表 表结构变更同步 数据实时同步 示例 # 从 MySQL 读取数据同步到 StarRocks 的 Pipeline 可以定义如下：&#xA;source: type: mysql name: MySQL Source hostname: 127.0.0.1 port: 3306 username: admin password: pass tables: adb.\.*, bdb.user_table_[0-9]+, [app|web].order_\.* server-id: 5401-5404 sink: type: starrocks name: StarRocks Sink jdbc-url: jdbc:mysql://127.0.0.1:9030 load-url: 127.0.0.1:8030 username: root password: pass pipeline: name: MySQL to StarRocks Pipeline parallelism: 2 连接器配置项 # Option Required Default Type Description type required (none) String 指定要使用的连接器, 这里需要设置成 &#39;starrocks&#39;.</description>
+    </item>
+    <item>
+      <title>Db2</title>
+      <link>//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/flink-sources/db2-cdc/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/flink-sources/db2-cdc/</guid>
+      <description>Db2 CDC Connector # The Db2 CDC connector allows for reading snapshot data and incremental data from Db2 database. This document describes how to setup the db2 CDC connector to run SQL queries against Db2 databases.&#xA;Supported Databases # Connector Database Driver Db2-cdc Db2: 11.5 Db2 Driver: 11.5.0.0 Dependencies # In order to set up the Db2 CDC connector, the following table provides dependency information for both projects using a build automation tool (such as Maven or SBT) and SQL Client with SQL JAR bundles.</description>
+    </item>
+    <item>
+      <title>TiDB 教程</title>
+      <link>//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/flink-sources/tutorials/tidb-tutorial/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/flink-sources/tutorials/tidb-tutorial/</guid>
+      <description>演示: TiDB CDC 导入 Elasticsearch # 首先我们得通过 docker 来启动 TiDB 集群。&#xA;$ git clone https://github.com/pingcap/tidb-docker-compose.git 其次替换目录 tidb-docker-compose 里面的 docker-compose.yml 文件，内容如下所示：&#xA;version: &amp;#34;2.1&amp;#34; services: pd: image: pingcap/pd:v5.3.1 ports: - &amp;#34;2379:2379&amp;#34; volumes: - ./config/pd.toml:/pd.toml - ./logs:/logs command: - --client-urls=http://0.0.0.0:2379 - --peer-urls=http://0.0.0.0:2380 - --advertise-client-urls=http://pd:2379 - --advertise-peer-urls=http://pd:2380 - --initial-cluster=pd=http://pd:2380 - --data-dir=/data/pd - --config=/pd.toml - --log-file=/logs/pd.log restart: on-failure tikv: image: pingcap/tikv:v5.3.1 ports: - &amp;#34;20160:20160&amp;#34; volumes: - ./config/tikv.toml:/tikv.toml - ./logs:/logs command: - --addr=0.0.0.0:20160 - --advertise-addr=tikv:20160 - --data-dir=/data/tikv - --pd=pd:2379 - --config=/tikv.</description>
+    </item>
+    <item>
+      <title>TiDB</title>
+      <link>//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/flink-sources/tidb-cdc/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/flink-sources/tidb-cdc/</guid>
+      <description>TiDB CDC Connector # The TiDB CDC connector allows for reading snapshot data and incremental data from TiDB database. This document describes how to setup the TiDB CDC connector to run SQL queries against TiDB databases.&#xA;Dependencies # In order to setup the TiDB CDC connector, the following table provides dependency information for both projects using a build automation tool (such as Maven or SBT) and SQL Client with SQL JAR bundles.</description>
+    </item>
+    <item>
+      <title>OceanBase</title>
+      <link>//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/flink-sources/oceanbase-cdc/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/flink-sources/oceanbase-cdc/</guid>
+      <description>OceanBase CDC 连接器 # OceanBase CDC 连接器允许从 OceanBase 读取快照数据和增量数据。本文介绍了如何设置 OceanBase CDC 连接器以对 OceanBase 进行 SQL 查询。&#xA;OceanBase CDC 方案 # 名词解释:&#xA;OceanBase CE: OceanBase 社区版。OceanBase 的开源版本，兼容 MySQL https://github.com/oceanbase/oceanbase 。 OceanBase EE: OceanBase 企业版。OceanBase 的商业版本，支持 MySQL 和 Oracle 两种兼容模式 https://www.oceanbase.com 。 OceanBase Cloud: OceanBase 云数据库 https://www.oceanbase.com/product/cloud 。 Log Proxy CE: OceanBase 日志代理服务社区版。单独使用时支持 CDC 模式，是一个获取 OceanBase 社区版事务日志（commit log）的代理服务 https://github.com/oceanbase/oblogproxy 。 Log Proxy EE: OceanBase 日志代理服务企业版。单独使用时支持 CDC 模式，是一个获取 OceanBase 企业版事务日志（commit log）的代理服务，目前仅在 OceanBase Cloud 上提供有限的支持, 详情请咨询相关技术支持。 Binlog Service CE: OceanBase Binlog 服务社区版。OceanBase 社区版的一个兼容 MySQL 复制协议的解决方案，详情参考 Log Proxy CE Binlog 模式的文档。 Binlog Service EE: OceanBase Binlog 服务企业版。OceanBase 企业版 MySQL 模式的一个兼容 MySQL 复制协议的解决方案，仅可在阿里云使用，详情见操作指南。 MySQL Driver: mysql-connector-java，可用于 OceanBase 社区版和 OceanBase 企业版 MySQL 模式。 OceanBase Driver: OceanBase JDBC 驱动，支持所有版本的 MySQL 和 Oracle 兼容模式 https://github.</description>
+    </item>
+    <item>
+      <title>Vitess</title>
+      <link>//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/flink-sources/vitess-cdc/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/flink-sources/vitess-cdc/</guid>
+      <description>Vitess CDC Connector # The Vitess CDC connector allows for reading of incremental data from Vitess cluster. The connector does not support snapshot feature at the moment. This document describes how to setup the Vitess CDC connector to run SQL queries against Vitess databases. Vitess debezium documentation&#xA;Dependencies # In order to setup the Vitess CDC connector, the following table provides dependency information for both projects using a build automation tool (such as Maven or SBT) and SQL Client with SQL JAR bundles.</description>
+    </item>
+    <item>
+      <title>DataStream API 打包指南</title>
+      <link>//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/flink-sources/datastream-api-package-guidance/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/flink-sources/datastream-api-package-guidance/</guid>
+      <description>DataStream API Package Guidance # This guide provides a simple pom.xml example for packaging DataStream job JARs with MySQL CDC source.&#xA;Example for pom.xml # &amp;lt;?xml version=&amp;#34;1.0&amp;#34; encoding=&amp;#34;UTF-8&amp;#34;?&amp;gt; &amp;lt;project xmlns=&amp;#34;http://maven.apache.org/POM/4.0.0&amp;#34; xmlns:xsi=&amp;#34;http://www.w3.org/2001/XMLSchema-instance&amp;#34; xsi:schemaLocation=&amp;#34;http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd&amp;#34;&amp;gt; &amp;lt;modelVersion&amp;gt;4.0.0&amp;lt;/modelVersion&amp;gt; &amp;lt;groupId&amp;gt;org.apache.flink&amp;lt;/groupId&amp;gt; &amp;lt;artifactId&amp;gt;FlinkCDCTest&amp;lt;/artifactId&amp;gt; &amp;lt;version&amp;gt;1.0-SNAPSHOT&amp;lt;/version&amp;gt; &amp;lt;properties&amp;gt; &amp;lt;maven.compiler.source&amp;gt;8&amp;lt;/maven.compiler.source&amp;gt; &amp;lt;maven.compiler.target&amp;gt;8&amp;lt;/maven.compiler.target&amp;gt; &amp;lt;project.build.sourceEncoding&amp;gt;UTF-8&amp;lt;/project.build.sourceEncoding&amp;gt; &amp;lt;java.version&amp;gt;1.8&amp;lt;/java.version&amp;gt; &amp;lt;scala.binary.version&amp;gt;2.12&amp;lt;/scala.binary.version&amp;gt; &amp;lt;maven.compiler.source&amp;gt;${java.version}&amp;lt;/maven.compiler.source&amp;gt; &amp;lt;maven.compiler.target&amp;gt;${java.version}&amp;lt;/maven.compiler.target&amp;gt; &amp;lt;project.build.sourceEncoding&amp;gt;UTF-8&amp;lt;/project.build.sourceEncoding&amp;gt; &amp;lt;!-- Enforce single fork execution due to heavy mini cluster use in the tests --&amp;gt; &amp;lt;flink.forkCount&amp;gt;1&amp;lt;/flink.forkCount&amp;gt; &amp;lt;flink.reuseForks&amp;gt;true&amp;lt;/flink.reuseForks&amp;gt; &amp;lt;!-- dependencies versions --&amp;gt; &amp;lt;flink.version&amp;gt;1.17.2&amp;lt;/flink.version&amp;gt; &amp;lt;slf4j.version&amp;gt;1.7.15&amp;lt;/slf4j.version&amp;gt; &amp;lt;log4j.</description>
+    </item>
+    <item>
+      <title>使用 Flink CDC 构建实时数据湖</title>
+      <link>//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/flink-sources/tutorials/build-real-time-data-lake-tutorial/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/flink-sources/tutorials/build-real-time-data-lake-tutorial/</guid>
+      <description>使用 Flink CDC 构建实时数据湖 # 在 OLTP 系统中，为了解决单表数据量大的问题，通常采用分库分表的方式将单个大表进行拆分以提高系统的吞吐量。 但是为了方便数据分析，通常需要将分库分表拆分出的表在同步到数据仓库、数据湖时，再合并成一个大表。&#xA;这篇教程将展示如何使用 Flink CDC 构建实时数据湖来应对这种场景，本教程的演示基于 Docker，只涉及 SQL，无需一行 Java/Scala 代码，也无需安装 IDE，你可以很方便地在自己的电脑上完成本教程的全部内容。&#xA;接下来将以数据从 MySQL 同步到 Iceberg 为例展示整个流程，架构图如下所示：&#xA;你也可以使用不同的 source 比如 Oracle/Postgres 和 sink 比如 Hudi 来构建自己的 ETL 流程。&#xA;准备阶段 # 准备一台已经安装了 Docker 的 Linux 或者 MacOS 电脑。&#xA;准备教程所需要的组件 # 接下来的教程将以 docker-compose 的方式准备所需要的组件。&#xA;使用下面的内容创建一个 docker-compose.yml 文件：&#xA;version: &amp;#39;2.1&amp;#39; services: sql-client: user: flink:flink image: yuxialuo/flink-sql-client:1.13.2.v1 depends_on: - jobmanager - mysql environment: FLINK_JOBMANAGER_HOST: jobmanager MYSQL_HOST: mysql volumes: - shared-tmpfs:/tmp/iceberg jobmanager: user: flink:flink image: flink:1.</description>
+    </item>
+    <item>
+      <title>使用 Flink CDC 构建 Streaming ETL</title>
+      <link>//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/flink-sources/tutorials/build-streaming-etl-tutorial/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/flink-sources/tutorials/build-streaming-etl-tutorial/</guid>
+      <description>使用 Flink CDC 构建 Streaming ETL # 这篇教程将展示如何基于 Flink CDC 快速构建 MySQL 和 Postgres 的流式 ETL。本教程的演示都将在 Flink SQL CLI 中进行，只涉及 SQL，无需一行 Java/Scala 代码，也无需安装 IDE。&#xA;假设我们正在经营电子商务业务，商品和订单的数据存储在 MySQL 中，订单对应的物流信息存储在 Postgres 中。 对于订单表，为了方便进行分析，我们希望让它关联上其对应的商品和物流信息，构成一张宽表，并且实时把它写到 ElasticSearch 中。&#xA;接下来的内容将介绍如何使用 Flink Mysql/Postgres CDC 来实现这个需求，系统的整体架构如下图所示： 准备阶段 # 准备一台已经安装了 Docker 的 Linux 或者 MacOS 电脑。&#xA;准备教程所需要的组件 # 接下来的教程将以 docker-compose 的方式准备所需要的组件。&#xA;使用下面的内容创建一个 docker-compose.yml 文件：&#xA;version: &amp;#39;2.1&amp;#39; services: postgres: image: debezium/example-postgres:1.1 ports: - &amp;#34;5432:5432&amp;#34; environment: - POSTGRES_DB=postgres - POSTGRES_USER=postgres - POSTGRES_PASSWORD=postgres mysql: image: debezium/example-mysql:1.</description>
+    </item>
+    <item>
+      <title>Versions</title>
+      <link>//localhost:1313/flink/flink-cdc-docs-master/zh/versions/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>//localhost:1313/flink/flink-cdc-docs-master/zh/versions/</guid>
+      <description> Versions # An appendix of hosted documentation for all versions of Apache Flink CDC.&#xA;v3.0 </description>
+    </item>
+  </channel>
+</rss>

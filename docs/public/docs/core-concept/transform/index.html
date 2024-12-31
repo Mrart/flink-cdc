@@ -1,0 +1,1786 @@
+
+<!DOCTYPE html>
+<html lang="en" dir=ZgotmplZ>
+
+<head><script src="/flink/flink-cdc-docs-master/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=flink/flink-cdc-docs-master/livereload" data-no-instant defer></script>
+  <meta name="generator" content="Hugo 0.124.1">
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Definition # Transform module helps users delete and expand data columns based on the data columns in the table. What&rsquo;s more, it also helps users filter some unnecessary data during the synchronization process.
+Parameters # To describe a transform rule, the following parameters can be used:
+Parameter Meaning Optional/Required source-table Source table id, supports regular expressions required projection Projection rule, supports syntax similar to the select clause in SQL optional filter Filter rule, supports syntax similar to the where clause in SQL optional primary-keys Sink table primary keys, separated by commas optional partition-keys Sink table partition keys, separated by commas optional table-options used to the configure table creation statement when automatically creating tables optional description Transform rule description optional Multiple rules can be declared in one single pipeline YAML file.">
+<meta name="theme-color" content="#FFFFFF"><meta property="og:title" content="Transform" />
+<meta property="og:description" content="Definition # Transform module helps users delete and expand data columns based on the data columns in the table. What&rsquo;s more, it also helps users filter some unnecessary data during the synchronization process.
+Parameters # To describe a transform rule, the following parameters can be used:
+Parameter Meaning Optional/Required source-table Source table id, supports regular expressions required projection Projection rule, supports syntax similar to the select clause in SQL optional filter Filter rule, supports syntax similar to the where clause in SQL optional primary-keys Sink table primary keys, separated by commas optional partition-keys Sink table partition keys, separated by commas optional table-options used to the configure table creation statement when automatically creating tables optional description Transform rule description optional Multiple rules can be declared in one single pipeline YAML file." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="//localhost:1313/flink/flink-cdc-docs-master/docs/core-concept/transform/" /><meta property="article:section" content="docs" />
+
+
+<title>Transform | Apache Flink CDC</title>
+<link rel="manifest" href="/flink/flink-cdc-docs-master/manifest.json">
+<link rel="icon" href="/flink/flink-cdc-docs-master/favicon.png" type="image/x-icon">
+<link rel="alternate" hreflang="zh" href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/core-concept/transform/" title="Transform">
+
+<link rel="stylesheet" href="/flink/flink-cdc-docs-master/book.min.59471f109f689a198d44e845028ea35c1b638516a64e46df5101f6f6537d611e.css" integrity="sha256-WUcfEJ9omhmNROhFAo6jXBtjhRamTkbfUQH29lN9YR4=">
+<script defer src="/flink/flink-cdc-docs-master/en.search.min.60d7dc9e723d3271101320a889b96a35e0c8d94bb858e65d4cc723e8e6ec1674.js" integrity="sha256-YNfcnnI9MnEQEyCoiblqNeDI2Uu4WOZdTMcj6ObsFnQ="></script>
+<!--
+Made with Book Theme
+https://github.com/alex-shpak/hugo-book
+-->
+
+  
+
+<link rel="stylesheet" type="text/css" href="//localhost:1313/flink/flink-cdc-docs-master//font-awesome/css/font-awesome.min.css">
+<script src="//localhost:1313/flink/flink-cdc-docs-master//js/anchor.min.js"></script>
+<script src="//localhost:1313/flink/flink-cdc-docs-master//js/flink.js"></script>
+
+
+  
+  <script>
+    var _paq = window._paq = window._paq || [];
+     
+     
+    _paq.push(['disableCookies']);
+     
+    _paq.push(["setDomains", ["*.flink.apache.org","*.nightlies.apache.org/flink"]]);
+    _paq.push(['trackPageView']);
+    _paq.push(['enableLinkTracking']);
+    (function() {
+      var u="//matomo.privacy.apache.org/";
+      _paq.push(['setTrackerUrl', u+'matomo.php']);
+      _paq.push(['setSiteId', '1']);
+      var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
+      g.async=true; g.src=u+'matomo.js'; s.parentNode.insertBefore(g,s);
+    })();
+  </script>
+  
+</head>
+
+<body dir=ZgotmplZ>
+  <input type="checkbox" class="hidden toggle" id="menu-control" />
+  <input type="checkbox" class="hidden toggle" id="toc-control" />
+  <main class="container flex">
+    <aside class="book-menu">
+      
+  
+
+<nav>
+
+
+<a id="logo" href="//localhost:1313/flink/flink-cdc-docs-master/">
+    <img width="70%" src="//localhost:1313/flink/flink-cdc-docs-master//navbar-brand-logo.jpg">
+</a>
+<p style="text-align:right">v3.2-SNAPSHOT</p>
+
+<div class="book-search">
+  <input type="text" id="book-search-input" placeholder="Search" aria-label="Search" maxlength="64" data-hotkeys="s/" />
+  <div class="book-search-spinner hidden"></div>
+  <ul id="book-search-results"></ul>
+</div>
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+  <ul>
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <input type="checkbox" id="section-6200e334011b863c650806533c1e934d" class="toggle"  />
+    <label for="section-6200e334011b863c650806533c1e934d" class="flex justify-between"><div style="font-weight:450;margin-bottom:0.5em">Get Started</div><span>▾</span>
+    </label>
+  
+
+          
+  <ul>
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/get-started/introduction/" class="">Introduction</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <input type="checkbox" id="section-65126ba91b4ad451d64ae3bb634a3d69" class="toggle"  />
+    <label for="section-65126ba91b4ad451d64ae3bb634a3d69" class="flex justify-between">Quickstart<span>▾</span>
+    </label>
+  
+
+          
+  <ul>
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/get-started/quickstart/mysql-to-doris/" class="">MySQL to Doris</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/get-started/quickstart/mysql-to-starrocks/" class="">MySQL to StarRocks</a>
+  
+
+        </li>
+      
+    
+  </ul>
+
+        </li>
+      
+    
+  </ul>
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <input type="checkbox" id="section-9368478381278f3e55d1d748555c70f6" class="toggle" checked />
+    <label for="section-9368478381278f3e55d1d748555c70f6" class="flex justify-between"><div style="font-weight:450;margin-bottom:0.5em">Core Concept</div><span>▾</span>
+    </label>
+  
+
+          
+  <ul>
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/core-concept/data-pipeline/" class="">Data Pipeline</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/core-concept/data-source/" class="">Data Source</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/core-concept/data-sink/" class="">Data Sink</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/core-concept/table-id/" class="">Table ID</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/core-concept/transform/" class=" active">Transform</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/core-concept/route/" class="">Route</a>
+  
+
+        </li>
+      
+    
+  </ul>
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <input type="checkbox" id="section-cca35f842c08f0e2b4a94e3d03b79c9b" class="toggle"  />
+    <label for="section-cca35f842c08f0e2b4a94e3d03b79c9b" class="flex justify-between"><div style="font-weight:450;margin-bottom:0.5em">Connectors</div><span>▾</span>
+    </label>
+  
+
+          
+  <ul>
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <input type="checkbox" id="section-4436a0c8f6839ca41c460c9dd3348724" class="toggle"  />
+    <label for="section-4436a0c8f6839ca41c460c9dd3348724" class="flex justify-between">Pipeline Connectors<span>▾</span>
+    </label>
+  
+
+          
+  <ul>
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/pipeline-connectors/overview/" class="">Overview</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/pipeline-connectors/mysql/" class="">MySQL</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/pipeline-connectors/paimon/" class="">Paimon</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/pipeline-connectors/kafka/" class="">Kafka</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/pipeline-connectors/doris/" class="">Doris</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/pipeline-connectors/starrocks/" class="">StarRocks</a>
+  
+
+        </li>
+      
+    
+  </ul>
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <input type="checkbox" id="section-c0a0971d8f495dc42589f86cef138818" class="toggle"  />
+    <label for="section-c0a0971d8f495dc42589f86cef138818" class="flex justify-between">Flink Sources<span>▾</span>
+    </label>
+  
+
+          
+  <ul>
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/flink-sources/overview/" class="">Overview</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/flink-sources/mysql-cdc/" class="">MySQL</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/flink-sources/oracle-cdc/" class="">Oracle</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/flink-sources/sqlserver-cdc/" class="">SQL Server</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/flink-sources/postgres-cdc/" class="">Postgres</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/flink-sources/mongodb-cdc/" class="">MongoDB</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/flink-sources/db2-cdc/" class="">Db2</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/flink-sources/tidb-cdc/" class="">TiDB</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/flink-sources/oceanbase-cdc/" class="">OceanBase</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/flink-sources/vitess-cdc/" class="">Vitess</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/flink-sources/datastream-api-package-guidance/" class="">DataStream API Package Guidance</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <input type="checkbox" id="section-c23e2f7ee1f6d87942cc0f2b79648372" class="toggle"  />
+    <label for="section-c23e2f7ee1f6d87942cc0f2b79648372" class="flex justify-between">Tutorials<span>▾</span>
+    </label>
+  
+
+          
+  <ul>
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/flink-sources/tutorials/mongodb-tutorial/" class="">MongoDB Tutorial</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/flink-sources/tutorials/db2-tutorial/" class="">Db2 Tutorial</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/flink-sources/tutorials/oceanbase-tutorial/" class="">OceanBase Tutorial</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/flink-sources/tutorials/oracle-tutorial/" class="">Oracle Tutorial</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/flink-sources/tutorials/polardbx-tutorial/" class="">PolarDB-X Tutorial</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/flink-sources/tutorials/sqlserver-tutorial/" class="">SqlServer Tutorial</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/flink-sources/tutorials/tidb-tutorial/" class="">TiDB Tutorial</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/flink-sources/tutorials/build-real-time-data-lake-tutorial/" class="">Building a Real-time Data Lake with Flink CDC</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/flink-sources/tutorials/build-streaming-etl-tutorial/" class="">Building a Streaming ETL with Flink CDC</a>
+  
+
+        </li>
+      
+    
+  </ul>
+
+        </li>
+      
+    
+  </ul>
+
+        </li>
+      
+    
+  </ul>
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <input type="checkbox" id="section-988c4238198a24c7eac9b0f056d01246" class="toggle"  />
+    <label for="section-988c4238198a24c7eac9b0f056d01246" class="flex justify-between"><div style="font-weight:450;margin-bottom:0.5em">Deployment</div><span>▾</span>
+    </label>
+  
+
+          
+  <ul>
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/deployment/standalone/" class="">Standalone</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/deployment/yarn/" class="">YARN</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/deployment/kubernetes/" class="">Kubernetes</a>
+  
+
+        </li>
+      
+    
+  </ul>
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <input type="checkbox" id="section-fc36b619eabb0ca9cb7b253e0eba8a7a" class="toggle"  />
+    <label for="section-fc36b619eabb0ca9cb7b253e0eba8a7a" class="flex justify-between"><div style="font-weight:450;margin-bottom:0.5em">Developer Guide</div><span>▾</span>
+    </label>
+  
+
+          
+  <ul>
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/developer-guide/understand-flink-cdc-api/" class="">Understand Flink CDC API</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/developer-guide/contribute-to-flink-cdc/" class="">Contribute to Flink CDC</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/developer-guide/licenses/" class="">Licenses</a>
+  
+
+        </li>
+      
+    
+  </ul>
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <input type="checkbox" id="section-fb051daccb64de13ff5dc1ae657b01b6" class="toggle"  />
+    <label for="section-fb051daccb64de13ff5dc1ae657b01b6" class="flex justify-between">FAQ<span>▾</span>
+    </label>
+  
+
+          
+  <ul>
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/faq/faq/" class="">Frequently Asked Questions</a>
+  
+
+        </li>
+      
+    
+  </ul>
+
+        </li>
+      
+    
+  </ul>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<br/>
+<hr class="menu-break">
+
+<a href="//flink.apache.org" style="color:black;margin-bottom:0.5em"><i class="link fa fa-external-link title" aria-hidden="true"></i> Project Homepage</a>
+<br/>
+
+<a href="//nightlies.apache.org/flink/flink-cdc-docs-master/api/java/" style="color:black;margin-bottom:0.5em"><i class="link fa fa-external-link title" aria-hidden="true"></i> JavaDocs</a>
+<br/>
+
+<hr class="menu-break">
+<li style="list-style-type: none">
+  <br>
+  <input type="checkbox" id="section-version-picker" class="toggle">
+  <label for="section-version-picker" class="flex justify-between">
+     <div style="font-weight:450;margin-bottom:0.5em">Pick Docs Version</div>
+     <span>▾</span>
+  </label>
+  <ul>
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/">
+      3.2-SNAPSHOT (✓)
+    </a>
+    <hr class="menu-break">
+    
+      <li>
+        <a href="https://nightlies.apache.org/flink/flink-cdc-docs-release-3.0">
+          v3.0
+        </a>
+      </li>
+    
+    <hr class="menu-break">
+    <li>
+      <a href="//localhost:1313/flink/flink-cdc-docs-master//versions">
+          All Versions
+      </a>
+    </li>
+  </ul>
+</li>
+
+
+
+
+  
+
+  
+
+
+  
+
+
+
+
+
+
+<a  href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/core-concept/transform/" class="flex align-center">
+  <i class="fa fa-globe" aria-hidden="true"></i>&nbsp;&nbsp;
+  中文版
+</a>
+
+
+</nav>
+
+
+
+
+  <script>(function(){var e=document.querySelector("aside.book-menu nav");addEventListener("beforeunload",function(){localStorage.setItem("menu.scrollTop",e.scrollTop)}),e.scrollTop=localStorage.getItem("menu.scrollTop")})()</script>
+
+
+ 
+    </aside>
+
+    <div class="book-page">
+      <header class="book-header">
+        
+  <div class="flex align-center justify-between">
+  <label for="menu-control">
+    <img src="/flink/flink-cdc-docs-master/svg/menu.svg" class="book-icon" alt="Menu" />
+  </label>
+
+  <strong>Transform</strong>
+
+  <label for="toc-control">
+    
+    <img src="/flink/flink-cdc-docs-master/svg/toc.svg" class="book-icon" alt="Table of Contents" />
+    
+  </label>
+</div>
+
+
+  
+  <aside class="hidden clearfix">
+    
+  
+
+<nav id="TableOfContents"><h3>On This Page <button class="toc" onclick="collapseToc()"><i class="fa fa-compress" aria-hidden="true"></i></button></h3>
+  <ul>
+    <li><a href="#fields-definition">Fields definition</a></li>
+    <li><a href="#metadata-relationship">Metadata relationship</a></li>
+  </ul>
+
+  <ul>
+    <li><a href="#comparison-functions">Comparison Functions</a></li>
+    <li><a href="#logical-functions">Logical Functions</a></li>
+    <li><a href="#arithmetic-functions">Arithmetic Functions</a></li>
+    <li><a href="#string-functions">String Functions</a></li>
+    <li><a href="#temporal-functions">Temporal Functions</a></li>
+    <li><a href="#conditional-functions">Conditional Functions</a></li>
+  </ul>
+
+  <ul>
+    <li><a href="#add-computed-columns">Add computed columns</a></li>
+    <li><a href="#reference-metadata-columns">Reference metadata columns</a></li>
+    <li><a href="#use-wildcard-character-to-project-all-fields">Use wildcard character to project all fields</a></li>
+    <li><a href="#add-filter-rule">Add filter rule</a></li>
+    <li><a href="#reassign-primary-key">Reassign primary key</a></li>
+    <li><a href="#reassign-partition-key">Reassign partition key</a></li>
+    <li><a href="#specify-table-creation-configuration">Specify table creation configuration</a></li>
+    <li><a href="#classification-mapping">Classification mapping</a></li>
+  </ul>
+</nav>
+
+
+  </aside>
+  
+ 
+      </header>
+
+      
+
+
+
+
+<article class="markdown">
+    <blockquote style="border-color:#f66">
+        This documentation is for an unreleased version of Apache Flink CDC. We recommend you use the latest <a href="https://ci.apache.org/projects/flink/flink-cdc-docs-stable/">stable version</a>.
+    </blockquote>
+</article>
+
+
+
+      
+  <article class="markdown"><!--
+Licensed to the Apache Software Foundation (ASF) under one
+or more contributor license agreements.  See the NOTICE file
+distributed with this work for additional information
+regarding copyright ownership.  The ASF licenses this file
+to you under the Apache License, Version 2.0 (the
+"License"); you may not use this file except in compliance
+with the License.  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing,
+software distributed under the License is distributed on an
+"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, either express or implied.  See the License for the
+specific language governing permissions and limitations
+under the License.
+-->
+<h1 id="definition">
+  Definition
+  <a class="anchor" href="#definition">#</a>
+</h1>
+<p><strong>Transform</strong> module helps users delete and expand data columns based on the data columns in the table.   <br>
+What&rsquo;s more, it also helps users filter some unnecessary data during the synchronization process.</p>
+<h1 id="parameters">
+  Parameters
+  <a class="anchor" href="#parameters">#</a>
+</h1>
+<p>To describe a transform rule, the following parameters can be used:</p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Meaning</th>
+<th>Optional/Required</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>source-table</td>
+<td>Source table id, supports regular expressions</td>
+<td>required</td>
+</tr>
+<tr>
+<td>projection</td>
+<td>Projection rule, supports syntax similar to the select clause in SQL</td>
+<td>optional</td>
+</tr>
+<tr>
+<td>filter</td>
+<td>Filter rule, supports syntax similar to the where clause in SQL</td>
+<td>optional</td>
+</tr>
+<tr>
+<td>primary-keys</td>
+<td>Sink table primary keys, separated by commas</td>
+<td>optional</td>
+</tr>
+<tr>
+<td>partition-keys</td>
+<td>Sink table partition keys, separated by commas</td>
+<td>optional</td>
+</tr>
+<tr>
+<td>table-options</td>
+<td>used to the configure table creation statement when automatically creating tables</td>
+<td>optional</td>
+</tr>
+<tr>
+<td>description</td>
+<td>Transform rule description</td>
+<td>optional</td>
+</tr>
+</tbody>
+</table>
+<p>Multiple rules can be declared in one single pipeline YAML file.</p>
+<h1 id="metadata-fields">
+  Metadata Fields
+  <a class="anchor" href="#metadata-fields">#</a>
+</h1>
+<h2 id="fields-definition">
+  Fields definition
+  <a class="anchor" href="#fields-definition">#</a>
+</h2>
+<p>There are some hidden columns used to access metadata information. They will only take effect when explicitly referenced in the transform rules.</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Data Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>namespace_name</strong></td>
+<td>String</td>
+<td>Name of the namespace that contains the row.</td>
+</tr>
+<tr>
+<td><strong>schema_name</strong></td>
+<td>String</td>
+<td>Name of the schema that contains the row.</td>
+</tr>
+<tr>
+<td><strong>table_name</strong></td>
+<td>String</td>
+<td>Name of the table that contains the row.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="metadata-relationship">
+  Metadata relationship
+  <a class="anchor" href="#metadata-relationship">#</a>
+</h2>
+<table>
+<thead>
+<tr>
+<th>Type</th>
+<th>Namespace</th>
+<th>SchemaName</th>
+<th>Table</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>JDBC</td>
+<td>Catalog</td>
+<td>Schema</td>
+<td>Table</td>
+</tr>
+<tr>
+<td>Debezium</td>
+<td>Catalog</td>
+<td>Schema</td>
+<td>Table</td>
+</tr>
+<tr>
+<td>MySQL</td>
+<td>Database</td>
+<td>-</td>
+<td>Table</td>
+</tr>
+<tr>
+<td>Postgres</td>
+<td>Database</td>
+<td>Schema</td>
+<td>Table</td>
+</tr>
+<tr>
+<td>Oracle</td>
+<td>-</td>
+<td>Schema</td>
+<td>Table</td>
+</tr>
+<tr>
+<td>Microsoft SQL Server</td>
+<td>Database</td>
+<td>Schema</td>
+<td>Table</td>
+</tr>
+<tr>
+<td>StarRocks</td>
+<td>Database</td>
+<td>-</td>
+<td>Table</td>
+</tr>
+<tr>
+<td>Doris</td>
+<td>Database</td>
+<td>-</td>
+<td>Table</td>
+</tr>
+</tbody>
+</table>
+<h1 id="functions">
+  Functions
+  <a class="anchor" href="#functions">#</a>
+</h1>
+<p>Flink CDC uses <a href="https://calcite.apache.org/">Calcite</a> to parse expressions and <a href="https://www.janino.net/">Janino script</a> to evaluate expressions with function call.</p>
+<h2 id="comparison-functions">
+  Comparison Functions
+  <a class="anchor" href="#comparison-functions">#</a>
+</h2>
+<table>
+<thead>
+<tr>
+<th>Function</th>
+<th>Janino Code</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>value1 = value2</td>
+<td>valueEquals(value1, value2)</td>
+<td>Returns TRUE if value1 is equal to value2; returns FALSE if value1 or value2 is NULL.</td>
+</tr>
+<tr>
+<td>value1 &lt;&gt; value2</td>
+<td>!valueEquals(value1, value2)</td>
+<td>Returns TRUE if value1 is not equal to value2; returns FALSE if value1 or value2 is NULL.</td>
+</tr>
+<tr>
+<td>value1 &gt; value2</td>
+<td>value1 &gt; value2</td>
+<td>Returns TRUE if value1 is greater than value2; returns FALSE if value1 or value2 is NULL.</td>
+</tr>
+<tr>
+<td>value1 &gt;= value2</td>
+<td>value1 &gt;= value2</td>
+<td>Returns TRUE if value1 is greater than or equal to value2; returns FALSE if value1 or value2 is NULL.</td>
+</tr>
+<tr>
+<td>value1 &lt; value2</td>
+<td>value1 &lt; value2</td>
+<td>Returns TRUE if value1 is less than value2; returns FALSE if value1 or value2 is NULL.</td>
+</tr>
+<tr>
+<td>value1 &lt;= value2</td>
+<td>value1 &lt;= value2</td>
+<td>Returns TRUE if value1 is less than or equal to value2; returns FALSE if value1 or value2 is NULL.</td>
+</tr>
+<tr>
+<td>value IS NULL</td>
+<td>null == value</td>
+<td>Returns TRUE if value is NULL.</td>
+</tr>
+<tr>
+<td>value IS NOT NULL</td>
+<td>null != value</td>
+<td>Returns TRUE if value is not NULL.</td>
+</tr>
+<tr>
+<td>value1 BETWEEN value2 AND value3</td>
+<td>betweenAsymmetric(value1, value2, value3)</td>
+<td>Returns TRUE if value1 is greater than or equal to value2 and less than or equal to value3.</td>
+</tr>
+<tr>
+<td>value1 NOT BETWEEN value2 AND value3</td>
+<td>notBetweenAsymmetric(value1, value2, value3)</td>
+<td>Returns TRUE if value1 is less than value2 or greater than value3.</td>
+</tr>
+<tr>
+<td>string1 LIKE string2</td>
+<td>like(string1, string2)</td>
+<td>Returns TRUE if string1 matches pattern string2.</td>
+</tr>
+<tr>
+<td>string1 NOT LIKE string2</td>
+<td>notLike(string1, string2)</td>
+<td>Returns TRUE if string1 does not match pattern string2.</td>
+</tr>
+<tr>
+<td>value1 IN (value2 [, value3]* )</td>
+<td>in(value1, value2 [, value3]*)</td>
+<td>Returns TRUE if value1 exists in the given list (value2, value3, …).</td>
+</tr>
+<tr>
+<td>value1 NOT IN (value2 [, value3]* )</td>
+<td>notIn(value1, value2 [, value3]*)</td>
+<td>Returns TRUE if value1 does not exist in the given list (value2, value3, …).</td>
+</tr>
+</tbody>
+</table>
+<h2 id="logical-functions">
+  Logical Functions
+  <a class="anchor" href="#logical-functions">#</a>
+</h2>
+<table>
+<thead>
+<tr>
+<th>Function</th>
+<th>Janino Code</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>boolean1 OR boolean2</td>
+<td>boolean1 || boolean2</td>
+<td>Returns TRUE if BOOLEAN1 is TRUE or BOOLEAN2 is TRUE.</td>
+</tr>
+<tr>
+<td>boolean1 AND boolean2</td>
+<td>boolean1 &amp;&amp; boolean2</td>
+<td>Returns TRUE if BOOLEAN1 and BOOLEAN2 are both TRUE.</td>
+</tr>
+<tr>
+<td>NOT boolean</td>
+<td>!boolean</td>
+<td>Returns TRUE if boolean is FALSE; returns FALSE if boolean is TRUE.</td>
+</tr>
+<tr>
+<td>boolean IS FALSE</td>
+<td>false == boolean</td>
+<td>Returns TRUE if boolean is FALSE; returns FALSE if boolean is TRUE.</td>
+</tr>
+<tr>
+<td>boolean IS NOT FALSE</td>
+<td>true == boolean</td>
+<td>Returns TRUE if BOOLEAN is TRUE; returns FALSE if BOOLEAN is FALSE.</td>
+</tr>
+<tr>
+<td>boolean IS TRUE</td>
+<td>true == boolean</td>
+<td>Returns TRUE if BOOLEAN is TRUE; returns FALSE if BOOLEAN is FALSE.</td>
+</tr>
+<tr>
+<td>boolean IS NOT TRUE</td>
+<td>false == boolean</td>
+<td>Returns TRUE if boolean is FALSE; returns FALSE if boolean is TRUE.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="arithmetic-functions">
+  Arithmetic Functions
+  <a class="anchor" href="#arithmetic-functions">#</a>
+</h2>
+<table>
+<thead>
+<tr>
+<th>Function</th>
+<th>Janino Code</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>numeric1 + numeric2</td>
+<td>numeric1 + numeric2</td>
+<td>Returns NUMERIC1 plus NUMERIC2.</td>
+</tr>
+<tr>
+<td>numeric1 - numeric2</td>
+<td>numeric1 - numeric2</td>
+<td>Returns NUMERIC1 minus NUMERIC2.</td>
+</tr>
+<tr>
+<td>numeric1 * numeric2</td>
+<td>numeric1 * numeric2</td>
+<td>Returns NUMERIC1 multiplied by NUMERIC2.</td>
+</tr>
+<tr>
+<td>numeric1 / numeric2</td>
+<td>numeric1 / numeric2</td>
+<td>Returns NUMERIC1 divided by NUMERIC2.</td>
+</tr>
+<tr>
+<td>numeric1 % numeric2</td>
+<td>numeric1 % numeric2</td>
+<td>Returns the remainder (modulus) of numeric1 divided by numeric2.</td>
+</tr>
+<tr>
+<td>ABS(numeric)</td>
+<td>abs(numeric)</td>
+<td>Returns the absolute value of numeric.</td>
+</tr>
+<tr>
+<td>CEIL(numeric)</td>
+<td>ceil(numeric)</td>
+<td>Rounds numeric up, and returns the smallest number that is greater than or equal to numeric.</td>
+</tr>
+<tr>
+<td>FLOOR(numeric)</td>
+<td>floor(numeric)</td>
+<td>Rounds numeric down, and returns the largest number that is less than or equal to numeric.</td>
+</tr>
+<tr>
+<td>ROUND(numeric, int)</td>
+<td>round(numeric)</td>
+<td>Returns a number rounded to INT decimal places for NUMERIC.</td>
+</tr>
+<tr>
+<td>UUID()</td>
+<td>uuid()</td>
+<td>Returns an UUID (Universally Unique Identifier) string (e.g., &ldquo;3d3c68f7-f608-473f-b60c-b0c44ad4cc4e&rdquo;) according to RFC 4122 type 4 (pseudo randomly generated) UUID.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="string-functions">
+  String Functions
+  <a class="anchor" href="#string-functions">#</a>
+</h2>
+<table>
+<thead>
+<tr>
+<th>Function</th>
+<th>Janino Code</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>string1 || string2</td>
+<td>concat(string1, string2)</td>
+<td>Returns the concatenation of STRING1 and STRING2.</td>
+</tr>
+<tr>
+<td>CHAR_LENGTH(string)</td>
+<td>charLength(string)</td>
+<td>Returns the number of characters in STRING.</td>
+</tr>
+<tr>
+<td>UPPER(string)</td>
+<td>upper(string)</td>
+<td>Returns string in uppercase.</td>
+</tr>
+<tr>
+<td>LOWER(string)</td>
+<td>lower(string)</td>
+<td>Returns string in lowercase.</td>
+</tr>
+<tr>
+<td>TRIM(string1)</td>
+<td>trim(&lsquo;BOTH&rsquo;,string1)</td>
+<td>Returns a string that removes whitespaces at both sides.</td>
+</tr>
+<tr>
+<td>REGEXP_REPLACE(string1, string2, string3)</td>
+<td>regexpReplace(string1, string2, string3)</td>
+<td>Returns a string from STRING1 with all the substrings that match a regular expression STRING2 consecutively being replaced with STRING3. E.g., &lsquo;foobar&rsquo;.regexpReplace(&lsquo;oo|ar&rsquo;, &lsquo;&rsquo;) returns &ldquo;fb&rdquo;.</td>
+</tr>
+<tr>
+<td>SUBSTRING(string FROM integer1 [ FOR integer2 ])</td>
+<td>substring(string,integer1,integer2)</td>
+<td>Returns a substring of STRING starting from position INT1 with length INT2 (to the end by default).</td>
+</tr>
+<tr>
+<td>CONCAT(string1, string2,…)</td>
+<td>concat(string1, string2,…)</td>
+<td>Returns a string that concatenates string1, string2, …. E.g., CONCAT(&lsquo;AA&rsquo;, &lsquo;BB&rsquo;, &lsquo;CC&rsquo;) returns &lsquo;AABBCC&rsquo;.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="temporal-functions">
+  Temporal Functions
+  <a class="anchor" href="#temporal-functions">#</a>
+</h2>
+<table>
+<thead>
+<tr>
+<th>Function</th>
+<th>Janino Code</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>LOCALTIME</td>
+<td>localtime()</td>
+<td>Returns the current SQL time in the local time zone, the return type is TIME(0).</td>
+</tr>
+<tr>
+<td>LOCALTIMESTAMP</td>
+<td>localtimestamp()</td>
+<td>Returns the current SQL timestamp in local time zone, the return type is TIMESTAMP(3).</td>
+</tr>
+<tr>
+<td>CURRENT_TIME</td>
+<td>currentTime()</td>
+<td>Returns the current SQL time in the local time zone, this is a synonym of LOCAL_TIME.</td>
+</tr>
+<tr>
+<td>CURRENT_DATE</td>
+<td>currentDate()</td>
+<td>Returns the current SQL date in the local time zone.</td>
+</tr>
+<tr>
+<td>CURRENT_TIMESTAMP</td>
+<td>currentTimestamp()</td>
+<td>Returns the current SQL timestamp in the local time zone, the return type is TIMESTAMP_LTZ(3).</td>
+</tr>
+<tr>
+<td>NOW()</td>
+<td>now()</td>
+<td>Returns the current SQL timestamp in the local time zone, this is a synonym of CURRENT_TIMESTAMP.</td>
+</tr>
+<tr>
+<td>DATE_FORMAT(timestamp, string)</td>
+<td>dateFormat(timestamp, string)</td>
+<td>Converts timestamp to a value of string in the format specified by the date format string. The format string is compatible with Java&rsquo;s SimpleDateFormat.</td>
+</tr>
+<tr>
+<td>TIMESTAMPDIFF(timepointunit, timepoint1, timepoint2)</td>
+<td>timestampDiff(timepointunit, timepoint1, timepoint2)</td>
+<td>Returns the (signed) number of timepointunit between timepoint1 and timepoint2. The unit for the interval is given by the first argument, which should be one of the following values: SECOND, MINUTE, HOUR, DAY, MONTH, or YEAR.</td>
+</tr>
+<tr>
+<td>TO_DATE(string1[, string2])</td>
+<td>toDate(string1[, string2])</td>
+<td>Converts a date string string1 with format string2 (by default &lsquo;yyyy-MM-dd&rsquo;) to a date.</td>
+</tr>
+<tr>
+<td>TO_TIMESTAMP(string1[, string2])</td>
+<td>toTimestamp(string1[, string2])</td>
+<td>Converts date time string string1 with format string2 (by default: &lsquo;yyyy-MM-dd HH:mm:ss&rsquo;) to a timestamp, without time zone.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="conditional-functions">
+  Conditional Functions
+  <a class="anchor" href="#conditional-functions">#</a>
+</h2>
+<table>
+<thead>
+<tr>
+<th>Function</th>
+<th>Janino Code</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>CASE value WHEN value1_1 [, value1_2]* THEN RESULT1 (WHEN value2_1 [, value2_2 ]* THEN result_2)* (ELSE result_z) END</td>
+<td>Nested ternary expression</td>
+<td>Returns resultX when the first time value is contained in (valueX_1, valueX_2, …). When no value matches, returns result_z if it is provided and returns NULL otherwise.</td>
+</tr>
+<tr>
+<td>CASE WHEN condition1 THEN result1 (WHEN condition2 THEN result2)* (ELSE result_z) END</td>
+<td>Nested ternary expression</td>
+<td>Returns resultX when the first conditionX is met. When no condition is met, returns result_z if it is provided and returns NULL otherwise.</td>
+</tr>
+<tr>
+<td>COALESCE(value1 [, value2]*)</td>
+<td>coalesce(Object&hellip; objects)</td>
+<td>Returns the first argument that is not NULL.If all arguments are NULL, it returns NULL as well. The return type is the least restrictive, common type of all of its arguments. The return type is nullable if all arguments are nullable as well.</td>
+</tr>
+<tr>
+<td>IF(condition, true_value, false_value)</td>
+<td>condition ? true_value : false_value</td>
+<td>Returns the true_value if condition is met, otherwise false_value. E.g., IF(5 &gt; 3, 5, 3) returns 5.</td>
+</tr>
+</tbody>
+</table>
+<h1 id="example">
+  Example
+  <a class="anchor" href="#example">#</a>
+</h1>
+<h2 id="add-computed-columns">
+  Add computed columns
+  <a class="anchor" href="#add-computed-columns">#</a>
+</h2>
+<p>Evaluation expressions can be used to generate new columns. For example, if we want to append two computed columns based on the table <code>web_order</code> in the database <code>mydb</code>, we may define a transform rule as follows:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-yaml" data-lang="yaml"><span class="line"><span class="cl"><span class="nt">transform</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span>- <span class="nt">source-table</span><span class="p">:</span><span class="w"> </span><span class="l">mydb.web_order</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">projection</span><span class="p">:</span><span class="w"> </span><span class="l">id, order_id, UPPER(product_name) as product_name, localtimestamp as new_timestamp</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="l">append calculated columns based on source table</span><span class="w">
+</span></span></span></code></pre></div><h2 id="reference-metadata-columns">
+  Reference metadata columns
+  <a class="anchor" href="#reference-metadata-columns">#</a>
+</h2>
+<p>We may reference metadata column in projection expressions. For example, given a table <code>web_order</code> in the database <code>mydb</code>, we may define a transform rule as follows:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-yaml" data-lang="yaml"><span class="line"><span class="cl"><span class="nt">transform</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span>- <span class="nt">source-table</span><span class="p">:</span><span class="w"> </span><span class="l">mydb.web_order</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">projection</span><span class="p">:</span><span class="w"> </span><span class="l">id, order_id, __namespace_name__ || &#39;.&#39; || __schema_name__ || &#39;.&#39; || __table_name__ identifier_name</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="l">access metadata columns from source table</span><span class="w">
+</span></span></span></code></pre></div><h2 id="use-wildcard-character-to-project-all-fields">
+  Use wildcard character to project all fields
+  <a class="anchor" href="#use-wildcard-character-to-project-all-fields">#</a>
+</h2>
+<p>A wildcard character (<code>*</code>) can be used to reference all fields in a table. For example, given two tables <code>web_order</code> and <code>app_order</code> in the database <code>mydb</code>, we may define a transform rule as follows:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-yaml" data-lang="yaml"><span class="line"><span class="cl"><span class="nt">transform</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span>- <span class="nt">source-table</span><span class="p">:</span><span class="w"> </span><span class="l">mydb.web_order</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">projection</span><span class="p">:</span><span class="w"> </span><span class="l">\*, UPPER(product_name) as product_name</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="l">project fields with wildcard character from source table</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span>- <span class="nt">source-table</span><span class="p">:</span><span class="w"> </span><span class="l">mydb.app_order</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">projection</span><span class="p">:</span><span class="w"> </span><span class="l">UPPER(product_name) as product_name, *</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="l">project fields with wildcard character from source table</span><span class="w">
+</span></span></span></code></pre></div><p>Notice: When <code>*</code> character presents at the beginning of expressions, an escaping backslash is required.</p>
+<h2 id="add-filter-rule">
+  Add filter rule
+  <a class="anchor" href="#add-filter-rule">#</a>
+</h2>
+<p>Use reference columns when adding filtering rules to the table <code>web_order</code> in the database <code>mydb</code>, we may define a transform rule as follows:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-yaml" data-lang="yaml"><span class="line"><span class="cl"><span class="nt">transform</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span>- <span class="nt">source-table</span><span class="p">:</span><span class="w"> </span><span class="l">mydb.web_order</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">filter</span><span class="p">:</span><span class="w"> </span><span class="l">id &gt; 10 AND order_id &gt; 100</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="l">filtering rows from source table</span><span class="w">
+</span></span></span></code></pre></div><p>Computed columns can be used in filtering conditions, too. For example, given a table <code>web_order</code> in the database <code>mydb</code>, we may define a transform rule as follows:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-yaml" data-lang="yaml"><span class="line"><span class="cl"><span class="nt">transform</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span>- <span class="nt">source-table</span><span class="p">:</span><span class="w"> </span><span class="l">mydb.web_order</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">projection</span><span class="p">:</span><span class="w"> </span><span class="l">id, order_id, UPPER(province) as new_province </span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">filter</span><span class="p">:</span><span class="w"> </span><span class="l">new_province = &#39;SHANGHAI&#39;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="l">filtering rows based on computed columns</span><span class="w">
+</span></span></span></code></pre></div><h2 id="reassign-primary-key">
+  Reassign primary key
+  <a class="anchor" href="#reassign-primary-key">#</a>
+</h2>
+<p>We can reassign the primary key in transform rules. For example, given a table <code>web_order</code> in the database <code>mydb</code>, we may define a transform rule as follows:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-yaml" data-lang="yaml"><span class="line"><span class="cl"><span class="nt">transform</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span>- <span class="nt">source-table</span><span class="p">:</span><span class="w"> </span><span class="l">mydb.web_order</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">projection</span><span class="p">:</span><span class="w"> </span><span class="l">id, order_id</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">primary-keys</span><span class="p">:</span><span class="w"> </span><span class="l">order_id</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="l">reassign primary key example</span><span class="w">
+</span></span></span></code></pre></div><p>Composite primary keys are also supported:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-yaml" data-lang="yaml"><span class="line"><span class="cl"><span class="nt">transform</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span>- <span class="nt">source-table</span><span class="p">:</span><span class="w"> </span><span class="l">mydb.web_order</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">projection</span><span class="p">:</span><span class="w"> </span><span class="l">id, order_id, UPPER(product_name) as product_name</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">primary-keys</span><span class="p">:</span><span class="w"> </span><span class="l">order_id, product_name</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="l">reassign composite primary keys example</span><span class="w">
+</span></span></span></code></pre></div><h2 id="reassign-partition-key">
+  Reassign partition key
+  <a class="anchor" href="#reassign-partition-key">#</a>
+</h2>
+<p>We can reassign the partition key in transform rules. For example, given a table web_order in the database mydb, we may define a transform rule as follows:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-yaml" data-lang="yaml"><span class="line"><span class="cl"><span class="nt">transform</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span>- <span class="nt">source-table</span><span class="p">:</span><span class="w"> </span><span class="l">mydb.web_order</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">projection</span><span class="p">:</span><span class="w"> </span><span class="l">id, order_id, UPPER(product_name) as product_name</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">partition-keys</span><span class="p">:</span><span class="w"> </span><span class="l">product_name</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="l">reassign partition key example</span><span class="w">
+</span></span></span></code></pre></div><h2 id="specify-table-creation-configuration">
+  Specify table creation configuration
+  <a class="anchor" href="#specify-table-creation-configuration">#</a>
+</h2>
+<p>Extra options can be defined in a transform rule, and will be applied when creating downstream tables. Given a table <code>web_order</code> in the database <code>mydb</code>, we may define a transform rule as follows:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-yaml" data-lang="yaml"><span class="line"><span class="cl"><span class="nt">transform</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span>- <span class="nt">source-table</span><span class="p">:</span><span class="w"> </span><span class="l">mydb.web_order</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">projection</span><span class="p">:</span><span class="w"> </span><span class="l">id, order_id, UPPER(product_name) as product_name</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">table-options</span><span class="p">:</span><span class="w"> </span><span class="l">comment=web order</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="l">auto creating table options example</span><span class="w">
+</span></span></span></code></pre></div><p>Tips: The format of table-options is <code>key1=value1,key2=value2</code>.</p>
+<h2 id="classification-mapping">
+  Classification mapping
+  <a class="anchor" href="#classification-mapping">#</a>
+</h2>
+<p>Multiple transform rules can be defined to classify input data rows and apply different processings. For example, we may define a transform rule as follows:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-yaml" data-lang="yaml"><span class="line"><span class="cl"><span class="nt">transform</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span>- <span class="nt">source-table</span><span class="p">:</span><span class="w"> </span><span class="l">mydb.web_order</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">projection</span><span class="p">:</span><span class="w"> </span><span class="l">id, order_id</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">filter</span><span class="p">:</span><span class="w"> </span><span class="l">UPPER(province) = &#39;SHANGHAI&#39;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="l">classification mapping example</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span>- <span class="nt">source-table</span><span class="p">:</span><span class="w"> </span><span class="l">mydb.web_order</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">projection</span><span class="p">:</span><span class="w"> </span><span class="l">order_id as id, id as order_id</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">filter</span><span class="p">:</span><span class="w"> </span><span class="l">UPPER(province) = &#39;BEIJING&#39;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="l">classification mapping example</span><span class="w">
+</span></span></span></code></pre></div><h1 id="known-limitations">
+  Known limitations
+  <a class="anchor" href="#known-limitations">#</a>
+</h1>
+<ul>
+<li>Currently, transform doesn&rsquo;t work with route rules. It will be supported in future versions.</li>
+<li>Computed columns cannot reference trimmed columns that do not present in final projection results. This will be fixed in future versions.</li>
+<li>Regular matching of tables with different schemas is not supported. If necessary, multiple rules need to be written.</li>
+</ul>
+</article>
+ 
+      
+
+      <footer class="book-footer">
+        
+  
+
+
+
+
+<a href="//github.com/apache/flink-cdc/edit/master/docs/content/docs/core-concept/transform.md" style="color:black"><i class="fa fa-edit fa-fw"></i>Edit This Page</a>
+
+
+ 
+        
+      </footer>
+
+      
+  
+  <div class="book-comments">
+
+</div>
+  
+ 
+
+      <label for="menu-control" class="hidden book-menu-overlay"></label>
+    </div>
+
+    
+    <aside class="book-toc">
+      
+  
+
+<nav id="TableOfContents"><h3>On This Page <button class="toc" onclick="collapseToc()"><i class="fa fa-compress" aria-hidden="true"></i></button></h3>
+  <ul>
+    <li><a href="#fields-definition">Fields definition</a></li>
+    <li><a href="#metadata-relationship">Metadata relationship</a></li>
+  </ul>
+
+  <ul>
+    <li><a href="#comparison-functions">Comparison Functions</a></li>
+    <li><a href="#logical-functions">Logical Functions</a></li>
+    <li><a href="#arithmetic-functions">Arithmetic Functions</a></li>
+    <li><a href="#string-functions">String Functions</a></li>
+    <li><a href="#temporal-functions">Temporal Functions</a></li>
+    <li><a href="#conditional-functions">Conditional Functions</a></li>
+  </ul>
+
+  <ul>
+    <li><a href="#add-computed-columns">Add computed columns</a></li>
+    <li><a href="#reference-metadata-columns">Reference metadata columns</a></li>
+    <li><a href="#use-wildcard-character-to-project-all-fields">Use wildcard character to project all fields</a></li>
+    <li><a href="#add-filter-rule">Add filter rule</a></li>
+    <li><a href="#reassign-primary-key">Reassign primary key</a></li>
+    <li><a href="#reassign-partition-key">Reassign partition key</a></li>
+    <li><a href="#specify-table-creation-configuration">Specify table creation configuration</a></li>
+    <li><a href="#classification-mapping">Classification mapping</a></li>
+  </ul>
+</nav>
+
+ 
+    </aside>
+    <aside class="expand-toc">
+      <button class="toc" onclick="expandToc()">
+        <i class="fa fa-expand" aria-hidden="true"></i>
+      </button>
+    </aside>
+    
+  </main>
+
+  
+</body>
+
+</html>
+
+
+
+
+
+
+
+
+
+
+
+

@@ -6,6 +6,7 @@ import org.apache.flink.cdc.connectors.base.relational.JdbcSourceEventDispatcher
 import org.apache.flink.cdc.connectors.base.source.meta.offset.Offset;
 import org.apache.flink.cdc.connectors.base.source.meta.split.SourceSplitBase;
 import org.apache.flink.cdc.connectors.base.source.reader.external.JdbcSourceFetchTaskContext;
+import org.apache.flink.cdc.connectors.base.utils.SourceRecordUtils;
 import org.apache.flink.cdc.connectors.tidb.source.config.TiDBConnectorConfig;
 import org.apache.flink.cdc.connectors.tidb.source.connection.TiDBConnection;
 import org.apache.flink.cdc.connectors.tidb.source.handler.TiDBSchemaChangeEventHandler;
@@ -60,6 +61,7 @@ public class TiDBSourceFetchTaskContext extends JdbcSourceFetchTaskContext {
         this.connection = connection;
         this.metadataProvider = new TiDBEventMetadataProvider();
         this.tiDBDatabaseSchema = tiDBDatabaseSchema;
+        this.errorHandler = new ErrorHandler(null, sourceConfig.getDbzConnectorConfig(), queue);
     }
 
     @Override
@@ -72,19 +74,12 @@ public class TiDBSourceFetchTaskContext extends JdbcSourceFetchTaskContext {
                         connectorConfig,
                         (tableId, prefix, delimiter) ->
                                 String.join(delimiter, prefix, tableId.identifier()));
-
-        // change to newSchema
-        //   this.tiDBDatabaseSchema=TiDBUtils.createTiDBDatabaseSchema(connectorConfig,
-        // tableIdCaseInsensitive);
-        //        this.tiDBDatabaseSchema =
-        //                    TiDBUtils.createTiDBDatabaseSchema(connectorConfig, topicSelector,
-        // tableIdCaseInsensitive);
         try {
             this.tiDBDatabaseSchema =
                     TiDBUtils.newSchema(
                             connection, connectorConfig, topicSelector, tableIdCaseInsensitive);
         } catch (Exception e) {
-            throw new RuntimeException("Failed to initialize TiDBschema", e);
+            throw new RuntimeException("Failed to initialize TiDBSchema", e);
         }
 
         this.tiDBPartition = new TiDBPartition(connectorConfig.getLogicalName());
@@ -135,7 +130,7 @@ public class TiDBSourceFetchTaskContext extends JdbcSourceFetchTaskContext {
 
     @Override
     public Tables.TableFilter getTableFilter() {
-        return null;
+        return this.sourceConfig.getTableFilters().dataCollectionFilter();
     }
 
     @Override
@@ -144,7 +139,9 @@ public class TiDBSourceFetchTaskContext extends JdbcSourceFetchTaskContext {
     }
 
     @Override
-    public void close() throws Exception {}
+    public void close() throws Exception {
+        this.connection.close();
+    }
 
     @Override
     public TiDBDatabaseSchema getDatabaseSchema() {
@@ -152,13 +149,28 @@ public class TiDBSourceFetchTaskContext extends JdbcSourceFetchTaskContext {
     }
 
     @Override
+    public boolean isRecordBetween(SourceRecord record, Object[] splitStart, Object[] splitEnd) {
+        if (this.offsetContext.isSnapshotRunning()) {
+            RowType splitKeyType =
+                    getSplitType(getDatabaseSchema().tableFor(this.getTableId(record)));
+            Object[] key =
+                    SourceRecordUtils.getSplitKey(splitKeyType, record, getSchemaNameAdjuster());
+            return SourceRecordUtils.splitKeyRangeContains(key, splitStart, splitEnd);
+        } else {
+            CDCEventOffset newOffset = new CDCEventOffset(record.sourceOffset());
+            return SourceRecordUtils.splitKeyRangeContains(
+                    new CDCEventOffset[] {newOffset}, splitStart, splitEnd);
+        }
+    }
+
+    @Override
     public RowType getSplitType(Table table) {
-        return null;
+        return TiDBUtils.getSplitType(table);
     }
 
     @Override
     public ErrorHandler getErrorHandler() {
-        return null;
+        return errorHandler;
     }
 
     @Override
@@ -193,20 +205,8 @@ public class TiDBSourceFetchTaskContext extends JdbcSourceFetchTaskContext {
                                 .createInitialOffset() // get an offset for starting snapshot
                         : sourceSplitBase.asStreamSplit().getStartingOffset();
 
-        //    if (!isBinlogAvailable(mySqlOffsetContext)) {
-        //      throw new IllegalStateException(
-        //              "The connector is trying to read binlog starting at "
-        //                      + mySqlOffsetContext.getSourceInfo()
-        //                      + ", but this is no longer "
-        //                      + "available on the server. Reconfigure the connector to use a
-        // snapshot when needed.");
-        //    }
         return CDCEventOffsetUtils.getCDCEventOffsetContext(loader, offset);
     }
-
-    //  public TiDBSourceConfig getSourceConfig() {
-    //    return (TiDBSourceConfig) sourceConfig;
-    //  }
 
     public TiDBSourceFetchTaskContext getTaskContext() {
         return this;

@@ -1,5 +1,6 @@
 package org.tikv.cdc.model;
 
+import org.tikv.common.meta.TiTableInfo;
 import org.tikv.shade.com.google.protobuf.ByteString;
 
 public class RawKVEntry {
@@ -10,6 +11,9 @@ public class RawKVEntry {
     private final long startTs;
     private final long crts;
     private final long regionId;
+    private String dbName;
+    private String tableName;
+    private TiTableInfo tableInfo;
 
     public RawKVEntry(RawKVEntry raw) {
         this.opType = raw.getOpType();
@@ -65,6 +69,30 @@ public class RawKVEntry {
 
     public long getRegionId() {
         return regionId;
+    }
+
+    public String getDbName() {
+        return dbName;
+    }
+
+    public void setDbName(String dbName) {
+        this.dbName = dbName;
+    }
+
+    public String getTableName() {
+        return tableName;
+    }
+
+    public void setTableName(String tableName) {
+        this.tableName = tableName;
+    }
+
+    public TiTableInfo getTableInfo() {
+        return tableInfo;
+    }
+
+    public void setTableInfo(TiTableInfo tableInfo) {
+        this.tableInfo = tableInfo;
     }
 
     public static class Builder {

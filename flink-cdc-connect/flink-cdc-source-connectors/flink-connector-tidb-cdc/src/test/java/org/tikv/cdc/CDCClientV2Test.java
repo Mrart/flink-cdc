@@ -4,19 +4,23 @@ import org.apache.flink.cdc.connectors.tidb.TiDBTestBase;
 import org.apache.flink.cdc.connectors.tidb.source.config.TiDBSourceConfig;
 import org.apache.flink.cdc.connectors.tidb.source.config.TiDBSourceConfigFactory;
 
+import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.tikv.cdc.exception.ClientException;
 import org.tikv.cdc.kv.CDCClientV2;
-import org.tikv.cdc.kv.ICDCClientV2;
-import org.tikv.cdc.model.RegionFeedEvent;
+import org.tikv.cdc.kv.EventListener;
+import org.tikv.cdc.model.PolymorphicEvent;
+import org.tikv.common.meta.TiTableInfo;
 
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.time.Instant;
+import java.util.Optional;
 
-import static org.apache.flink.cdc.connectors.tidb.source.fetch.CDCEventSource.getTiConfig;
+import static org.apache.flink.cdc.connectors.tidb.source.config.TiDBSourceOptions.getTiConfig;
 
 public class CDCClientV2Test extends TiDBTestBase {
     private static final Logger LOGGER = LoggerFactory.getLogger(CDCClientV2Test.class);
@@ -33,22 +37,26 @@ public class CDCClientV2Test extends TiDBTestBase {
                 PD.getContainerIpAddress() + ":" + PD.getMappedPort(PD_PORT_ORIGIN));
         TiDBSourceConfig tiDBSourceConfig = configFactoryOfCustomDatabase.create(0);
         //    tiDBSourceConfig.
-        ICDCClientV2 icdcClientV2 =
+        CDCClientV2 icdcClientV2 =
                 new CDCClientV2(getTiConfig(tiDBSourceConfig), databaseName, tableName);
-        try (Connection connection = getJdbcConnection("customer");
+        try (Connection connection = getJdbcConnection(databaseName);
                 Statement statement = connection.createStatement()) {
             // update tidb.
             statement.execute("UPDATE customers SET address='hangzhou' WHERE id=103;");
         }
-        icdcClientV2.execute(Instant.now().getEpochSecond());
-        while (true) {
-            RegionFeedEvent regionFeedEvent = icdcClientV2.get();
-            if (regionFeedEvent == null) {
-                continue;
-            } else {
-                LOGGER.info("Receive event {}", regionFeedEvent);
-                return;
-            }
-        }
+        Optional<TiTableInfo> tableInfoOptional =
+                icdcClientV2.getTableInfo(databaseName, tableName);
+        icdcClientV2.addListener(
+                new EventListener() {
+                    @Override
+                    public void notify(PolymorphicEvent rawKVEntry) {
+                        Assert.assertNotNull(rawKVEntry);
+                    }
+
+                    @Override
+                    public void onException(ClientException e) {}
+                });
+        icdcClientV2.start(Instant.now().toEpochMilli());
+        icdcClientV2.join();
     }
 }

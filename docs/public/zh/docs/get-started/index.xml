@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>入门指南 on Apache Flink CDC</title>
+    <link>//localhost:1313/flink/flink-cdc-docs-master/zh/docs/get-started/</link>
+    <description>Recent content in 入门指南 on Apache Flink CDC</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>zh</language>
+    <atom:link href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/get-started/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>项目介绍</title>
+      <link>//localhost:1313/flink/flink-cdc-docs-master/zh/docs/get-started/introduction/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>//localhost:1313/flink/flink-cdc-docs-master/zh/docs/get-started/introduction/</guid>
+      <description>欢迎使用 Flink CDC 🎉 # Flink CDC 是一个基于流的数据集成工具，旨在为用户提供一套功能更加全面的编程接口（API）。 该工具使得用户能够以 YAML 配置文件的形式，优雅地定义其 ETL（Extract, Transform, Load）流程，并协助用户自动化生成定制化的 Flink 算子并且提交 Flink 作业。 Flink CDC 在任务提交过程中进行了优化，并且增加了一些高级特性，如表结构变更自动同步（Schema Evolution）、数据转换（Data Transformation）、整库同步（Full Database Synchronization）以及 精确一次（Exactly-once）语义。&#xA;Flink CDC 深度集成并由 Apache Flink 驱动，提供以下核心功能：&#xA;✅ 端到端的数据集成框架 ✅ 为数据集成的用户提供了易于构建作业的 API ✅ 支持在 Source 和 Sink 中处理多个表 ✅ 整库同步 ✅具备表结构变更自动同步的能力（Schema Evolution）， 如何使用 Flink CDC # Flink CDC 提供了基于 YAML 格式的用户 API，更适合于数据集成场景。以下是一个 YAML 文件的示例，它定义了一个数据管道(Pipeline)，该Pipeline从 MySQL 捕获实时变更，并将它们同步到 Apache Doris：&#xA;source: type: mysql hostname: localhost port: 3306 username: root password: 123456 tables: app_db.</description>
+    </item>
+  </channel>
+</rss>

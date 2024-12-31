@@ -12,25 +12,26 @@ import io.debezium.relational.TableId;
 import io.debezium.schema.DataCollectionId;
 import org.apache.kafka.connect.data.Schema;
 import org.apache.kafka.connect.data.Struct;
+import org.tikv.common.meta.TiTimestamp;
 
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+import static org.apache.flink.cdc.connectors.tidb.source.offset.CDCEventOffset.COMMIT_VERSION_KEY;
+import static org.apache.flink.cdc.connectors.tidb.source.offset.CDCEventOffset.TIMESTAMP_KEY;
+
 public class CDCEventOffsetContext implements OffsetContext {
     private static final String SNAPSHOT_COMPLETED_KEY = "snapshot_completed";
-
-    public static final String TIMESTAMP_KEY = "timestamp";
-    public static final String EVENTS_TO_SKIP_KEY = "events";
 
     private final Schema sourceInfoSchema;
     private final TiDBSourceInfo sourceInfo;
     private final TransactionContext transactionContext;
     private final IncrementalSnapshotContext<TableId> incrementalSnapshotContext;
     private boolean snapshotCompleted;
-    private long currentTimestamp;
-    private long restartEventsToSkip = 0;
+    private String commitVersion;
+    private String timestamp;
 
     public CDCEventOffsetContext(
             boolean snapshot,
@@ -52,16 +53,25 @@ public class CDCEventOffsetContext implements OffsetContext {
         }
     }
 
+    public static CDCEventOffsetContext initial(TiDBConnectorConfig config) {
+        return new CDCEventOffsetContext(
+                false,
+                false,
+                new TransactionContext(),
+                new SignalBasedIncrementalSnapshotContext<>(),
+                new TiDBSourceInfo(config));
+    }
+
     @Override
     public Map<String, ?> getOffset() {
-        HashMap<String, Object> map = new HashMap<>();
-        if (restartEventsToSkip != 0) {
-            map.put(EVENTS_TO_SKIP_KEY, String.valueOf(restartEventsToSkip));
-        }
+        HashMap<String, Object> offset = new HashMap<>();
         if (sourceInfo.timestamp() != null) {
-            map.put(TIMESTAMP_KEY, String.valueOf(sourceInfo.timestamp().getEpochSecond()));
+            offset.put(TIMESTAMP_KEY, String.valueOf(sourceInfo.timestamp().toEpochMilli()));
         }
-        return map;
+        if (commitVersion != null) {
+            offset.put(COMMIT_VERSION_KEY, commitVersion);
+        }
+        return offset;
     }
 
     public void databaseEvent(String database, Instant timestamp) {
@@ -88,31 +98,68 @@ public class CDCEventOffsetContext implements OffsetContext {
 
     @Override
     public boolean isSnapshotRunning() {
-        return false;
+        return sourceInfo.isSnapshot() && !snapshotCompleted;
     }
 
     @Override
-    public void markLastSnapshotRecord() {}
+    public void markLastSnapshotRecord() {
+        sourceInfo.setSnapshot(SnapshotRecord.LAST);
+    }
 
     @Override
-    public void preSnapshotStart() {}
+    public void preSnapshotStart() {
+        sourceInfo.setSnapshot(SnapshotRecord.TRUE);
+        snapshotCompleted = false;
+    }
 
     @Override
-    public void preSnapshotCompletion() {}
+    public void preSnapshotCompletion() {
+        snapshotCompleted = true;
+    }
 
     @Override
-    public void postSnapshotCompletion() {}
+    public void postSnapshotCompletion() {
+        sourceInfo.setSnapshot(SnapshotRecord.FALSE);
+    }
 
     @Override
     public void event(DataCollectionId collectionId, Instant timestamp) {
         sourceInfo.setSourceTime(timestamp);
         sourceInfo.tableEvent((TableId) collectionId);
-        //    sourceInfo.update(instant, (TableId) tableId);
+    }
+
+    public void event(DataCollectionId collectionId, long resolvedTs) {
+        sourceInfo.setSourceTime(Instant.ofEpochMilli(TiTimestamp.extractPhysical(resolvedTs)));
+        sourceInfo.tableEvent((TableId) collectionId);
+        sourceInfo.setCommitVersion(resolvedTs);
     }
 
     @Override
     public TransactionContext getTransactionContext() {
         return transactionContext;
+    }
+
+    @Override
+    public void incrementalSnapshotEvents() {
+        sourceInfo.setSnapshot(SnapshotRecord.INCREMENTAL);
+    }
+
+    @Override
+    public IncrementalSnapshotContext<?> getIncrementalSnapshotContext() {
+        return incrementalSnapshotContext;
+    }
+
+    public void setCheckpoint(Instant timestamp, String commitVersion) {
+        this.timestamp = Long.toString(timestamp.toEpochMilli());
+        if (commitVersion == null) {
+            commitVersion =
+                    String.valueOf(new TiTimestamp(timestamp.toEpochMilli(), 0).getVersion());
+        }
+        this.commitVersion = commitVersion;
+    }
+
+    public void setCommitVersion(Instant timestamp, String commitVersion) {
+        this.setCheckpoint(timestamp, commitVersion);
     }
 
     public CDCEventOffsetContext(
@@ -129,19 +176,9 @@ public class CDCEventOffsetContext implements OffsetContext {
                         : new SignalBasedIncrementalSnapshotContext<>(),
                 tiDBSourceInfo);
     }
-    //  public static CDCEventOffsetContext initial(TiDBConnectorConfig config){
-    //    new CDCEventOffsetContext(config,)
-    //  }
-
-    public static CDCEventOffsetContext initial(TiDBConnectorConfig config) {
-        final CDCEventOffsetContext offset =
-                new CDCEventOffsetContext(config, false, false, new TiDBSourceInfo(config));
-        offset.setBinlogStartPoint(); // start from the beginning of the binlog
-        return offset;
-    }
 
     public void setBinlogStartPoint() {
-        this.currentTimestamp = System.currentTimeMillis();
+        this.sourceInfo.setSourceTime(Instant.now());
     }
 
     public static class Loader implements OffsetContext.Loader<CDCEventOffsetContext> {
@@ -179,6 +216,12 @@ public class CDCEventOffsetContext implements OffsetContext {
                             TransactionContext.load(offset),
                             incrementalSnapshotContext,
                             new TiDBSourceInfo(connectorConfig));
+            String timestamp = (String) offset.get(TIMESTAMP_KEY);
+            offsetContext.setCheckpoint(
+                    timestamp == null
+                            ? Instant.now()
+                            : Instant.ofEpochMilli(Long.parseLong(timestamp)),
+                    (String) offset.get(COMMIT_VERSION_KEY));
             return offsetContext;
         }
     }

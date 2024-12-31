@@ -14,13 +14,39 @@ import org.apache.flink.table.factories.DynamicTableSourceFactory;
 import org.apache.flink.table.factories.FactoryUtil;
 
 import java.time.Duration;
-import java.util.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
-import static org.apache.flink.cdc.connectors.base.options.JdbcSourceOptions.*;
-import static org.apache.flink.cdc.connectors.tidb.source.config.TiDBSourceOptions.*;
+import static org.apache.flink.cdc.connectors.base.options.JdbcSourceOptions.CHUNK_META_GROUP_SIZE;
+import static org.apache.flink.cdc.connectors.base.options.JdbcSourceOptions.CONNECTION_POOL_SIZE;
+import static org.apache.flink.cdc.connectors.base.options.JdbcSourceOptions.CONNECT_MAX_RETRIES;
+import static org.apache.flink.cdc.connectors.base.options.JdbcSourceOptions.CONNECT_TIMEOUT;
+import static org.apache.flink.cdc.connectors.base.options.JdbcSourceOptions.DATABASE_NAME;
+import static org.apache.flink.cdc.connectors.base.options.JdbcSourceOptions.HOSTNAME;
+import static org.apache.flink.cdc.connectors.base.options.JdbcSourceOptions.PASSWORD;
+import static org.apache.flink.cdc.connectors.base.options.JdbcSourceOptions.SCAN_INCREMENTAL_SNAPSHOT_CHUNK_KEY_COLUMN;
+import static org.apache.flink.cdc.connectors.base.options.JdbcSourceOptions.SCAN_INCREMENTAL_SNAPSHOT_CHUNK_SIZE;
+import static org.apache.flink.cdc.connectors.base.options.JdbcSourceOptions.SCAN_INCREMENTAL_SNAPSHOT_ENABLED;
+import static org.apache.flink.cdc.connectors.base.options.JdbcSourceOptions.SCAN_SNAPSHOT_FETCH_SIZE;
+import static org.apache.flink.cdc.connectors.base.options.JdbcSourceOptions.SCAN_STARTUP_MODE;
+import static org.apache.flink.cdc.connectors.base.options.JdbcSourceOptions.SCAN_STARTUP_TIMESTAMP_MILLIS;
+import static org.apache.flink.cdc.connectors.base.options.JdbcSourceOptions.SERVER_TIME_ZONE;
+import static org.apache.flink.cdc.connectors.base.options.JdbcSourceOptions.SPLIT_KEY_EVEN_DISTRIBUTION_FACTOR_LOWER_BOUND;
+import static org.apache.flink.cdc.connectors.base.options.JdbcSourceOptions.SPLIT_KEY_EVEN_DISTRIBUTION_FACTOR_UPPER_BOUND;
+import static org.apache.flink.cdc.connectors.base.options.JdbcSourceOptions.TABLE_NAME;
+import static org.apache.flink.cdc.connectors.base.options.JdbcSourceOptions.USERNAME;
+import static org.apache.flink.cdc.connectors.tidb.source.config.TiDBSourceOptions.HEARTBEAT_INTERVAL;
+import static org.apache.flink.cdc.connectors.tidb.source.config.TiDBSourceOptions.HOST_MAPPING;
+import static org.apache.flink.cdc.connectors.tidb.source.config.TiDBSourceOptions.JDBC_DRIVER;
+import static org.apache.flink.cdc.connectors.tidb.source.config.TiDBSourceOptions.PD_ADDRESSES;
+import static org.apache.flink.cdc.connectors.tidb.source.config.TiDBSourceOptions.TABLE_LIST;
+import static org.apache.flink.cdc.connectors.tidb.source.config.TiDBSourceOptions.TiDB_PORT;
 import static org.apache.flink.cdc.debezium.table.DebeziumOptions.getDebeziumProperties;
 import static org.apache.flink.cdc.debezium.utils.ResolvedSchemaUtils.getPhysicalSchema;
 
+@Deprecated
 public class TiDBTableSourceFactory implements DynamicTableSourceFactory {
     private static final String IDENTIFIER = "tidb-cdc";
 

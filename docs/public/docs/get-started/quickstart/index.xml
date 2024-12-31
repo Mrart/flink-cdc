@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Quickstart on Apache Flink CDC</title>
+    <link>//localhost:1313/flink/flink-cdc-docs-master/docs/get-started/quickstart/</link>
+    <description>Recent content in Quickstart on Apache Flink CDC</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en</language>
+    <atom:link href="//localhost:1313/flink/flink-cdc-docs-master/docs/get-started/quickstart/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>MySQL to Doris</title>
+      <link>//localhost:1313/flink/flink-cdc-docs-master/docs/get-started/quickstart/mysql-to-doris/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>//localhost:1313/flink/flink-cdc-docs-master/docs/get-started/quickstart/mysql-to-doris/</guid>
+      <description>Streaming ELT from MySQL to Doris # This tutorial is to show how to quickly build a Streaming ELT job from MySQL to Doris using Flink CDC, including the feature of sync all table of one database, schema change evolution and sync sharding tables into one table.&#xA;All exercises in this tutorial are performed in the Flink CDC CLI, and the entire process uses standard SQL syntax, without a single line of Java/Scala code or IDE installation.</description>
+    </item>
+    <item>
+      <title>MySQL to StarRocks</title>
+      <link>//localhost:1313/flink/flink-cdc-docs-master/docs/get-started/quickstart/mysql-to-starrocks/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>//localhost:1313/flink/flink-cdc-docs-master/docs/get-started/quickstart/mysql-to-starrocks/</guid>
+      <description>Streaming ELT from MySQL to StarRocks # This tutorial is to show how to quickly build a Streaming ELT job from MySQL to StarRocks using Flink CDC, including the feature of sync all table of one database, schema change evolution and sync sharding tables into one table.&#xA;All exercises in this tutorial are performed in the Flink CDC CLI, and the entire process uses standard SQL syntax, without a single line of Java/Scala code or IDE installation.</description>
+    </item>
+  </channel>
+</rss>

@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Flink Sources on Apache Flink CDC</title>
+    <link>//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/flink-sources/</link>
+    <description>Recent content in Flink Sources on Apache Flink CDC</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en</language>
+    <atom:link href="//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/flink-sources/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Overview</title>
+      <link>//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/flink-sources/overview/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/flink-sources/overview/</guid>
+      <description>Flink CDC sources # Flink CDC sources is a set of source connectors for Apache Flink®, ingesting changes from different databases using change data capture (CDC). Some CDC sources integrate Debezium as the engine to capture data changes. So it can fully leverage the ability of Debezium. See more about what is Debezium.&#xA;You can also read tutorials about how to use these sources.&#xA;Supported Connectors # Connector Database Driver mongodb-cdc MongoDB: 3.</description>
+    </item>
+    <item>
+      <title>MySQL</title>
+      <link>//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/flink-sources/mysql-cdc/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/flink-sources/mysql-cdc/</guid>
+      <description>MySQL CDC Connector # The MySQL CDC connector allows for reading snapshot data and incremental data from MySQL database. This document describes how to setup the MySQL CDC connector to run SQL queries against MySQL databases.&#xA;Supported Databases # Connector Database Driver mysql-cdc MySQL: 5.6, 5.7, 8.0.x RDS MySQL: 5.6, 5.7, 8.0.x PolarDB MySQL: 5.6, 5.7, 8.0.x Aurora MySQL: 5.6, 5.7, 8.0.x MariaDB: 10.x PolarDB X: 2.0.1 JDBC Driver: 8.</description>
+    </item>
+    <item>
+      <title>Oracle</title>
+      <link>//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/flink-sources/oracle-cdc/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/flink-sources/oracle-cdc/</guid>
+      <description>Oracle CDC Connector # The Oracle CDC connector allows for reading snapshot data and incremental data from Oracle database. This document describes how to setup the Oracle CDC connector to run SQL queries against Oracle databases.&#xA;Dependencies # In order to setup the Oracle CDC connector, the following table provides dependency information for both projects using a build automation tool (such as Maven or SBT) and SQL Client with SQL JAR bundles.</description>
+    </item>
+    <item>
+      <title>SQL Server</title>
+      <link>//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/flink-sources/sqlserver-cdc/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/flink-sources/sqlserver-cdc/</guid>
+      <description>SQLServer CDC Connector # The SQLServer CDC connector allows for reading snapshot data and incremental data from SQLServer database. This document describes how to setup the SQLServer CDC connector to run SQL queries against SQLServer databases.&#xA;Dependencies # In order to setup the SQLServer CDC connector, the following table provides dependency information for both projects using a build automation tool (such as Maven or SBT) and SQL Client with SQL JAR bundles.</description>
+    </item>
+    <item>
+      <title>Postgres</title>
+      <link>//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/flink-sources/postgres-cdc/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/flink-sources/postgres-cdc/</guid>
+      <description>Postgres CDC Connector # The Postgres CDC connector allows for reading snapshot data and incremental data from PostgreSQL database. This document describes how to setup the Postgres CDC connector to run SQL queries against PostgreSQL databases.&#xA;Dependencies # In order to setup the Postgres CDC connector, the following table provides dependency information for both projects using a build automation tool (such as Maven or SBT) and SQL Client with SQL JAR bundles.</description>
+    </item>
+    <item>
+      <title>MongoDB</title>
+      <link>//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/flink-sources/mongodb-cdc/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/flink-sources/mongodb-cdc/</guid>
+      <description>MongoDB CDC Connector # The MongoDB CDC connector allows for reading snapshot data and incremental data from MongoDB. This document describes how to setup the MongoDB CDC connector to run SQL queries against MongoDB.&#xA;Dependencies # In order to setup the MongoDB CDC connector, the following table provides dependency information for both projects using a build automation tool (such as Maven or SBT) and SQL Client with SQL JAR bundles.</description>
+    </item>
+    <item>
+      <title>Db2</title>
+      <link>//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/flink-sources/db2-cdc/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/flink-sources/db2-cdc/</guid>
+      <description>Db2 CDC Connector # The Db2 CDC connector allows for reading snapshot data and incremental data from Db2 database. This document describes how to setup the db2 CDC connector to run SQL queries against Db2 databases.&#xA;Supported Databases # Connector Database Driver Db2-cdc Db2: 11.5 Db2 Driver: 11.5.0.0 Dependencies # In order to set up the Db2 CDC connector, the following table provides dependency information for both projects using a build automation tool (such as Maven or SBT) and SQL Client with SQL JAR bundles.</description>
+    </item>
+    <item>
+      <title>TiDB</title>
+      <link>//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/flink-sources/tidb-cdc/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/flink-sources/tidb-cdc/</guid>
+      <description>TiDB CDC Connector # The TiDB CDC connector allows for reading snapshot data and incremental data from TiDB database. This document describes how to setup the TiDB CDC connector to run SQL queries against TiDB databases.&#xA;Dependencies # In order to setup the TiDB CDC connector, the following table provides dependency information for both projects using a build automation tool (such as Maven or SBT) and SQL Client with SQL JAR bundles.</description>
+    </item>
+    <item>
+      <title>OceanBase</title>
+      <link>//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/flink-sources/oceanbase-cdc/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/flink-sources/oceanbase-cdc/</guid>
+      <description>OceanBase CDC Connector # The OceanBase CDC connector allows for reading snapshot data and incremental data from OceanBase. This document describes how to set up the OceanBase CDC connector to run SQL queries against OceanBase.&#xA;OceanBase CDC Solutions # Glossary:&#xA;OceanBase CE: OceanBase Community Edition. It&amp;rsquo;s compatible with MySQL and has been open sourced at https://github.com/oceanbase/oceanbase. OceanBase EE: OceanBase Enterprise Edition. It supports two compatibility modes: MySQL and Oracle. See https://en.</description>
+    </item>
+    <item>
+      <title>Vitess</title>
+      <link>//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/flink-sources/vitess-cdc/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/flink-sources/vitess-cdc/</guid>
+      <description>Vitess CDC Connector # The Vitess CDC connector allows for reading of incremental data from Vitess cluster. The connector does not support snapshot feature at the moment. This document describes how to setup the Vitess CDC connector to run SQL queries against Vitess databases. Vitess debezium documentation&#xA;Dependencies # In order to setup the Vitess CDC connector, the following table provides dependency information for both projects using a build automation tool (such as Maven or SBT) and SQL Client with SQL JAR bundles.</description>
+    </item>
+    <item>
+      <title>DataStream API Package Guidance</title>
+      <link>//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/flink-sources/datastream-api-package-guidance/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/flink-sources/datastream-api-package-guidance/</guid>
+      <description>DataStream API Package Guidance # This guide provides a simple pom.xml example for packaging DataStream job JARs with MySQL CDC source.&#xA;Example for pom.xml # &amp;lt;?xml version=&amp;#34;1.0&amp;#34; encoding=&amp;#34;UTF-8&amp;#34;?&amp;gt; &amp;lt;project xmlns=&amp;#34;http://maven.apache.org/POM/4.0.0&amp;#34; xmlns:xsi=&amp;#34;http://www.w3.org/2001/XMLSchema-instance&amp;#34; xsi:schemaLocation=&amp;#34;http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd&amp;#34;&amp;gt; &amp;lt;modelVersion&amp;gt;4.0.0&amp;lt;/modelVersion&amp;gt; &amp;lt;groupId&amp;gt;org.apache.flink&amp;lt;/groupId&amp;gt; &amp;lt;artifactId&amp;gt;FlinkCDCTest&amp;lt;/artifactId&amp;gt; &amp;lt;version&amp;gt;1.0-SNAPSHOT&amp;lt;/version&amp;gt; &amp;lt;properties&amp;gt; &amp;lt;maven.compiler.source&amp;gt;8&amp;lt;/maven.compiler.source&amp;gt; &amp;lt;maven.compiler.target&amp;gt;8&amp;lt;/maven.compiler.target&amp;gt; &amp;lt;project.build.sourceEncoding&amp;gt;UTF-8&amp;lt;/project.build.sourceEncoding&amp;gt; &amp;lt;java.version&amp;gt;1.8&amp;lt;/java.version&amp;gt; &amp;lt;scala.binary.version&amp;gt;2.12&amp;lt;/scala.binary.version&amp;gt; &amp;lt;maven.compiler.source&amp;gt;${java.version}&amp;lt;/maven.compiler.source&amp;gt; &amp;lt;maven.compiler.target&amp;gt;${java.version}&amp;lt;/maven.compiler.target&amp;gt; &amp;lt;project.build.sourceEncoding&amp;gt;UTF-8&amp;lt;/project.build.sourceEncoding&amp;gt; &amp;lt;!-- Enforce single fork execution due to heavy mini cluster use in the tests --&amp;gt; &amp;lt;flink.forkCount&amp;gt;1&amp;lt;/flink.forkCount&amp;gt; &amp;lt;flink.reuseForks&amp;gt;true&amp;lt;/flink.reuseForks&amp;gt; &amp;lt;!-- dependencies versions --&amp;gt; &amp;lt;flink.version&amp;gt;1.17.2&amp;lt;/flink.version&amp;gt; &amp;lt;slf4j.version&amp;gt;1.7.15&amp;lt;/slf4j.version&amp;gt; &amp;lt;log4j.</description>
+    </item>
+  </channel>
+</rss>

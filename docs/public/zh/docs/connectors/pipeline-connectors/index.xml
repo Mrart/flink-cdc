@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Pipeline 连接器 on Apache Flink CDC</title>
+    <link>//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/pipeline-connectors/</link>
+    <description>Recent content in Pipeline 连接器 on Apache Flink CDC</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>zh</language>
+    <atom:link href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/pipeline-connectors/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>概览</title>
+      <link>//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/pipeline-connectors/overview/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/pipeline-connectors/overview/</guid>
+      <description>Pipeline Connectors # Flink CDC 提供了可用于 YAML 作业的 Pipeline Source 和 Sink 连接器来与外部系统交互。您可以直接使用这些连接器，只需将 JAR 文件添加到您的 Flink CDC 环境中，并在您的 YAML Pipeline 定义中指定所需的连接器。&#xA;Supported Connectors # 连接器 类型 支持的外部系统 Apache Doris Sink Apache Doris: 1.2.x, 2.x.x Kafka Sink Kafka MySQL Source MySQL: 5.6, 5.7, 8.0.x RDS MySQL: 5.6, 5.7, 8.0.x PolarDB MySQL: 5.6, 5.7, 8.0.x Aurora MySQL: 5.6, 5.7, 8.0.x MariaDB: 10.x PolarDB X: 2.0.1 Paimon Sink Paimon: 0.6, 0.7, 0.8 StarRocks Sink StarRocks: 2.</description>
+    </item>
+    <item>
+      <title>MySQL</title>
+      <link>//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/pipeline-connectors/mysql/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/pipeline-connectors/mysql/</guid>
+      <description>MySQL Connector # MySQL CDC Pipeline 连接器允许从 MySQL 数据库读取快照数据和增量数据，并提供端到端的整库数据同步能力。 本文描述了如何设置 MySQL CDC Pipeline 连接器。&#xA;依赖配置 # 由于 MySQL Connector 采用的 GPLv2 协议与 Flink CDC 项目不兼容，我们无法在 jar 包中提供 MySQL 连接器。 您可能需要手动配置以下依赖，并在提交 YAML 作业时使用 Flink CDC CLI 的 --jar 参数将其传入：&#xA;依赖名称 说明 mysql:mysql-connector-java:8.0.27 用于连接到 MySQL 数据库。 示例 # 从 MySQL 读取数据同步到 Doris 的 Pipeline 可以定义如下：&#xA;source: type: mysql name: MySQL Source hostname: 127.0.0.1 port: 3306 username: admin password: pass tables: adb.\.*, bdb.</description>
+    </item>
+    <item>
+      <title>Paimon</title>
+      <link>//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/pipeline-connectors/paimon/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/pipeline-connectors/paimon/</guid>
+      <description>Paimon Pipeline 连接器 # Paimon Pipeline 连接器可以用作 Pipeline 的 Data Sink，将数据写入Paimon。 本文档介绍如何设置 Paimon Pipeline 连接器。&#xA;连接器的功能 # 自动建表 表结构变更同步 数据实时同步 如何创建 Pipeline # 从 MySQL 读取数据同步到 Paimon 的 Pipeline 可以定义如下：&#xA;source: type: mysql name: MySQL Source hostname: 127.0.0.1 port: 3306 username: admin password: pass tables: adb.\.*, bdb.user_table_[0-9]+, [app|web].order_\.* server-id: 5401-5404 sink: type: paimon name: Paimon Sink catalog.properties.metastore: filesystem catalog.properties.warehouse: /path/warehouse pipeline: name: MySQL to Paimon Pipeline parallelism: 2 Pipeline 连接器配置项 # Option Required Default Type Description type required (none) String 指定要使用的连接器, 这里需要设置成 &#39;paimon&#39;.</description>
+    </item>
+    <item>
+      <title>Kafka</title>
+      <link>//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/pipeline-connectors/kafka/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/pipeline-connectors/kafka/</guid>
+      <description>Kafka Pipeline 连接器 # Kafka Pipeline 连接器可以用作 Pipeline 的 Data Sink，将数据写入Kafka。 本文档介绍如何设置 Kafka Pipeline 连接器。&#xA;连接器的功能 # 自动建表 表结构变更同步 数据实时同步 如何创建 Pipeline # 从 MySQL 读取数据同步到 Kafka 的 Pipeline 可以定义如下：&#xA;source: type: mysql name: MySQL Source hostname: 127.0.0.1 port: 3306 username: admin password: pass tables: adb.\.*, bdb.user_table_[0-9]+, [app|web].order_\.* server-id: 5401-5404 sink: type: kafka name: Kafka Sink properties.bootstrap.servers: PLAINTEXT://localhost:62510 pipeline: name: MySQL to Kafka Pipeline parallelism: 2 Pipeline 连接器配置项 # Option Required Default Type Description type required (none) String 指定要使用的连接器, 这里需要设置成 &#39;kafka&#39;。 name optional (none) String Sink 的名称。 value.</description>
+    </item>
+    <item>
+      <title>Doris</title>
+      <link>//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/pipeline-connectors/doris/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/pipeline-connectors/doris/</guid>
+      <description>Doris Connector # 本文介绍了Pipeline Doris Connector的使用。&#xA;示例 # source: type: values name: ValuesSource sink: type: doris name: Doris Sink fenodes: 127.0.0.1:8030 username: root password: &amp;#34;&amp;#34; table.create.properties.replication_num: 1 pipeline: parallelism: 1 连接器配置项 # Option Required Default Type Description type required (none) String 指定要使用的Sink, 这里是 &#39;doris&#39;. name optional (none) String PipeLine的名称 fenodes required (none) String Doris集群FE的Http地址, 比如 127.0.0.1:8030 benodes optional (none) String Doris集群BE的Http地址, 比如 127.0.0.1:8040 jdbc-url optional (none) String Doris集群的JDBC地址，比如：jdbc:mysql://127.0.0.1:9030/db username required (none) String Doris集群的用户名 password optional (none) String Doris集群的密码 auto-redirect optional false String 是否通过FE重定向写入，直连BE写入 sink.</description>
+    </item>
+    <item>
+      <title>StarRocks</title>
+      <link>//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/pipeline-connectors/starrocks/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>//localhost:1313/flink/flink-cdc-docs-master/zh/docs/connectors/pipeline-connectors/starrocks/</guid>
+      <description>StarRocks Connector # StarRocks Pipeline 连接器可以用作 Pipeline 的 Data Sink，将数据写入StarRocks。 本文档介绍如何设置 StarRocks Pipeline 连接器。&#xA;连接器的功能 # 自动建表 表结构变更同步 数据实时同步 示例 # 从 MySQL 读取数据同步到 StarRocks 的 Pipeline 可以定义如下：&#xA;source: type: mysql name: MySQL Source hostname: 127.0.0.1 port: 3306 username: admin password: pass tables: adb.\.*, bdb.user_table_[0-9]+, [app|web].order_\.* server-id: 5401-5404 sink: type: starrocks name: StarRocks Sink jdbc-url: jdbc:mysql://127.0.0.1:9030 load-url: 127.0.0.1:8030 username: root password: pass pipeline: name: MySQL to StarRocks Pipeline parallelism: 2 连接器配置项 # Option Required Default Type Description type required (none) String 指定要使用的连接器, 这里需要设置成 &#39;starrocks&#39;.</description>
+    </item>
+  </channel>
+</rss>

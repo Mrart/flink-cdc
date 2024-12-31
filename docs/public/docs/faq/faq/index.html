@@ -1,0 +1,1510 @@
+
+<!DOCTYPE html>
+<html lang="en" dir=ZgotmplZ>
+
+<head><script src="/flink/flink-cdc-docs-master/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=flink/flink-cdc-docs-master/livereload" data-no-instant defer></script>
+  <meta name="generator" content="Hugo 0.124.1">
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="General FAQ # Q1: Why can&rsquo;t I download Flink-sql-connector-mysql-cdc-2.2-snapshot jar, why doesn&rsquo;t Maven warehouse rely on XXX snapshot? # Like the mainstream Maven project version management, XXX snapshot version is the code corresponding to the development branch. Users need to download the source code and compile the corresponding jar. Users should use the released version, such as flink-sql-connector-mysql-cdc-2.1 0.jar, the released version will be available in the Maven central warehouse.">
+<meta name="theme-color" content="#FFFFFF"><meta property="og:title" content="Frequently Asked Questions" />
+<meta property="og:description" content="General FAQ # Q1: Why can&rsquo;t I download Flink-sql-connector-mysql-cdc-2.2-snapshot jar, why doesn&rsquo;t Maven warehouse rely on XXX snapshot? # Like the mainstream Maven project version management, XXX snapshot version is the code corresponding to the development branch. Users need to download the source code and compile the corresponding jar. Users should use the released version, such as flink-sql-connector-mysql-cdc-2.1 0.jar, the released version will be available in the Maven central warehouse." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="//localhost:1313/flink/flink-cdc-docs-master/docs/faq/faq/" /><meta property="article:section" content="docs" />
+
+
+<title>Frequently Asked Questions | Apache Flink CDC</title>
+<link rel="manifest" href="/flink/flink-cdc-docs-master/manifest.json">
+<link rel="icon" href="/flink/flink-cdc-docs-master/favicon.png" type="image/x-icon">
+<link rel="alternate" hreflang="zh" href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/faq/faq/" title="通用FAQ">
+
+<link rel="stylesheet" href="/flink/flink-cdc-docs-master/book.min.59471f109f689a198d44e845028ea35c1b638516a64e46df5101f6f6537d611e.css" integrity="sha256-WUcfEJ9omhmNROhFAo6jXBtjhRamTkbfUQH29lN9YR4=">
+<script defer src="/flink/flink-cdc-docs-master/en.search.min.60d7dc9e723d3271101320a889b96a35e0c8d94bb858e65d4cc723e8e6ec1674.js" integrity="sha256-YNfcnnI9MnEQEyCoiblqNeDI2Uu4WOZdTMcj6ObsFnQ="></script>
+<!--
+Made with Book Theme
+https://github.com/alex-shpak/hugo-book
+-->
+
+  
+
+<link rel="stylesheet" type="text/css" href="//localhost:1313/flink/flink-cdc-docs-master//font-awesome/css/font-awesome.min.css">
+<script src="//localhost:1313/flink/flink-cdc-docs-master//js/anchor.min.js"></script>
+<script src="//localhost:1313/flink/flink-cdc-docs-master//js/flink.js"></script>
+
+
+  
+  <script>
+    var _paq = window._paq = window._paq || [];
+     
+     
+    _paq.push(['disableCookies']);
+     
+    _paq.push(["setDomains", ["*.flink.apache.org","*.nightlies.apache.org/flink"]]);
+    _paq.push(['trackPageView']);
+    _paq.push(['enableLinkTracking']);
+    (function() {
+      var u="//matomo.privacy.apache.org/";
+      _paq.push(['setTrackerUrl', u+'matomo.php']);
+      _paq.push(['setSiteId', '1']);
+      var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
+      g.async=true; g.src=u+'matomo.js'; s.parentNode.insertBefore(g,s);
+    })();
+  </script>
+  
+</head>
+
+<body dir=ZgotmplZ>
+  <input type="checkbox" class="hidden toggle" id="menu-control" />
+  <input type="checkbox" class="hidden toggle" id="toc-control" />
+  <main class="container flex">
+    <aside class="book-menu">
+      
+  
+
+<nav>
+
+
+<a id="logo" href="//localhost:1313/flink/flink-cdc-docs-master/">
+    <img width="70%" src="//localhost:1313/flink/flink-cdc-docs-master//navbar-brand-logo.jpg">
+</a>
+<p style="text-align:right">v3.2-SNAPSHOT</p>
+
+<div class="book-search">
+  <input type="text" id="book-search-input" placeholder="Search" aria-label="Search" maxlength="64" data-hotkeys="s/" />
+  <div class="book-search-spinner hidden"></div>
+  <ul id="book-search-results"></ul>
+</div>
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+  <ul>
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <input type="checkbox" id="section-6200e334011b863c650806533c1e934d" class="toggle"  />
+    <label for="section-6200e334011b863c650806533c1e934d" class="flex justify-between"><div style="font-weight:450;margin-bottom:0.5em">Get Started</div><span>▾</span>
+    </label>
+  
+
+          
+  <ul>
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/get-started/introduction/" class="">Introduction</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <input type="checkbox" id="section-65126ba91b4ad451d64ae3bb634a3d69" class="toggle"  />
+    <label for="section-65126ba91b4ad451d64ae3bb634a3d69" class="flex justify-between">Quickstart<span>▾</span>
+    </label>
+  
+
+          
+  <ul>
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/get-started/quickstart/mysql-to-doris/" class="">MySQL to Doris</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/get-started/quickstart/mysql-to-starrocks/" class="">MySQL to StarRocks</a>
+  
+
+        </li>
+      
+    
+  </ul>
+
+        </li>
+      
+    
+  </ul>
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <input type="checkbox" id="section-9368478381278f3e55d1d748555c70f6" class="toggle"  />
+    <label for="section-9368478381278f3e55d1d748555c70f6" class="flex justify-between"><div style="font-weight:450;margin-bottom:0.5em">Core Concept</div><span>▾</span>
+    </label>
+  
+
+          
+  <ul>
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/core-concept/data-pipeline/" class="">Data Pipeline</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/core-concept/data-source/" class="">Data Source</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/core-concept/data-sink/" class="">Data Sink</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/core-concept/table-id/" class="">Table ID</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/core-concept/transform/" class="">Transform</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/core-concept/route/" class="">Route</a>
+  
+
+        </li>
+      
+    
+  </ul>
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <input type="checkbox" id="section-cca35f842c08f0e2b4a94e3d03b79c9b" class="toggle"  />
+    <label for="section-cca35f842c08f0e2b4a94e3d03b79c9b" class="flex justify-between"><div style="font-weight:450;margin-bottom:0.5em">Connectors</div><span>▾</span>
+    </label>
+  
+
+          
+  <ul>
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <input type="checkbox" id="section-4436a0c8f6839ca41c460c9dd3348724" class="toggle"  />
+    <label for="section-4436a0c8f6839ca41c460c9dd3348724" class="flex justify-between">Pipeline Connectors<span>▾</span>
+    </label>
+  
+
+          
+  <ul>
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/pipeline-connectors/overview/" class="">Overview</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/pipeline-connectors/mysql/" class="">MySQL</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/pipeline-connectors/paimon/" class="">Paimon</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/pipeline-connectors/kafka/" class="">Kafka</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/pipeline-connectors/doris/" class="">Doris</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/pipeline-connectors/starrocks/" class="">StarRocks</a>
+  
+
+        </li>
+      
+    
+  </ul>
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <input type="checkbox" id="section-c0a0971d8f495dc42589f86cef138818" class="toggle"  />
+    <label for="section-c0a0971d8f495dc42589f86cef138818" class="flex justify-between">Flink Sources<span>▾</span>
+    </label>
+  
+
+          
+  <ul>
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/flink-sources/overview/" class="">Overview</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/flink-sources/mysql-cdc/" class="">MySQL</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/flink-sources/oracle-cdc/" class="">Oracle</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/flink-sources/sqlserver-cdc/" class="">SQL Server</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/flink-sources/postgres-cdc/" class="">Postgres</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/flink-sources/mongodb-cdc/" class="">MongoDB</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/flink-sources/db2-cdc/" class="">Db2</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/flink-sources/tidb-cdc/" class="">TiDB</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/flink-sources/oceanbase-cdc/" class="">OceanBase</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/flink-sources/vitess-cdc/" class="">Vitess</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/flink-sources/datastream-api-package-guidance/" class="">DataStream API Package Guidance</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <input type="checkbox" id="section-c23e2f7ee1f6d87942cc0f2b79648372" class="toggle"  />
+    <label for="section-c23e2f7ee1f6d87942cc0f2b79648372" class="flex justify-between">Tutorials<span>▾</span>
+    </label>
+  
+
+          
+  <ul>
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/flink-sources/tutorials/mongodb-tutorial/" class="">MongoDB Tutorial</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/flink-sources/tutorials/db2-tutorial/" class="">Db2 Tutorial</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/flink-sources/tutorials/oceanbase-tutorial/" class="">OceanBase Tutorial</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/flink-sources/tutorials/oracle-tutorial/" class="">Oracle Tutorial</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/flink-sources/tutorials/polardbx-tutorial/" class="">PolarDB-X Tutorial</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/flink-sources/tutorials/sqlserver-tutorial/" class="">SqlServer Tutorial</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/flink-sources/tutorials/tidb-tutorial/" class="">TiDB Tutorial</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/flink-sources/tutorials/build-real-time-data-lake-tutorial/" class="">Building a Real-time Data Lake with Flink CDC</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/flink-sources/tutorials/build-streaming-etl-tutorial/" class="">Building a Streaming ETL with Flink CDC</a>
+  
+
+        </li>
+      
+    
+  </ul>
+
+        </li>
+      
+    
+  </ul>
+
+        </li>
+      
+    
+  </ul>
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <input type="checkbox" id="section-988c4238198a24c7eac9b0f056d01246" class="toggle"  />
+    <label for="section-988c4238198a24c7eac9b0f056d01246" class="flex justify-between"><div style="font-weight:450;margin-bottom:0.5em">Deployment</div><span>▾</span>
+    </label>
+  
+
+          
+  <ul>
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/deployment/standalone/" class="">Standalone</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/deployment/yarn/" class="">YARN</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/deployment/kubernetes/" class="">Kubernetes</a>
+  
+
+        </li>
+      
+    
+  </ul>
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <input type="checkbox" id="section-fc36b619eabb0ca9cb7b253e0eba8a7a" class="toggle"  />
+    <label for="section-fc36b619eabb0ca9cb7b253e0eba8a7a" class="flex justify-between"><div style="font-weight:450;margin-bottom:0.5em">Developer Guide</div><span>▾</span>
+    </label>
+  
+
+          
+  <ul>
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/developer-guide/understand-flink-cdc-api/" class="">Understand Flink CDC API</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/developer-guide/contribute-to-flink-cdc/" class="">Contribute to Flink CDC</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/developer-guide/licenses/" class="">Licenses</a>
+  
+
+        </li>
+      
+    
+  </ul>
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <input type="checkbox" id="section-fb051daccb64de13ff5dc1ae657b01b6" class="toggle" checked />
+    <label for="section-fb051daccb64de13ff5dc1ae657b01b6" class="flex justify-between">FAQ<span>▾</span>
+    </label>
+  
+
+          
+  <ul>
+    
+      
+        <li>
+          
+  
+  
+
+  
+  
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/docs/faq/faq/" class=" active">Frequently Asked Questions</a>
+  
+
+        </li>
+      
+    
+  </ul>
+
+        </li>
+      
+    
+  </ul>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<br/>
+<hr class="menu-break">
+
+<a href="//flink.apache.org" style="color:black;margin-bottom:0.5em"><i class="link fa fa-external-link title" aria-hidden="true"></i> Project Homepage</a>
+<br/>
+
+<a href="//nightlies.apache.org/flink/flink-cdc-docs-master/api/java/" style="color:black;margin-bottom:0.5em"><i class="link fa fa-external-link title" aria-hidden="true"></i> JavaDocs</a>
+<br/>
+
+<hr class="menu-break">
+<li style="list-style-type: none">
+  <br>
+  <input type="checkbox" id="section-version-picker" class="toggle">
+  <label for="section-version-picker" class="flex justify-between">
+     <div style="font-weight:450;margin-bottom:0.5em">Pick Docs Version</div>
+     <span>▾</span>
+  </label>
+  <ul>
+    <a href="//localhost:1313/flink/flink-cdc-docs-master/">
+      3.2-SNAPSHOT (✓)
+    </a>
+    <hr class="menu-break">
+    
+      <li>
+        <a href="https://nightlies.apache.org/flink/flink-cdc-docs-release-3.0">
+          v3.0
+        </a>
+      </li>
+    
+    <hr class="menu-break">
+    <li>
+      <a href="//localhost:1313/flink/flink-cdc-docs-master//versions">
+          All Versions
+      </a>
+    </li>
+  </ul>
+</li>
+
+
+
+
+  
+
+  
+
+
+  
+
+
+
+
+
+
+<a  href="//localhost:1313/flink/flink-cdc-docs-master/zh/docs/faq/faq/" class="flex align-center">
+  <i class="fa fa-globe" aria-hidden="true"></i>&nbsp;&nbsp;
+  中文版
+</a>
+
+
+</nav>
+
+
+
+
+  <script>(function(){var e=document.querySelector("aside.book-menu nav");addEventListener("beforeunload",function(){localStorage.setItem("menu.scrollTop",e.scrollTop)}),e.scrollTop=localStorage.getItem("menu.scrollTop")})()</script>
+
+
+ 
+    </aside>
+
+    <div class="book-page">
+      <header class="book-header">
+        
+  <div class="flex align-center justify-between">
+  <label for="menu-control">
+    <img src="/flink/flink-cdc-docs-master/svg/menu.svg" class="book-icon" alt="Menu" />
+  </label>
+
+  <strong>Frequently Asked Questions</strong>
+
+  <label for="toc-control">
+    
+    <img src="/flink/flink-cdc-docs-master/svg/toc.svg" class="book-icon" alt="Table of Contents" />
+    
+  </label>
+</div>
+
+
+  
+  <aside class="hidden clearfix">
+    
+  
+
+<nav id="TableOfContents"><h3>On This Page <button class="toc" onclick="collapseToc()"><i class="fa fa-compress" aria-hidden="true"></i></button></h3>
+  <ul>
+    <li><a href="#general-faq">General FAQ</a>
+      <ul>
+        <li><a href="#q1-why-cant-i-download-flink-sql-connector-mysql-cdc-22-snapshot-jar-why-doesnt-maven-warehouse-rely-on-xxx-snapshot">Q1: Why can&rsquo;t I download Flink-sql-connector-mysql-cdc-2.2-snapshot jar, why doesn&rsquo;t Maven warehouse rely on XXX snapshot?</a></li>
+        <li><a href="#q2-when-should-i-use-flink-sql-connector-xxx-jar-when-should-i--flink-connector-xxx-jar-whats-the-difference-between-the-two">Q2: When should I use Flink SQL connector XXX Jar? When should I  Flink connector XXX jar? What&rsquo;s the difference between the two?</a></li>
+        <li><a href="#q3-why-change-the-package-name-from-comalibabaververica-changed-to-orgapacheflink--why-cant-the-2-x-version-be-found-in-maven-warehouse">Q3: Why change the package name from com.alibaba.ververica changed to org.apache.flink?  Why can&rsquo;t the 2. X version be found in Maven warehouse?</a></li>
+      </ul>
+    </li>
+    <li><a href="#mysql-cdc-faq">MySQL CDC FAQ</a>
+      <ul>
+        <li><a href="#q1-i-use-cdc-2x-version--only-full-data-can-be-read-but-binlog-data-cannot-be-read-whats-the-matter">Q1: I use CDC 2.x version , only full data can be read, but binlog data cannot be read. What&rsquo;s the matter?</a></li>
+        <li><a href="#q2-using-mysql-cdc-datastream-api-the-timestamp-field-read-in-the-incremental-phase-has-a-time-zone-difference-of-8-hours-whats-the-matter">Q2: Using MySQL CDC DataStream API, the timestamp field read in the incremental phase has a time zone difference of 8 hours. What&rsquo;s the matter?</a></li>
+        <li><a href="#q3-does-mysql-cdc-support-listening-to-slave-database-how-to-configure-slave-database">Q3: Does MySQL CDC support listening to slave database? How to configure slave database?</a></li>
+        <li><a href="#q4-i-want-to-synchronize-sub-databases-and-sub-tables-how-should-i-configure-them">Q4: I want to synchronize sub databases and sub tables. How should I configure them?</a></li>
+        <li><a href="#q5-i-want-to-skip-the-stock-reading-phase-and-only-read-binlog-data-how-to-configure-it">Q5: I want to skip the stock reading phase and only read binlog data. How to configure it?</a></li>
+        <li><a href="#q6-i-want-to-get-ddl-events-in-the-database-what-should-i-do-is-there-a-demo">Q6: I want to get DDL events in the database. What should I do? Is there a demo?</a></li>
+        <li><a href="#q7-how-to-synchronize-the-whole-mysql-database-does-flink-cdc-support-it">Q7: How to synchronize the whole MySQL database? Does Flink CDC support it?</a></li>
+        <li><a href="#q8-in-the-same-mysql-instance-the-table-of-one-database-cannot-synchronize-incremental-data-but-other-databases-works-fine-why">Q8: In the same MySQL instance, the table of one database cannot synchronize incremental data, but other databases works fine. Why?</a></li>
+        <li><a href="#q9-the-job-reports-an-error-the-connector-is-trying-to-read-binlog-starting-at-gtids-xxx-and-binlog-file-binlog000064-pos89887992-skipping-4-events-plus-1-rows-but-this-is-no-longer-available-on-the-server-reconfigure-the-connector-to-use-a-snapshot-when-needed-what-should-i-do">Q9: The job reports an error the connector is trying to read binlog starting at GTIDs xxx and binlog file &lsquo;binlog.000064&rsquo;, pos=89887992, skipping 4 events plus 1 rows, but this is no longer available on the server. Reconfigure the connector to use a snapshot when needed, What should I do?</a></li>
+        <li><a href="#q10-the-job-reports-an-error-connectexception-a-slave-with-the-same-server_uuidserver_id-as-this-slave-has-connected-to-the-masterwhat-should-i-do">Q10: The job reports an error ConnectException: A slave with the same server_uuid/server_id as this slave has connected to the master,What should I do?</a></li>
+        <li><a href="#q11-the-job-reports-an-error-connectexception-received-dml--for-processing-binlog-probably-contains-events-generated-with-statement-or-mixed-based-replication-formatwhat-should-i-do">Q11: The job reports an error ConnectException: Received DML ‘…’ for processing, binlog probably contains events generated with statement or mixed based replication format,What should I do?</a></li>
+        <li><a href="#q12-the-job-reports-an-error-mysql80-public-key-retrieval-is-not-allowedwhat-should-i-do">Q12: The job reports an error Mysql8.0 Public Key Retrieval is not allowed,What should I do?</a></li>
+        <li><a href="#q13-the-job-reports-an-error-eventdatadeserializationexception-failed-to-deserialize-data-of-eventheaderv4--caused-by-javanetsocketexception-connection-resetwhat-should-i-do">Q13: The job reports an error EventDataDeserializationException: Failed to deserialize data of EventHeaderV4 &hellip;. Caused by: java.net.SocketException: Connection reset,What should I do?</a></li>
+        <li><a href="#q14-the-job-reports-an-error-the-slave-is-connecting-using-change-master-to-master_auto_position--1-but-the-master-has-purged-binary-logs-containing-gtids-that-the-slave-requireswhat-should-i-do">Q14: The job reports an error The slave is connecting using CHANGE MASTER TO MASTER_AUTO_POSITION = 1, but the master has purged binary logs containing GTIDs that the slave requires,What should I do?</a></li>
+        <li><a href="#q15-how-to-config-tablelist-option-when-build-mysql-cdc-source-in-datastream-api">Q15: How to config <code>tableList</code> option when build MySQL CDC source in DataStream API?</a></li>
+      </ul>
+    </li>
+    <li><a href="#postgres-cdc-faq">Postgres CDC FAQ</a>
+      <ul>
+        <li><a href="#q1-it-is-found-that-the-disk-utilization-rate-of-pg-server-is-high-what-is-the-reason-why-wal-is-not-released">Q1: It is found that the disk utilization rate of PG server is high. What is the reason why wal is not released?</a></li>
+        <li><a href="#q2-flink-postgres-cdc-returns-null-for-decimal-types-exceeding-the-maximum-precision-38-18-in-synchronous-postgres">Q2: Flink Postgres CDC returns null for decimal types exceeding the maximum precision (38, 18) in synchronous Postgres</a></li>
+        <li><a href="#q3-flink-postgres-cdc-prompts-that-toast-data-is-not-transmitted-what-is-the-reason">Q3: Flink Postgres CDC prompts that toast data is not transmitted. What is the reason?</a></li>
+        <li><a href="#q4-the-job-reports-an-error-replication-slot-xxxx-is-active-what-should-i-do">Q4: The job reports an error replication slot &ldquo;XXXX&rdquo; is active. What should I do?</a></li>
+        <li><a href="#q5-jobs-have-dirty-data-such-as-illegal-dates-are-there-parameters-that-can-be-configured-and-filtered">Q5: Jobs have dirty data, such as illegal dates. Are there parameters that can be configured and filtered?</a></li>
+        <li><a href="#q6-how-to-config-tablelist-option-when-build-postgres-cdc-source-in-datastream-api">Q6: How to config <code>tableList</code> option when build Postgres CDC source in DataStream API?</a></li>
+      </ul>
+    </li>
+    <li><a href="#mongodb-cdc-faq">MongoDB CDC FAQ</a>
+      <ul>
+        <li><a href="#q1-does-mongodb-cdc-support-full--incremental-read-and-read-only-incremental">Q1: Does MongoDB CDC support full + incremental read and read-only incremental?</a></li>
+        <li><a href="#q2-does-mongodb-cdc-support-recovery-from-checkpoint-what-is-the-principle">Q2: Does MongoDB CDC support recovery from checkpoint? What is the principle?</a></li>
+        <li><a href="#q3-does-mongodb-cdc-support-outputting---u-update_before-messages">Q3: Does MongoDB CDC support outputting - U (update_before) messages?</a></li>
+        <li><a href="#q4-does-mongodb-cdc-support-subscribing-multiple-collections">Q4: Does MongoDB CDC support subscribing multiple collections?</a></li>
+        <li><a href="#q5-which-versions-of-mongodb-are-supported-by-mongodb-cdc">Q5: Which versions of MongoDB are supported by MongoDB CDC?</a></li>
+        <li><a href="#q6-which-operational-modes-of-mongodb-are-supported-by-mongodb-cdc">Q6: Which operational modes of MongoDB are supported by MongoDB CDC?</a></li>
+        <li><a href="#q7-mongodb-cdc-reports-an-error-the-username-and-password-are-incorrect-but-other-components-can-connect-normally-with-this-username-and-password-what-is-the-reason">Q7: MongoDB CDC reports an error. The username and password are incorrect, but other components can connect normally with this username and password. What is the reason?</a></li>
+        <li><a href="#q8-does-mongodb-cdc-support-debezium-related-parameters">Q8: Does MongoDB CDC support debezium related parameters?</a></li>
+      </ul>
+    </li>
+    <li><a href="#oracle-cdc-faq">Oracle CDC FAQ</a>
+      <ul>
+        <li><a href="#q1-oracle-cdcs-archive-logs-grow-rapidly-and-read-logs-slowly">Q1: Oracle CDC&rsquo;s archive logs grow rapidly and read logs slowly?</a></li>
+        <li><a href="#q2-operation-error-caused-by-io-debezium-debeziumexception-supplemental-logging-not-configured-for-table-xxx--use-command-alter-table-xxx-add-supplementary-log-data-all-columns">Q2: Operation error caused by: io debezium. DebeziumException: Supplemental logging not configured for table xxx.  Use command: alter table XXX add supplementary log data (all) columns?</a></li>
+        <li><a href="#q3-how-does-oracle-cdc-switch-to-xstream">Q3: How does Oracle CDC switch to XStream?</a></li>
+        <li><a href="#q4-what-are-the-database-name-and-schema-name-of-oracle-cdc">Q4: What are the database name and schema name of Oracle CDC?</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+
+
+  </aside>
+  
+ 
+      </header>
+
+      
+
+
+
+
+<article class="markdown">
+    <blockquote style="border-color:#f66">
+        This documentation is for an unreleased version of Apache Flink CDC. We recommend you use the latest <a href="https://ci.apache.org/projects/flink/flink-cdc-docs-stable/">stable version</a>.
+    </blockquote>
+</article>
+
+
+
+      
+  <article class="markdown"><!--
+Licensed to the Apache Software Foundation (ASF) under one
+or more contributor license agreements.  See the NOTICE file
+distributed with this work for additional information
+regarding copyright ownership.  The ASF licenses this file
+to you under the Apache License, Version 2.0 (the
+"License"); you may not use this file except in compliance
+with the License.  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing,
+software distributed under the License is distributed on an
+"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, either express or implied.  See the License for the
+specific language governing permissions and limitations
+under the License.
+-->
+<h2 id="general-faq">
+  General FAQ
+  <a class="anchor" href="#general-faq">#</a>
+</h2>
+<h3 id="q1-why-cant-i-download-flink-sql-connector-mysql-cdc-22-snapshot-jar-why-doesnt-maven-warehouse-rely-on-xxx-snapshot">
+  Q1: Why can&rsquo;t I download Flink-sql-connector-mysql-cdc-2.2-snapshot jar, why doesn&rsquo;t Maven warehouse rely on XXX snapshot?
+  <a class="anchor" href="#q1-why-cant-i-download-flink-sql-connector-mysql-cdc-22-snapshot-jar-why-doesnt-maven-warehouse-rely-on-xxx-snapshot">#</a>
+</h3>
+<p>Like the mainstream Maven project version management, XXX snapshot version is the code corresponding to the development branch. Users need to download the source code and compile the corresponding jar. Users should use the released version, such as flink-sql-connector-mysql-cdc-2.1 0.jar, the released version will be available in the Maven central warehouse.</p>
+<h3 id="q2-when-should-i-use-flink-sql-connector-xxx-jar-when-should-i--flink-connector-xxx-jar-whats-the-difference-between-the-two">
+  Q2: When should I use Flink SQL connector XXX Jar? When should I  Flink connector XXX jar? What&rsquo;s the difference between the two?
+  <a class="anchor" href="#q2-when-should-i-use-flink-sql-connector-xxx-jar-when-should-i--flink-connector-xxx-jar-whats-the-difference-between-the-two">#</a>
+</h3>
+<p>The dependency management of each connector in Flink CDC project is consistent with that in Flink project. Flink SQL connector XX is a fat jar. In addition to the code of connector, it also enters all the third-party packages that connector depends on into the shade and provides them to SQL jobs. Users only need to add the fat jar in the flink/lib directory. The Flink connector XX has only the code of the connector and does not contain the required dependencies. It is used by DataStream jobs. Users need to manage the required three-party package dependencies. Conflicting dependencies need to be excluded and shaded by themselves.</p>
+<h3 id="q3-why-change-the-package-name-from-comalibabaververica-changed-to-orgapacheflink--why-cant-the-2-x-version-be-found-in-maven-warehouse">
+  Q3: Why change the package name from com.alibaba.ververica changed to org.apache.flink?  Why can&rsquo;t the 2. X version be found in Maven warehouse?
+  <a class="anchor" href="#q3-why-change-the-package-name-from-comalibabaververica-changed-to-orgapacheflink--why-cant-the-2-x-version-be-found-in-maven-warehouse">#</a>
+</h3>
+<p>Flink CDC project changes the group ID from com.alibaba.ververica changed to org.apache.flink since 2.0.0 version, this is to make the project more community neutral and more convenient for developers of various companies to build. So look for 2.x in Maven warehouse package, the path is /com/ververica, while the path of 3.1+ is /org/apache/flink.</p>
+<h2 id="mysql-cdc-faq">
+  MySQL CDC FAQ
+  <a class="anchor" href="#mysql-cdc-faq">#</a>
+</h2>
+<h3 id="q1-i-use-cdc-2x-version--only-full-data-can-be-read-but-binlog-data-cannot-be-read-whats-the-matter">
+  Q1: I use CDC 2.x version , only full data can be read, but binlog data cannot be read. What&rsquo;s the matter?
+  <a class="anchor" href="#q1-i-use-cdc-2x-version--only-full-data-can-be-read-but-binlog-data-cannot-be-read-whats-the-matter">#</a>
+</h3>
+<p>CDC 2.0 supports lock free algorithm and concurrent reading. In order to ensure the order of full data + incremental data, it relies on Flink&rsquo;s checkpoint mechanism, so the job needs to be configured with checkpoint.</p>
+<p>Configuration method in SQL job:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="cl"><span class="n">Flink</span><span class="w"> </span><span class="k">SQL</span><span class="o">&gt;</span><span class="w"> </span><span class="k">SET</span><span class="w"> </span><span class="s1">&#39;execution.checkpointing.interval&#39;</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;3s&#39;</span><span class="p">;</span><span class="w">    
+</span></span></span></code></pre></div><p>DataStream job configuration mode:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="n">StreamExecutionEnvironment</span><span class="w"> </span><span class="n">env</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">StreamExecutionEnvironment</span><span class="p">.</span><span class="na">getExecutionEnvironment</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">env</span><span class="p">.</span><span class="na">enableCheckpointing</span><span class="p">(</span><span class="n">3000</span><span class="p">);</span><span class="w">  
+</span></span></span></code></pre></div><h3 id="q2-using-mysql-cdc-datastream-api-the-timestamp-field-read-in-the-incremental-phase-has-a-time-zone-difference-of-8-hours-whats-the-matter">
+  Q2: Using MySQL CDC DataStream API, the timestamp field read in the incremental phase has a time zone difference of 8 hours. What&rsquo;s the matter?
+  <a class="anchor" href="#q2-using-mysql-cdc-datastream-api-the-timestamp-field-read-in-the-incremental-phase-has-a-time-zone-difference-of-8-hours-whats-the-matter">#</a>
+</h3>
+<p>When parsing the timestamp field in binlog data, CDC will use the server time zone information configured in the job, that is, the time zone of the MySQL server. If this time zone is not consistent with the time zone of your MySQL server, this problem will occur.</p>
+<p>In addition, if the serializer is customized in the DataStream job.</p>
+<p>such as MyDeserializer implements DebeziumDeserializationSchema, when the customized serializer parses the timestamp type data, it needs to refer to the analysis of the timestamp type in RowDataDebeziumDeserializeSchema and use the given time zone information.</p>
+<pre tabindex="0"><code>private TimestampData convertToTimestamp(Object dbzObj, Schema schema) {
+        if (dbzObj instanceof Long) {
+            switch (schema.name()) {
+                case Timestamp.SCHEMA_NAME:
+                    return TimestampData.fromEpochMillis((Long) dbzObj);
+                case MicroTimestamp.SCHEMA_NAME:
+                    long micro = (long) dbzObj;
+                    return TimestampData.fromEpochMillis(micro / 1000, (int) (micro % 1000 * 1000));
+                case NanoTimestamp.SCHEMA_NAME:
+                    long nano = (long) dbzObj;
+                    return TimestampData.fromEpochMillis(nano / 1000_000, (int) (nano % 1000_000));
+            }
+        }
+        LocalDateTime localDateTime = TemporalConversions.toLocalDateTime(dbzObj, serverTimeZone);
+        return TimestampData.fromLocalDateTime(localDateTime);
+    }
+</code></pre><h3 id="q3-does-mysql-cdc-support-listening-to-slave-database-how-to-configure-slave-database">
+  Q3: Does MySQL CDC support listening to slave database? How to configure slave database?
+  <a class="anchor" href="#q3-does-mysql-cdc-support-listening-to-slave-database-how-to-configure-slave-database">#</a>
+</h3>
+<p>Yes, the slave database needs to be configured with log slave updates = 1, so that the slave instance can also write the data synchronized from the master instance to the binlog file of the slave database. If the master database has enabled gtid mode, the slave database also needs to be enabled.</p>
+<pre tabindex="0"><code>log-slave-updates = 1
+gtid_mode = on 
+enforce_gtid_consistency = on 
+</code></pre><h3 id="q4-i-want-to-synchronize-sub-databases-and-sub-tables-how-should-i-configure-them">
+  Q4: I want to synchronize sub databases and sub tables. How should I configure them?
+  <a class="anchor" href="#q4-i-want-to-synchronize-sub-databases-and-sub-tables-how-should-i-configure-them">#</a>
+</h3>
+<p>In the with parameter of MySQL CDC table, both table name and database name support regular configuration, such as &rsquo;table name &rsquo; = &lsquo;user_ &lsquo;.&rsquo; Can match table name  &lsquo;user_ 1, user_ 2,user_ A &rsquo; table.</p>
+<p>Note that any regular matching character is&rsquo;. &rsquo; Instead of &lsquo;*&rsquo;, where the dot represents any character, the asterisk represents 0 or more, and so does database name, that the shared table should be in the same schema.</p>
+<h3 id="q5-i-want-to-skip-the-stock-reading-phase-and-only-read-binlog-data-how-to-configure-it">
+  Q5: I want to skip the stock reading phase and only read binlog data. How to configure it?
+  <a class="anchor" href="#q5-i-want-to-skip-the-stock-reading-phase-and-only-read-binlog-data-how-to-configure-it">#</a>
+</h3>
+<p>In the with parameter of MySQL CDC table</p>
+<pre tabindex="0"><code>&#39;scan.startup.mode&#39; = &#39;latest-offset&#39;.
+</code></pre><h3 id="q6-i-want-to-get-ddl-events-in-the-database-what-should-i-do-is-there-a-demo">
+  Q6: I want to get DDL events in the database. What should I do? Is there a demo?
+  <a class="anchor" href="#q6-i-want-to-get-ddl-events-in-the-database-what-should-i-do-is-there-a-demo">#</a>
+</h3>
+<p>Flink CDC provides DataStream API <code>MysqlSource</code> since version 2.1. Users can configure includeschemachanges to indicate whether DDL events are required. After obtaining DDL events, they can write code for next processing.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="w"> </span><span class="kd">public</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">consumingAllEvents</span><span class="p">()</span><span class="w"> </span><span class="kd">throws</span><span class="w"> </span><span class="n">Exception</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">inventoryDatabase</span><span class="p">.</span><span class="na">createAndInitialize</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">MySqlSource</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;</span><span class="w"> </span><span class="n">mySqlSource</span><span class="w"> </span><span class="o">=</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="n">MySqlSource</span><span class="p">.</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;</span><span class="n">builder</span><span class="p">()</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                        </span><span class="p">.</span><span class="na">hostname</span><span class="p">(</span><span class="n">MYSQL_CONTAINER</span><span class="p">.</span><span class="na">getHost</span><span class="p">())</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                        </span><span class="p">.</span><span class="na">port</span><span class="p">(</span><span class="n">MYSQL_CONTAINER</span><span class="p">.</span><span class="na">getDatabasePort</span><span class="p">())</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                        </span><span class="p">.</span><span class="na">databaseList</span><span class="p">(</span><span class="n">inventoryDatabase</span><span class="p">.</span><span class="na">getDatabaseName</span><span class="p">())</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                        </span><span class="p">.</span><span class="na">tableList</span><span class="p">(</span><span class="n">inventoryDatabase</span><span class="p">.</span><span class="na">getDatabaseName</span><span class="p">()</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="s">&#34;.products&#34;</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                        </span><span class="p">.</span><span class="na">username</span><span class="p">(</span><span class="n">inventoryDatabase</span><span class="p">.</span><span class="na">getUsername</span><span class="p">())</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                        </span><span class="p">.</span><span class="na">password</span><span class="p">(</span><span class="n">inventoryDatabase</span><span class="p">.</span><span class="na">getPassword</span><span class="p">())</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                        </span><span class="p">.</span><span class="na">serverId</span><span class="p">(</span><span class="s">&#34;5401-5404&#34;</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                        </span><span class="p">.</span><span class="na">deserializer</span><span class="p">(</span><span class="k">new</span><span class="w"> </span><span class="n">JsonDebeziumDeserializationSchema</span><span class="p">())</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                        </span><span class="p">.</span><span class="na">includeSchemaChanges</span><span class="p">(</span><span class="kc">true</span><span class="p">)</span><span class="w"> </span><span class="c1">// Configure here and output DDL events</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                        </span><span class="p">.</span><span class="na">build</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">				</span><span class="p">...</span><span class="w"> </span><span class="c1">// Other processing logic                        </span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></div><h3 id="q7-how-to-synchronize-the-whole-mysql-database-does-flink-cdc-support-it">
+  Q7: How to synchronize the whole MySQL database? Does Flink CDC support it?
+  <a class="anchor" href="#q7-how-to-synchronize-the-whole-mysql-database-does-flink-cdc-support-it">#</a>
+</h3>
+<ol>
+<li>The DataStream API provided in Q6 has enabled users to obtain DDL change events and data change events. On this basis, users need to develop DataStream jobs according to their own business logic and downstream storage.</li>
+<li>Flink CDC provides the pipeline to synchronize the whole MySQL database Since version 3.0.</li>
+</ol>
+<h3 id="q8-in-the-same-mysql-instance-the-table-of-one-database-cannot-synchronize-incremental-data-but-other-databases-works-fine-why">
+  Q8: In the same MySQL instance, the table of one database cannot synchronize incremental data, but other databases works fine. Why?
+  <a class="anchor" href="#q8-in-the-same-mysql-instance-the-table-of-one-database-cannot-synchronize-incremental-data-but-other-databases-works-fine-why">#</a>
+</h3>
+<p>Users can check Binlog_Ignore_DB and Binlog_Do_DB through the <code>show master status</code> command</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-mysql" data-lang="mysql"><span class="line"><span class="cl"><span class="n">mysql</span><span class="o">&gt;</span><span class="w"> </span><span class="k">show</span><span class="w"> </span><span class="n">master</span><span class="w"> </span><span class="n">status</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="o">+------------------+----------+--------------+------------------+----------------------+</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="o">|</span><span class="w"> </span><span class="n">File</span><span class="w">             </span><span class="o">|</span><span class="w"> </span><span class="n">Position</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">Binlog_Do_DB</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">Binlog_Ignore_DB</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">Executed_Gtid_Set</span><span class="w">    </span><span class="o">|</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="o">+------------------+----------+--------------+------------------+----------------------+</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="o">|</span><span class="w"> </span><span class="n">mysql</span><span class="o">-</span><span class="n">bin</span><span class="p">.</span><span class="mi">000006</span><span class="w"> </span><span class="o">|</span><span class="w">     </span><span class="mi">4594</span><span class="w"> </span><span class="o">|</span><span class="w">              </span><span class="o">|</span><span class="w">                  </span><span class="o">|</span><span class="w"> </span><span class="n">xxx</span><span class="p">:</span><span class="mi">1</span><span class="o">-</span><span class="mi">15</span><span class="w">             </span><span class="o">|</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="o">+------------------+----------+--------------+------------------+----------------------+</span><span class="w">
+</span></span></span></code></pre></div><h3 id="q9-the-job-reports-an-error-the-connector-is-trying-to-read-binlog-starting-at-gtids-xxx-and-binlog-file-binlog000064-pos89887992-skipping-4-events-plus-1-rows-but-this-is-no-longer-available-on-the-server-reconfigure-the-connector-to-use-a-snapshot-when-needed-what-should-i-do">
+  Q9: The job reports an error the connector is trying to read binlog starting at GTIDs xxx and binlog file &lsquo;binlog.000064&rsquo;, pos=89887992, skipping 4 events plus 1 rows, but this is no longer available on the server. Reconfigure the connector to use a snapshot when needed, What should I do?
+  <a class="anchor" href="#q9-the-job-reports-an-error-the-connector-is-trying-to-read-binlog-starting-at-gtids-xxx-and-binlog-file-binlog000064-pos89887992-skipping-4-events-plus-1-rows-but-this-is-no-longer-available-on-the-server-reconfigure-the-connector-to-use-a-snapshot-when-needed-what-should-i-do">#</a>
+</h3>
+<p>This error occurs because the binlog file being read by the job has been cleaned up on the MySQL server. Generally, the expiration time of the binlog file retained on the MySQL server is too short. You can set this value higher, such as 7 days.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-mysql" data-lang="mysql"><span class="line"><span class="cl"><span class="n">mysql</span><span class="o">&gt;</span><span class="w"> </span><span class="k">show</span><span class="w"> </span><span class="n">variables</span><span class="w"> </span><span class="k">like</span><span class="w"> </span><span class="s1">&#39;expire_logs_days&#39;</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">mysql</span><span class="o">&gt;</span><span class="w"> </span><span class="kt">set</span><span class="w"> </span><span class="n">global</span><span class="w"> </span><span class="n">expire_logs_days</span><span class="o">=</span><span class="mi">7</span><span class="p">;</span><span class="w">
+</span></span></span></code></pre></div><p>In another case, the binlog consumption of the Flink CDC job is too slow. Generally, sufficient resources can be allocated.</p>
+<h3 id="q10-the-job-reports-an-error-connectexception-a-slave-with-the-same-server_uuidserver_id-as-this-slave-has-connected-to-the-masterwhat-should-i-do">
+  Q10: The job reports an error ConnectException: A slave with the same server_uuid/server_id as this slave has connected to the master,What should I do?
+  <a class="anchor" href="#q10-the-job-reports-an-error-connectexception-a-slave-with-the-same-server_uuidserver_id-as-this-slave-has-connected-to-the-masterwhat-should-i-do">#</a>
+</h3>
+<p>This error occurs because the server ID used in the job conflicts with the server ID used by other jobs or other synchronization tools. The server ID needs to be globally unique. The server ID is an int type integer. In CDC 2.x In version, each concurrency of the source requires a server ID. it is recommended to reasonably plan the server ID. for example, if the source of the job is set to four concurrency, you can configure &lsquo;server ID&rsquo; = &lsquo;5001-5004&rsquo;, so that each source task will not conflict.</p>
+<h3 id="q11-the-job-reports-an-error-connectexception-received-dml--for-processing-binlog-probably-contains-events-generated-with-statement-or-mixed-based-replication-formatwhat-should-i-do">
+  Q11: The job reports an error ConnectException: Received DML ‘…’ for processing, binlog probably contains events generated with statement or mixed based replication format,What should I do?
+  <a class="anchor" href="#q11-the-job-reports-an-error-connectexception-received-dml--for-processing-binlog-probably-contains-events-generated-with-statement-or-mixed-based-replication-formatwhat-should-i-do">#</a>
+</h3>
+<p>This error occurs because the MySQL server is not configured correctly. You need to check the binlog is format row? You can view it through the following command</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-mysql" data-lang="mysql"><span class="line"><span class="cl"><span class="n">mysql</span><span class="o">&gt;</span><span class="w"> </span><span class="k">show</span><span class="w"> </span><span class="n">variables</span><span class="w"> </span><span class="k">like</span><span class="w"> </span><span class="s1">&#39;%binlog_format%&#39;</span><span class="p">;</span><span class="w"> 
+</span></span></span></code></pre></div><h3 id="q12-the-job-reports-an-error-mysql80-public-key-retrieval-is-not-allowedwhat-should-i-do">
+  Q12: The job reports an error Mysql8.0 Public Key Retrieval is not allowed,What should I do?
+  <a class="anchor" href="#q12-the-job-reports-an-error-mysql80-public-key-retrieval-is-not-allowedwhat-should-i-do">#</a>
+</h3>
+<p>This is because the MySQL user configured by the user uses sha256 password authentication and requires TLS and other protocols to transmit passwords. A simple method is to allow MySQL users to support original password access.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-mysql" data-lang="mysql"><span class="line"><span class="cl"><span class="n">mysql</span><span class="o">&gt;</span><span class="w"> </span><span class="k">ALTER</span><span class="w"> </span><span class="k">USER</span><span class="w"> </span><span class="s1">&#39;username&#39;</span><span class="o">@</span><span class="s1">&#39;localhost&#39;</span><span class="w"> </span><span class="k">IDENTIFIED</span><span class="w"> </span><span class="k">WITH</span><span class="w"> </span><span class="n">mysql_native_password</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="s1">&#39;password&#39;</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">mysql</span><span class="o">&gt;</span><span class="w"> </span><span class="k">FLUSH</span><span class="w"> </span><span class="k">PRIVILEGES</span><span class="p">;</span><span class="w"> 
+</span></span></span></code></pre></div><h3 id="q13-the-job-reports-an-error-eventdatadeserializationexception-failed-to-deserialize-data-of-eventheaderv4--caused-by-javanetsocketexception-connection-resetwhat-should-i-do">
+  Q13: The job reports an error EventDataDeserializationException: Failed to deserialize data of EventHeaderV4 &hellip;. Caused by: java.net.SocketException: Connection reset,What should I do?
+  <a class="anchor" href="#q13-the-job-reports-an-error-eventdatadeserializationexception-failed-to-deserialize-data-of-eventheaderv4--caused-by-javanetsocketexception-connection-resetwhat-should-i-do">#</a>
+</h3>
+<p>This problem is generally caused by the network. First, check the network between the Flink cluster and the database, and then increase the network parameters of the MySQL server.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-mysql" data-lang="mysql"><span class="line"><span class="cl"><span class="n">mysql</span><span class="o">&gt;</span><span class="w"> </span><span class="kt">set</span><span class="w"> </span><span class="n">global</span><span class="w"> </span><span class="n">slave_net_timeout</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">120</span><span class="p">;</span><span class="w"> 
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">mysql</span><span class="o">&gt;</span><span class="w"> </span><span class="kt">set</span><span class="w"> </span><span class="n">global</span><span class="w"> </span><span class="n">thread_pool_idle_timeout</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">120</span><span class="p">;</span><span class="w">
+</span></span></span></code></pre></div><p>Or try to use the flink configuration as follows.</p>
+<pre tabindex="0"><code>execution.checkpointing.interval=10min
+execution.checkpointing.tolerable-failed-checkpoints=100
+restart-strategy=fixed-delay
+restart-strategy.fixed-delay.attempts=2147483647
+restart-strategy.fixed-delay.delay= 30s
+</code></pre><p>If there is bad back pressure in the job, this problem may happen too. Then you need to handle the back pressure in the job first.</p>
+<h3 id="q14-the-job-reports-an-error-the-slave-is-connecting-using-change-master-to-master_auto_position--1-but-the-master-has-purged-binary-logs-containing-gtids-that-the-slave-requireswhat-should-i-do">
+  Q14: The job reports an error The slave is connecting using CHANGE MASTER TO MASTER_AUTO_POSITION = 1, but the master has purged binary logs containing GTIDs that the slave requires,What should I do?
+  <a class="anchor" href="#q14-the-job-reports-an-error-the-slave-is-connecting-using-change-master-to-master_auto_position--1-but-the-master-has-purged-binary-logs-containing-gtids-that-the-slave-requireswhat-should-i-do">#</a>
+</h3>
+<p>The reason for this problem is that the reading of the full volume phase of the job is too slow. After reading the full volume phase, the previously recorded gtid site at the beginning of the full volume phase has been cleared by mysql. This can increase the save time of binlog files on the MySQL server, or increase the concurrency of source to make the full volume phase read faster.</p>
+<h3 id="q15-how-to-config-tablelist-option-when-build-mysql-cdc-source-in-datastream-api">
+  Q15: How to config <code>tableList</code> option when build MySQL CDC source in DataStream API?
+  <a class="anchor" href="#q15-how-to-config-tablelist-option-when-build-mysql-cdc-source-in-datastream-api">#</a>
+</h3>
+<p>The <code>tableList</code> option requires table name with database name rather than table name in DataStream API. For MySQL CDC source, the <code>tableList</code> option value should like ‘my_db.my_table’.</p>
+<h2 id="postgres-cdc-faq">
+  Postgres CDC FAQ
+  <a class="anchor" href="#postgres-cdc-faq">#</a>
+</h2>
+<h3 id="q1-it-is-found-that-the-disk-utilization-rate-of-pg-server-is-high-what-is-the-reason-why-wal-is-not-released">
+  Q1: It is found that the disk utilization rate of PG server is high. What is the reason why wal is not released?
+  <a class="anchor" href="#q1-it-is-found-that-the-disk-utilization-rate-of-pg-server-is-high-what-is-the-reason-why-wal-is-not-released">#</a>
+</h3>
+<p>Flink Postgres CDC will only update the LSN in the Postgres slot when the checkpoint is completed. Therefore, if you find that the disk utilization is high, please first confirm whether the checkpoint is turned on.</p>
+<h3 id="q2-flink-postgres-cdc-returns-null-for-decimal-types-exceeding-the-maximum-precision-38-18-in-synchronous-postgres">
+  Q2: Flink Postgres CDC returns null for decimal types exceeding the maximum precision (38, 18) in synchronous Postgres
+  <a class="anchor" href="#q2-flink-postgres-cdc-returns-null-for-decimal-types-exceeding-the-maximum-precision-38-18-in-synchronous-postgres">#</a>
+</h3>
+<p>In Flink, if the precision of the received data is greater than the precision of the type declared in Flink, the data will be processed as null. You can configure the corresponding &lsquo;debezium decimal. handling. Mode &lsquo;=&lsquo;string&rsquo; process the read data with string type</p>
+<h3 id="q3-flink-postgres-cdc-prompts-that-toast-data-is-not-transmitted-what-is-the-reason">
+  Q3: Flink Postgres CDC prompts that toast data is not transmitted. What is the reason?
+  <a class="anchor" href="#q3-flink-postgres-cdc-prompts-that-toast-data-is-not-transmitted-what-is-the-reason">#</a>
+</h3>
+<p>Please ensure that the replica identity is full first. The toast data is relatively large. In order to save the size of wal, if the toast data is not changed, the wal2json plugin will not bring toast data to the updated data. To avoid this problem, you can use &lsquo;debezium schema. refresh. mode&rsquo;=&lsquo;columns_ diff_ exclude_ unchanged_ Toast &rsquo;to solve.</p>
+<h3 id="q4-the-job-reports-an-error-replication-slot-xxxx-is-active-what-should-i-do">
+  Q4: The job reports an error replication slot &ldquo;XXXX&rdquo; is active. What should I do?
+  <a class="anchor" href="#q4-the-job-reports-an-error-replication-slot-xxxx-is-active-what-should-i-do">#</a>
+</h3>
+<p>Currently, Flink Postgres CDC does not release the slot manually after the job exits.</p>
+<p>Go to Postgres and manually execute the following command.</p>
+<pre tabindex="0"><code>select pg_drop_replication_slot(&#39;rep_slot&#39;);
+    ERROR:  replication slot &#34;rep_slot&#34; is active for PID 162564
+select pg_terminate_backend(162564); select pg_drop_replication_slot(&#39;rep_slot&#39;);
+</code></pre><h3 id="q5-jobs-have-dirty-data-such-as-illegal-dates-are-there-parameters-that-can-be-configured-and-filtered">
+  Q5: Jobs have dirty data, such as illegal dates. Are there parameters that can be configured and filtered?
+  <a class="anchor" href="#q5-jobs-have-dirty-data-such-as-illegal-dates-are-there-parameters-that-can-be-configured-and-filtered">#</a>
+</h3>
+<p>Yes, you can add configure. In the with parameter of the Flink CDC table  &lsquo;debezium.event.deserialization.failure.handling.mode&rsquo;=&lsquo;warn&rsquo; parameter, skip dirty data and print dirty data to warn log. You can also configure &lsquo;debezium.event.deserialization.failure.handling.mode&rsquo;=&lsquo;ignore&rsquo;, skip dirty data directly and do not print dirty data to the log.</p>
+<h3 id="q6-how-to-config-tablelist-option-when-build-postgres-cdc-source-in-datastream-api">
+  Q6: How to config <code>tableList</code> option when build Postgres CDC source in DataStream API?
+  <a class="anchor" href="#q6-how-to-config-tablelist-option-when-build-postgres-cdc-source-in-datastream-api">#</a>
+</h3>
+<p>The <code>tableList</code> option requires table name with schema name rather than table name in DataStream API. For Postgres CDC source, the <code>tableList</code> option value should like ‘my_schema.my_table’.</p>
+<h2 id="mongodb-cdc-faq">
+  MongoDB CDC FAQ
+  <a class="anchor" href="#mongodb-cdc-faq">#</a>
+</h2>
+<h3 id="q1-does-mongodb-cdc-support-full--incremental-read-and-read-only-incremental">
+  Q1: Does MongoDB CDC support full + incremental read and read-only incremental?
+  <a class="anchor" href="#q1-does-mongodb-cdc-support-full--incremental-read-and-read-only-incremental">#</a>
+</h3>
+<p>Yes, the default is full + incremental reading; Using &lsquo;scan.startup.mode&rsquo; = &rsquo;latest-offset&rsquo; parameter can set to read-only incremental.</p>
+<h3 id="q2-does-mongodb-cdc-support-recovery-from-checkpoint-what-is-the-principle">
+  Q2: Does MongoDB CDC support recovery from checkpoint? What is the principle?
+  <a class="anchor" href="#q2-does-mongodb-cdc-support-recovery-from-checkpoint-what-is-the-principle">#</a>
+</h3>
+<p>Yes, the checkpoint will record the resumeToken of the changeStream. During recovery, the changeStream can be restored through the resumeToken. Where resumeToken corresponds to <code>oplog.rs</code> (Change log collection in MongoDB), <code>oplog.rs</code> is a fixed capacity collection. When the corresponding record of resumeToken does not exist in <code>oplog.rs</code>, an Invalid resumeToken Exception may occur. In this case, you can set the appropriate size of <code>oplog.rs</code> to avoid retention time of <code>oplog.rs</code> is too short, you can refer to <a href="https://docs.mongodb.com/manual/tutorial/change-oplog-size/">https://docs.mongodb.com/manual/tutorial/change-oplog-size/</a>. In addition, the resumeToken can be refreshed through the newly arrived change record and heartbeat record.</p>
+<h3 id="q3-does-mongodb-cdc-support-outputting---u-update_before-messages">
+  Q3: Does MongoDB CDC support outputting - U (update_before) messages?
+  <a class="anchor" href="#q3-does-mongodb-cdc-support-outputting---u-update_before-messages">#</a>
+</h3>
+<p>In MongoDB versions &gt;= 6.0, if MongoDB enable <a href="https://www.mongodb.com/docs/atlas/app-services/mongodb/preimages/">document preimages</a>, setting &lsquo;scan.full-changelog&rsquo; = &rsquo;true&rsquo; in Flink SQL can make source output -U messages, so ChangelogNormalize operator can be removed.</p>
+<p>In MongoDB versions &lt; 6.0, the original <code>oplog.rs</code> in MongoDB only has operation types including insert, update, replace and delete. It does not save the information before update, so it cannot output - U messages. It can only realize the UPSERT semantics in Flink. When using MongoDBTableSource, Flink planner will automatically perform ChangelogNormalize optimization, fill in the missing - U messages, and output complete + I, - U, + U, and - D messages. The cost of ChangelogNormalize optimization is that the operator will save the states of all previous keys. Therefore, if the DataStream job directly uses MongoDBSource, without the optimization of Flink planner, ChangelogNormalize will not be performed automatically, so - U messages cannot be obtained directly. To obtain the pre update image value, you need to manage the status yourself. If you don&rsquo;t want to manage the status yourself, you can convert MongodbTableSource to changelogstream or retractstream and supplement the pre update image value with the optimization ability of Flink planner. An example is as follows:</p>
+<pre tabindex="0"><code>    tEnv.executeSql(&#34;CREATE TABLE orders ( ... ) WITH ( &#39;connector&#39;=&#39;mongodb-cdc&#39;,... )&#34;);
+
+    Table table = tEnv.from(&#34;orders&#34;)
+            .select($(&#34;*&#34;));
+
+    tEnv.toChangelogStream(table)
+            .print()
+            .setParallelism(1);
+
+    env.execute();
+</code></pre><h3 id="q4-does-mongodb-cdc-support-subscribing-multiple-collections">
+  Q4: Does MongoDB CDC support subscribing multiple collections?
+  <a class="anchor" href="#q4-does-mongodb-cdc-support-subscribing-multiple-collections">#</a>
+</h3>
+<p>All collections in database can be subscribed. For example, if database is configured as &rsquo; mgdb&rsquo; and collection is configured as an empty string, all collections under &lsquo;mgdb&rsquo; database will be subscribed.</p>
+<p>It also supports subscribing collections using regular expressions. If the name of the collections to be monitored contains special characters used in regular expressions, then the collection parameter must be configured as a fully qualified namespace (&ldquo;database-name.collection-name&rdquo;), otherwise the changes to the corresponding collections cannot be captured.</p>
+<h3 id="q5-which-versions-of-mongodb-are-supported-by-mongodb-cdc">
+  Q5: Which versions of MongoDB are supported by MongoDB CDC?
+  <a class="anchor" href="#q5-which-versions-of-mongodb-are-supported-by-mongodb-cdc">#</a>
+</h3>
+<p>MongoDB CDC is implemented based on the ChangeStream feature, which is a new feature introduced in MongoDB 3.6. Mongodb CDC theoretically supports versions &gt;= 3.6. It is recommended to run on version &gt;= 4.0. When executed on versions &lt; 3.6, an error will occur: Unrecognized pipeline stage name: &lsquo;$changeStream&rsquo;.</p>
+<h3 id="q6-which-operational-modes-of-mongodb-are-supported-by-mongodb-cdc">
+  Q6: Which operational modes of MongoDB are supported by MongoDB CDC?
+  <a class="anchor" href="#q6-which-operational-modes-of-mongodb-are-supported-by-mongodb-cdc">#</a>
+</h3>
+<p>ChangeStream requires MongoDB to run in replica set or sharded cluster mode. For local test, a single-node replica set can be initialized with <code>rs.initiate()</code>. An error will occur in standalone mode: The $changeStream stage is only supported on replica sets.</p>
+<h3 id="q7-mongodb-cdc-reports-an-error-the-username-and-password-are-incorrect-but-other-components-can-connect-normally-with-this-username-and-password-what-is-the-reason">
+  Q7: MongoDB CDC reports an error. The username and password are incorrect, but other components can connect normally with this username and password. What is the reason?
+  <a class="anchor" href="#q7-mongodb-cdc-reports-an-error-the-username-and-password-are-incorrect-but-other-components-can-connect-normally-with-this-username-and-password-what-is-the-reason">#</a>
+</h3>
+<p>If the user is not created in the default admin database, you need to add parameter &lsquo;connection.options&rsquo; = &lsquo;authSource={{ database where the user is created }}&rsquo;.</p>
+<h3 id="q8-does-mongodb-cdc-support-debezium-related-parameters">
+  Q8: Does MongoDB CDC support debezium related parameters?
+  <a class="anchor" href="#q8-does-mongodb-cdc-support-debezium-related-parameters">#</a>
+</h3>
+<p>It is not supported, because MongoDB CDC connector is developed independently in the Flink CDC project and does not rely on the debezium project.</p>
+<h2 id="oracle-cdc-faq">
+  Oracle CDC FAQ
+  <a class="anchor" href="#oracle-cdc-faq">#</a>
+</h2>
+<h3 id="q1-oracle-cdcs-archive-logs-grow-rapidly-and-read-logs-slowly">
+  Q1: Oracle CDC&rsquo;s archive logs grow rapidly and read logs slowly?
+  <a class="anchor" href="#q1-oracle-cdcs-archive-logs-grow-rapidly-and-read-logs-slowly">#</a>
+</h3>
+<p>The online mining mode can be used without writing the data dictionary to the redo log, but it cannot process DDL statements. The default policy of the production environment reads the log slowly, and the default policy will write the data dictionary information to the redo log, resulting in a large increase in the log volume. You can add the following debezium configuration items. &quot; log. mining. strategy&rsquo; = &lsquo;online_ catalog&rsquo;,&rsquo;log. mining. continuous. mine&rsquo; = &rsquo;true&rsquo;。 If you use SQL, you need to prefix the configuration item with &lsquo;debezium.&rsquo;, Namely:</p>
+<pre tabindex="0"><code>&#39;debezium.log.mining.strategy&#39; = &#39;online_catalog&#39;,
+&#39;debezium.log.mining.continuous.mine&#39; = &#39;true&#39;
+</code></pre><h3 id="q2-operation-error-caused-by-io-debezium-debeziumexception-supplemental-logging-not-configured-for-table-xxx--use-command-alter-table-xxx-add-supplementary-log-data-all-columns">
+  Q2: Operation error caused by: io debezium. DebeziumException: Supplemental logging not configured for table xxx.  Use command: alter table XXX add supplementary log data (all) columns?
+  <a class="anchor" href="#q2-operation-error-caused-by-io-debezium-debeziumexception-supplemental-logging-not-configured-for-table-xxx--use-command-alter-table-xxx-add-supplementary-log-data-all-columns">#</a>
+</h3>
+<p>For Oracle version 11, debezium will set tableidcasesensitive to true by default, resulting in the table name being updated to lowercase. Therefore, the table completion log setting cannot be queried in Oracle, resulting in the false alarm of &ldquo;supplementary logging not configured for table error&rdquo;.</p>
+<p>If it is the DataStream API, add the configuration item of debezium &lsquo;database.tablename.case.insensitive&rsquo; = &lsquo;false&rsquo;. If the SQL API is used, add the configuration item &lsquo;debezium.database.tablename.case.insensitive&rsquo; = &lsquo;false&rsquo; in the option of the table</p>
+<h3 id="q3-how-does-oracle-cdc-switch-to-xstream">
+  Q3: How does Oracle CDC switch to XStream?
+  <a class="anchor" href="#q3-how-does-oracle-cdc-switch-to-xstream">#</a>
+</h3>
+<p>Add configuration item  &lsquo;database.connection.adpter&rsquo; = &lsquo;xstream&rsquo;, please use the configuration item &lsquo;debezium.database.connection.adpter&rsquo; = &lsquo;xstream&rsquo; if you&rsquo;re using SQL API.</p>
+<h3 id="q4-what-are-the-database-name-and-schema-name-of-oracle-cdc">
+  Q4: What are the database name and schema name of Oracle CDC?
+  <a class="anchor" href="#q4-what-are-the-database-name-and-schema-name-of-oracle-cdc">#</a>
+</h3>
+<p>Database name is the name of the database example, that is, the SID of Oracle. Schema name is the schema corresponding to the table. Generally speaking, a user corresponds to a schema. The schema name of the user is equal to the user name and is used as the default schema of the user. Therefore, schema name is generally the user name for creating the table, but if a schema is specified when creating the table, the specified schema is schema name. For example, use create table AAAA If TestTable (XXXX) is successfully created, AAAA is schema name.</p>
+</article>
+ 
+      
+
+      <footer class="book-footer">
+        
+  
+
+
+
+
+<a href="//github.com/apache/flink-cdc/edit/master/docs/content/docs/faq/faq.md" style="color:black"><i class="fa fa-edit fa-fw"></i>Edit This Page</a>
+
+
+ 
+        
+      </footer>
+
+      
+  
+  <div class="book-comments">
+
+</div>
+  
+ 
+
+      <label for="menu-control" class="hidden book-menu-overlay"></label>
+    </div>
+
+    
+    <aside class="book-toc">
+      
+  
+
+<nav id="TableOfContents"><h3>On This Page <button class="toc" onclick="collapseToc()"><i class="fa fa-compress" aria-hidden="true"></i></button></h3>
+  <ul>
+    <li><a href="#general-faq">General FAQ</a>
+      <ul>
+        <li><a href="#q1-why-cant-i-download-flink-sql-connector-mysql-cdc-22-snapshot-jar-why-doesnt-maven-warehouse-rely-on-xxx-snapshot">Q1: Why can&rsquo;t I download Flink-sql-connector-mysql-cdc-2.2-snapshot jar, why doesn&rsquo;t Maven warehouse rely on XXX snapshot?</a></li>
+        <li><a href="#q2-when-should-i-use-flink-sql-connector-xxx-jar-when-should-i--flink-connector-xxx-jar-whats-the-difference-between-the-two">Q2: When should I use Flink SQL connector XXX Jar? When should I  Flink connector XXX jar? What&rsquo;s the difference between the two?</a></li>
+        <li><a href="#q3-why-change-the-package-name-from-comalibabaververica-changed-to-orgapacheflink--why-cant-the-2-x-version-be-found-in-maven-warehouse">Q3: Why change the package name from com.alibaba.ververica changed to org.apache.flink?  Why can&rsquo;t the 2. X version be found in Maven warehouse?</a></li>
+      </ul>
+    </li>
+    <li><a href="#mysql-cdc-faq">MySQL CDC FAQ</a>
+      <ul>
+        <li><a href="#q1-i-use-cdc-2x-version--only-full-data-can-be-read-but-binlog-data-cannot-be-read-whats-the-matter">Q1: I use CDC 2.x version , only full data can be read, but binlog data cannot be read. What&rsquo;s the matter?</a></li>
+        <li><a href="#q2-using-mysql-cdc-datastream-api-the-timestamp-field-read-in-the-incremental-phase-has-a-time-zone-difference-of-8-hours-whats-the-matter">Q2: Using MySQL CDC DataStream API, the timestamp field read in the incremental phase has a time zone difference of 8 hours. What&rsquo;s the matter?</a></li>
+        <li><a href="#q3-does-mysql-cdc-support-listening-to-slave-database-how-to-configure-slave-database">Q3: Does MySQL CDC support listening to slave database? How to configure slave database?</a></li>
+        <li><a href="#q4-i-want-to-synchronize-sub-databases-and-sub-tables-how-should-i-configure-them">Q4: I want to synchronize sub databases and sub tables. How should I configure them?</a></li>
+        <li><a href="#q5-i-want-to-skip-the-stock-reading-phase-and-only-read-binlog-data-how-to-configure-it">Q5: I want to skip the stock reading phase and only read binlog data. How to configure it?</a></li>
+        <li><a href="#q6-i-want-to-get-ddl-events-in-the-database-what-should-i-do-is-there-a-demo">Q6: I want to get DDL events in the database. What should I do? Is there a demo?</a></li>
+        <li><a href="#q7-how-to-synchronize-the-whole-mysql-database-does-flink-cdc-support-it">Q7: How to synchronize the whole MySQL database? Does Flink CDC support it?</a></li>
+        <li><a href="#q8-in-the-same-mysql-instance-the-table-of-one-database-cannot-synchronize-incremental-data-but-other-databases-works-fine-why">Q8: In the same MySQL instance, the table of one database cannot synchronize incremental data, but other databases works fine. Why?</a></li>
+        <li><a href="#q9-the-job-reports-an-error-the-connector-is-trying-to-read-binlog-starting-at-gtids-xxx-and-binlog-file-binlog000064-pos89887992-skipping-4-events-plus-1-rows-but-this-is-no-longer-available-on-the-server-reconfigure-the-connector-to-use-a-snapshot-when-needed-what-should-i-do">Q9: The job reports an error the connector is trying to read binlog starting at GTIDs xxx and binlog file &lsquo;binlog.000064&rsquo;, pos=89887992, skipping 4 events plus 1 rows, but this is no longer available on the server. Reconfigure the connector to use a snapshot when needed, What should I do?</a></li>
+        <li><a href="#q10-the-job-reports-an-error-connectexception-a-slave-with-the-same-server_uuidserver_id-as-this-slave-has-connected-to-the-masterwhat-should-i-do">Q10: The job reports an error ConnectException: A slave with the same server_uuid/server_id as this slave has connected to the master,What should I do?</a></li>
+        <li><a href="#q11-the-job-reports-an-error-connectexception-received-dml--for-processing-binlog-probably-contains-events-generated-with-statement-or-mixed-based-replication-formatwhat-should-i-do">Q11: The job reports an error ConnectException: Received DML ‘…’ for processing, binlog probably contains events generated with statement or mixed based replication format,What should I do?</a></li>
+        <li><a href="#q12-the-job-reports-an-error-mysql80-public-key-retrieval-is-not-allowedwhat-should-i-do">Q12: The job reports an error Mysql8.0 Public Key Retrieval is not allowed,What should I do?</a></li>
+        <li><a href="#q13-the-job-reports-an-error-eventdatadeserializationexception-failed-to-deserialize-data-of-eventheaderv4--caused-by-javanetsocketexception-connection-resetwhat-should-i-do">Q13: The job reports an error EventDataDeserializationException: Failed to deserialize data of EventHeaderV4 &hellip;. Caused by: java.net.SocketException: Connection reset,What should I do?</a></li>
+        <li><a href="#q14-the-job-reports-an-error-the-slave-is-connecting-using-change-master-to-master_auto_position--1-but-the-master-has-purged-binary-logs-containing-gtids-that-the-slave-requireswhat-should-i-do">Q14: The job reports an error The slave is connecting using CHANGE MASTER TO MASTER_AUTO_POSITION = 1, but the master has purged binary logs containing GTIDs that the slave requires,What should I do?</a></li>
+        <li><a href="#q15-how-to-config-tablelist-option-when-build-mysql-cdc-source-in-datastream-api">Q15: How to config <code>tableList</code> option when build MySQL CDC source in DataStream API?</a></li>
+      </ul>
+    </li>
+    <li><a href="#postgres-cdc-faq">Postgres CDC FAQ</a>
+      <ul>
+        <li><a href="#q1-it-is-found-that-the-disk-utilization-rate-of-pg-server-is-high-what-is-the-reason-why-wal-is-not-released">Q1: It is found that the disk utilization rate of PG server is high. What is the reason why wal is not released?</a></li>
+        <li><a href="#q2-flink-postgres-cdc-returns-null-for-decimal-types-exceeding-the-maximum-precision-38-18-in-synchronous-postgres">Q2: Flink Postgres CDC returns null for decimal types exceeding the maximum precision (38, 18) in synchronous Postgres</a></li>
+        <li><a href="#q3-flink-postgres-cdc-prompts-that-toast-data-is-not-transmitted-what-is-the-reason">Q3: Flink Postgres CDC prompts that toast data is not transmitted. What is the reason?</a></li>
+        <li><a href="#q4-the-job-reports-an-error-replication-slot-xxxx-is-active-what-should-i-do">Q4: The job reports an error replication slot &ldquo;XXXX&rdquo; is active. What should I do?</a></li>
+        <li><a href="#q5-jobs-have-dirty-data-such-as-illegal-dates-are-there-parameters-that-can-be-configured-and-filtered">Q5: Jobs have dirty data, such as illegal dates. Are there parameters that can be configured and filtered?</a></li>
+        <li><a href="#q6-how-to-config-tablelist-option-when-build-postgres-cdc-source-in-datastream-api">Q6: How to config <code>tableList</code> option when build Postgres CDC source in DataStream API?</a></li>
+      </ul>
+    </li>
+    <li><a href="#mongodb-cdc-faq">MongoDB CDC FAQ</a>
+      <ul>
+        <li><a href="#q1-does-mongodb-cdc-support-full--incremental-read-and-read-only-incremental">Q1: Does MongoDB CDC support full + incremental read and read-only incremental?</a></li>
+        <li><a href="#q2-does-mongodb-cdc-support-recovery-from-checkpoint-what-is-the-principle">Q2: Does MongoDB CDC support recovery from checkpoint? What is the principle?</a></li>
+        <li><a href="#q3-does-mongodb-cdc-support-outputting---u-update_before-messages">Q3: Does MongoDB CDC support outputting - U (update_before) messages?</a></li>
+        <li><a href="#q4-does-mongodb-cdc-support-subscribing-multiple-collections">Q4: Does MongoDB CDC support subscribing multiple collections?</a></li>
+        <li><a href="#q5-which-versions-of-mongodb-are-supported-by-mongodb-cdc">Q5: Which versions of MongoDB are supported by MongoDB CDC?</a></li>
+        <li><a href="#q6-which-operational-modes-of-mongodb-are-supported-by-mongodb-cdc">Q6: Which operational modes of MongoDB are supported by MongoDB CDC?</a></li>
+        <li><a href="#q7-mongodb-cdc-reports-an-error-the-username-and-password-are-incorrect-but-other-components-can-connect-normally-with-this-username-and-password-what-is-the-reason">Q7: MongoDB CDC reports an error. The username and password are incorrect, but other components can connect normally with this username and password. What is the reason?</a></li>
+        <li><a href="#q8-does-mongodb-cdc-support-debezium-related-parameters">Q8: Does MongoDB CDC support debezium related parameters?</a></li>
+      </ul>
+    </li>
+    <li><a href="#oracle-cdc-faq">Oracle CDC FAQ</a>
+      <ul>
+        <li><a href="#q1-oracle-cdcs-archive-logs-grow-rapidly-and-read-logs-slowly">Q1: Oracle CDC&rsquo;s archive logs grow rapidly and read logs slowly?</a></li>
+        <li><a href="#q2-operation-error-caused-by-io-debezium-debeziumexception-supplemental-logging-not-configured-for-table-xxx--use-command-alter-table-xxx-add-supplementary-log-data-all-columns">Q2: Operation error caused by: io debezium. DebeziumException: Supplemental logging not configured for table xxx.  Use command: alter table XXX add supplementary log data (all) columns?</a></li>
+        <li><a href="#q3-how-does-oracle-cdc-switch-to-xstream">Q3: How does Oracle CDC switch to XStream?</a></li>
+        <li><a href="#q4-what-are-the-database-name-and-schema-name-of-oracle-cdc">Q4: What are the database name and schema name of Oracle CDC?</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+
+ 
+    </aside>
+    <aside class="expand-toc">
+      <button class="toc" onclick="expandToc()">
+        <i class="fa fa-expand" aria-hidden="true"></i>
+      </button>
+    </aside>
+    
+  </main>
+
+  
+</body>
+
+</html>
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,6 +1,5 @@
 package org.tikv.cdc.model;
 
-import org.tikv.common.meta.TiTableInfo;
 import org.tikv.kvproto.Cdcpb;
 
 import java.util.List;
@@ -16,11 +15,6 @@ public class RegionFeedEvent {
     private RawKVEntry rawKVEntry;
 
     private ResolvedKeyRanges resolved;
-    private TiTableInfo tableInfo;
-
-    private String dbName;
-    private String tableName;
-
     private long resolvedTs;
 
     public long getResolvedTs() {
@@ -29,30 +23,6 @@ public class RegionFeedEvent {
 
     public void setResolvedTs(long resolvedTs) {
         this.resolvedTs = resolvedTs;
-    }
-
-    public String getDbName() {
-        return dbName;
-    }
-
-    public void setDbName(String dbName) {
-        this.dbName = dbName;
-    }
-
-    public String getTableName() {
-        return tableName;
-    }
-
-    public void setTableName(String tableName) {
-        this.tableName = tableName;
-    }
-
-    public TiTableInfo getTableInfo() {
-        return tableInfo;
-    }
-
-    public void setTableInfo(TiTableInfo tableInfo) {
-        this.tableInfo = tableInfo;
     }
 
     public long getRegionId() {

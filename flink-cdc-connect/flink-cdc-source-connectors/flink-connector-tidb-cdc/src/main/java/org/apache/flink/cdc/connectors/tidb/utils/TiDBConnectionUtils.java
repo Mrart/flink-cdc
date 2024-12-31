@@ -4,7 +4,7 @@ import org.apache.flink.cdc.connectors.tidb.source.config.TiDBConnectorConfig;
 import org.apache.flink.cdc.connectors.tidb.source.converter.TiDBValueConverters;
 import org.apache.flink.util.FlinkRuntimeException;
 
-import io.debezium.connector.mysql.*;
+import io.debezium.connector.mysql.MySqlSystemVariables;
 import io.debezium.jdbc.JdbcConnection;
 import io.debezium.jdbc.JdbcValueConverters;
 import io.debezium.jdbc.TemporalPrecisionMode;
@@ -72,11 +72,4 @@ public class TiDBConnectionUtils {
                 timeAdjusterEnabled ? TiDBValueConverters::adjustTemporal : x -> x,
                 TiDBValueConverters::defaultParsingErrorHandler);
     }
-
-    //    public static TiDBDatabaseSchema createTiDBDatabaseSchema(
-    //            TiDBConnectorConfig dbzTiDBConfig, boolean isTableIdCaseSensitive) {
-    //        TopicSelector<TableId> topicSelector =
-    // TidbTopicSelector.defaultSelector(dbzTiDBConfig);
-    //        return new TiDBDatabaseSchema(dbzTiDBConfig, topicSelector, isTableIdCaseSensitive);
-    //    }
 }

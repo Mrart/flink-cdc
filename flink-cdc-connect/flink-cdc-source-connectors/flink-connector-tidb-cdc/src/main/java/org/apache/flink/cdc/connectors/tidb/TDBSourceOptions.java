@@ -29,6 +29,7 @@ import java.util.Map;
 import java.util.Optional;
 
 /** Configurations for {@link TiDBSource}. */
+@Deprecated
 public class TDBSourceOptions {
 
     private TDBSourceOptions() {}

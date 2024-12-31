@@ -4,7 +4,6 @@ import org.apache.flink.cdc.connectors.base.options.JdbcSourceOptions;
 import org.apache.flink.cdc.connectors.tidb.table.utils.UriHostMapping;
 import org.apache.flink.configuration.ConfigOption;
 import org.apache.flink.configuration.ConfigOptions;
-import org.apache.flink.configuration.Configuration;
 
 import org.tikv.common.ConfigUtils;
 import org.tikv.common.TiConfiguration;
@@ -12,6 +11,8 @@ import org.tikv.common.TiConfiguration;
 import java.time.Duration;
 import java.util.Map;
 import java.util.Optional;
+
+import static org.tikv.common.ConfigUtils.TIKV_GRPC_TIMEOUT;
 
 public class TiDBSourceOptions extends JdbcSourceOptions {
 
@@ -359,8 +360,6 @@ public class TiDBSourceOptions extends JdbcSourceOptions {
 
     public static TiConfiguration getTiConfiguration(
             final String pdAddrsStr, final String hostMapping, final Map<String, String> options) {
-        final Configuration configuration = Configuration.fromMap(options);
-
         final TiConfiguration tiConf = TiConfiguration.createDefault(pdAddrsStr);
         Optional.of(new UriHostMapping(hostMapping)).ifPresent(tiConf::setHostMapping);
         configuration.getOptional(TIKV_GRPC_TIMEOUT).ifPresent(tiConf::setTimeout);
@@ -476,6 +475,20 @@ public class TiDBSourceOptions extends JdbcSourceOptions {
         configuration.getOptional(TIKV_SCAN_REGIONS_LIMIT).ifPresent(tiConf::setScanRegionsLimit);
         configuration.getOptional(TIKV_WARM_UP_ENABLE).ifPresent(tiConf::setWarmUpEnable);
 
+        return tiConf;
+    }
+
+    public static TiConfiguration getTiConfig(TiDBSourceConfig tiDBSourceConfig) {
+        final TiConfiguration tiConf =
+                TiConfiguration.createDefault(tiDBSourceConfig.getPdAddresses());
+        Optional.of(new UriHostMapping(tiDBSourceConfig.getHostMapping()))
+                .ifPresent(tiConf::setHostMapping);
+        tiConf.setTimeout(
+                Long.parseLong(
+                        tiDBSourceConfig
+                                .getJdbcProperties()
+                                .getProperty(TIKV_GRPC_TIMEOUT, "60000")));
+        // get tikv config；
         return tiConf;
     }
 }

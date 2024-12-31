@@ -1,7 +1,9 @@
 package org.tikv.cdc.kv;
 
+import org.tikv.common.HostMapping;
 import org.tikv.common.region.TiRegion;
 import org.tikv.common.region.TiStore;
+import org.tikv.common.util.ChannelFactory;
 import org.tikv.kvproto.Metapb;
 import org.tikv.shade.io.grpc.ManagedChannel;
 
@@ -11,7 +13,8 @@ public class RPCContext {
     private final Metapb.Peer peer;
     private final TiStore tiStore;
     private final String address;
-    private final ManagedChannel channel;
+    private final HostMapping hostMapping;
+    private final ChannelFactory channelFactory;
 
     // Private constructor to enforce the use of the Builder
     private RPCContext(Builder builder) {
@@ -20,7 +23,8 @@ public class RPCContext {
         this.peer = builder.peer;
         this.tiStore = builder.tiStore;
         this.address = builder.address;
-        this.channel = builder.managedChannel;
+        this.hostMapping = builder.hostMapping;
+        this.channelFactory = builder.channelFactory;
     }
 
     // Getters for the fields (optional)
@@ -36,6 +40,10 @@ public class RPCContext {
         return peer;
     }
 
+    public HostMapping getHostMapping() {
+        return hostMapping;
+    }
+
     public TiStore getTiStore() {
         return tiStore;
     }
@@ -44,8 +52,12 @@ public class RPCContext {
         return address;
     }
 
+    public ChannelFactory getChannelFactory() {
+        return channelFactory;
+    }
+
     public ManagedChannel getChannel() {
-        return channel;
+        return this.channelFactory.getChannel(this.address, this.hostMapping);
     }
 
     // Builder class
@@ -55,7 +67,8 @@ public class RPCContext {
         private Metapb.Peer peer;
         private TiStore tiStore;
         private String address;
-        private ManagedChannel managedChannel;
+        private HostMapping hostMapping;
+        private ChannelFactory channelFactory;
 
         public Builder setRegion(TiRegion.RegionVerID region) {
             this.region = region;
@@ -82,8 +95,15 @@ public class RPCContext {
             return this;
         }
 
-        public Builder setChannel(ManagedChannel channel) {
-            this.managedChannel = channel;
+        public Builder setChannel(ChannelFactory channel) {
+            this.channelFactory = channel;
+            return this;
+        }
+
+        public Builder setHostMapping(HostMapping hostMapping) {
+            if (hostMapping != null) {
+                this.hostMapping = hostMapping;
+            }
             return this;
         }
 

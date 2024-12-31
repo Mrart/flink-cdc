@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Pipeline Connectors on Apache Flink CDC</title>
+    <link>//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/pipeline-connectors/</link>
+    <description>Recent content in Pipeline Connectors on Apache Flink CDC</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en</language>
+    <atom:link href="//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/pipeline-connectors/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Overview</title>
+      <link>//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/pipeline-connectors/overview/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/pipeline-connectors/overview/</guid>
+      <description>Connectors # Flink CDC provides several source and sink connectors to interact with external systems. You can use these connectors out-of-box, by adding released JARs to your Flink CDC environment, and specifying the connector in your YAML pipeline definition.&#xA;Supported Connectors # Connector Supported Type External System Apache Doris Sink Apache Doris: 1.2.x, 2.x.x Kafka Sink Kafka MySQL Source MySQL: 5.6, 5.7, 8.0.x RDS MySQL: 5.6, 5.7, 8.0.x PolarDB MySQL: 5.</description>
+    </item>
+    <item>
+      <title>MySQL</title>
+      <link>//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/pipeline-connectors/mysql/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/pipeline-connectors/mysql/</guid>
+      <description>MySQL Connector # MySQL connector allows reading snapshot data and incremental data from MySQL database and provides end-to-end full-database data synchronization capabilities. This document describes how to setup the MySQL connector.&#xA;Dependencies # Since MySQL Connector&amp;rsquo;s GPLv2 license is incompatible with Flink CDC project, we can&amp;rsquo;t provide MySQL connector in prebuilt connector jar packages. You may need to configure the following dependencies manually, and pass it with --jar argument of Flink CDC CLI when submitting YAML pipeline jobs.</description>
+    </item>
+    <item>
+      <title>Paimon</title>
+      <link>//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/pipeline-connectors/paimon/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/pipeline-connectors/paimon/</guid>
+      <description>Paimon Pipeline Connector # The Paimon Pipeline connector can be used as the Data Sink of the pipeline, and write data to Paimon. This document describes how to set up the Paimon Pipeline connector.&#xA;What can the connector do? # Create table automatically if not exist Schema change synchronization Data synchronization How to create Pipeline # The pipeline for reading data from MySQL and sink to Paimon can be defined as follows:</description>
+    </item>
+    <item>
+      <title>Kafka</title>
+      <link>//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/pipeline-connectors/kafka/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/pipeline-connectors/kafka/</guid>
+      <description>Kafka Pipeline Connector # The Kafka Pipeline connector can be used as the Data Sink of the pipeline, and write data to Kafka. This document describes how to set up the Kafka Pipeline connector.&#xA;What can the connector do? # Data synchronization How to create Pipeline # The pipeline for reading data from MySQL and sink to Kafka can be defined as follows:&#xA;source: type: mysql name: MySQL Source hostname: 127.</description>
+    </item>
+    <item>
+      <title>Doris</title>
+      <link>//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/pipeline-connectors/doris/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/pipeline-connectors/doris/</guid>
+      <description>Doris Connector # This article introduces of Doris Connector&#xA;Example # source: type: values name: ValuesSource sink: type: doris name: Doris Sink fenodes: 127.0.0.1:8030 username: root password: &amp;#34;&amp;#34; table.create.properties.replication_num: 1 pipeline: parallelism: 1 Connector Options # Option Required Default Type Description type required (none) String Specify the Sink to use, here is &#39;doris&#39;. name optional (none) String Name of PipeLine fenodes required (none) String Http address of Doris cluster FE, such as 127.</description>
+    </item>
+    <item>
+      <title>StarRocks</title>
+      <link>//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/pipeline-connectors/starrocks/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>//localhost:1313/flink/flink-cdc-docs-master/docs/connectors/pipeline-connectors/starrocks/</guid>
+      <description>StarRocks Connector # StarRocks connector can be used as the Data Sink of the pipeline, and write data to StarRocks. This document describes how to set up the StarRocks connector.&#xA;What can the connector do? # Create table automatically if not exist Schema change synchronization Data synchronization Example # The pipeline for reading data from MySQL and sink to StarRocks can be defined as follows:&#xA;source: type: mysql name: MySQL Source hostname: 127.</description>
+    </item>
+  </channel>
+</rss>
