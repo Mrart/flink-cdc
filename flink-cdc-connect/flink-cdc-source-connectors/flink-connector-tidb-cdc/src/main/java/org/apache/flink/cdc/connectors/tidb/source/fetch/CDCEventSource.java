@@ -11,6 +11,7 @@ import io.debezium.util.Clock;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.flink.cdc.connectors.base.relational.JdbcSourceEventDispatcher;
 import org.apache.flink.cdc.connectors.base.source.meta.split.StreamSplit;
+import org.apache.flink.cdc.connectors.base.source.meta.wartermark.WatermarkKind;
 import org.apache.flink.cdc.connectors.tidb.source.config.TiDBConnectorConfig;
 import org.apache.flink.cdc.connectors.tidb.source.offset.CDCEventOffset;
 import org.apache.flink.cdc.connectors.tidb.source.offset.CDCEventOffsetContext;
@@ -21,6 +22,7 @@ import org.tikv.cdc.exception.ClientException;
 import org.tikv.cdc.kv.CDCClientV2;
 import org.tikv.cdc.kv.EventListener;
 import org.tikv.cdc.model.OpType;
+import org.tikv.cdc.model.PolymorphicEvent;
 import org.tikv.cdc.model.RawKVEntry;
 import org.tikv.common.key.RowKey;
 
@@ -29,6 +31,7 @@ import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -43,7 +46,7 @@ public class CDCEventSource
   private final JdbcSourceEventDispatcher<TiDBPartition> eventDispatcher;
   private final ErrorHandler errorHandler;
   private final TiDBSourceFetchTaskContext taskContext;
-  private final SerializableFunction<RawKVEntry, TableId> tableIdProvider;
+  private final SerializableFunction<PolymorphicEvent, TableId> tableIdProvider;
   private final Map<TableSchema, Map<String, Integer>> fieldIndexMap = new HashMap<>();
 
   public CDCEventSource(
@@ -60,11 +63,12 @@ public class CDCEventSource
     this.tableIdProvider = this::getTableId;
   }
 
-  private TableId getTableId(RawKVEntry event) {
-    if (StringUtils.isBlank(event.getDbName()) || StringUtils.isBlank(event.getTableName())) {
+  private TableId getTableId(PolymorphicEvent event) {
+    if (StringUtils.isBlank(event.getDatabaseName())
+        || StringUtils.isBlank(event.getTableInfo().getName())) {
       return null;
     }
-    return new TableId(event.getDbName(), null, event.getTableName());
+    return new TableId(event.getDatabaseName(), null, event.getTableInfo().getName());
   }
 
   @Override
@@ -81,10 +85,9 @@ public class CDCEventSource
     CDCEventOffsetContext effectiveOffsetContext =
         offsetContext != null ? offsetContext : CDCEventOffsetContext.initial(this.connectorConfig);
     Set<Envelope.Operation> skippedOperations = this.connectorConfig.getSkippedOperations();
-    EnumMap<OpType, BlockingConsumer<RawKVEntry>> eventHandlers = new EnumMap<>(OpType.class);
-    eventHandlers.put(
-        OpType.Heatbeat, rawKVEntry -> LOG.trace("HEARTBEAT message: {}", rawKVEntry));
-    eventHandlers.put(OpType.Ddl, rawKVEntry -> LOG.trace("DDL message: {}", rawKVEntry));
+    EnumMap<OpType, BlockingConsumer<PolymorphicEvent>> eventHandlers = new EnumMap<>(OpType.class);
+    eventHandlers.put(OpType.Heatbeat, event -> LOG.trace("HEARTBEAT message: {}", event));
+    eventHandlers.put(OpType.Ddl, event -> LOG.trace("DDL message: {}", event));
     // The tidb cdc client has already handled the transaction, so we only need to handle
     // DDL/Update/Delete/Insert;
     if (!skippedOperations.contains(Envelope.Operation.CREATE)) {
@@ -106,42 +109,78 @@ public class CDCEventSource
               handleChange(partition, effectiveOffsetContext, Envelope.Operation.DELETE, event));
     }
     eventHandlers.put(
-        OpType.Resolved, (event) -> LOG.trace("HEARTBEAT message: {},resolvedTs:{}", event));
-
+        OpType.Resolved,
+        (event) -> LOG.trace("HEARTBEAT message: {},resolvedTs:{}", event, event.getCrTs()));
     this.split
         .getTableSchemas()
         .forEach(
             (tableId, tableChange) -> {
-              LOG.debug("table id is {}", tableId);
-              CDCClientV2 cdcClientV2 =
-                  new CDCClientV2(
-                      getTiConfig(connectorConfig.getSourceConfig()),
-                      tableId.catalog(),
-                      tableId.table());
-              cdcClientV2.addListener(
-                  new EventListener() {
-                    @Override
-                    public void notify(RawKVEntry rawKVEntry) {
-                      if (!context.isRunning()) {
-                        cdcClientV2.close();
-                        return;
-                      }
-                      try {
-                        eventHandlers
-                            .getOrDefault(rawKVEntry.getOpType(), event -> {})
-                            .accept(rawKVEntry);
-                      } catch (Exception e) {
-                        errorHandler.setProducerThrowable(e);
-                      }
-                    }
+              LOG.debug("Table id is {}", tableId);
+              CompletableFuture.runAsync(
+                  () -> {
+                    CDCClientV2 cdcClientV2 =
+                        new CDCClientV2(
+                            getTiConfig(connectorConfig.getSourceConfig()),
+                            tableId.catalog(),
+                            tableId.table());
+                    cdcClientV2.addListener(
+                        new EventListener() {
+                          @Override
+                          public void notify(PolymorphicEvent event) {
+                            if (!context.isRunning()) {
+                              cdcClientV2.close();
+                              return;
+                            }
+                            CDCEventOffset currentOffset =
+                                new CDCEventOffset(effectiveOffsetContext.getOffset());
+                            if (currentOffset.isBefore(split.getStartingOffset())) {
+                              return;
+                            }
+                            if (!CDCEventOffset.NO_STOPPING_OFFSET.equals(split.getEndingOffset())
+                                && currentOffset.isAtOrAfter(split.getEndingOffset())) {
+                              // send watermark event;
+                              try {
+                                eventDispatcher.dispatchWatermarkEvent(
+                                    partition.getSourcePartition(),
+                                    split,
+                                    currentOffset,
+                                    WatermarkKind.END);
+                              } catch (InterruptedException e) {
+                                LOG.error("Send signal event error.", e);
+                                errorHandler.setProducerThrowable(
+                                    new RuntimeException("Error processing log signal event", e));
+                              }
+                              ((StoppableChangeEventSourceContext) context).stopChangeEventSource();
+                              cdcClientV2.close();
+                              return;
+                            }
 
-                    @Override
-                    public void onException(ClientException e) {
-                      LOG.error("CDC event client error.", e);
-                      errorHandler.setProducerThrowable(e);
+                            try {
+                              eventHandlers
+                                  .getOrDefault(
+                                      event.getRawKVEntry().getOpType(),
+                                      pEvent -> {
+                                        LOG.trace("Skip cdc event {}", pEvent);
+                                      })
+                                  .accept(event);
+                            } catch (Exception e) {
+                              errorHandler.setProducerThrowable(e);
+                            }
+                          }
+
+                          @Override
+                          public void onException(ClientException e) {
+                            LOG.error("CDC event client error.", e);
+                            errorHandler.setProducerThrowable(e);
+                          }
+                        });
+                    try {
+                      cdcClientV2.start(CDCEventOffset.getStartTs(this.split.getStartingOffset()));
+                      cdcClientV2.join();
+                    } finally {
+                      cdcClientV2.close();
                     }
                   });
-              cdcClientV2.start(CDCEventOffset.getStartTs(this.split.getStartingOffset()));
             });
   }
 
@@ -163,7 +202,7 @@ public class CDCEventSource
       TiDBPartition partition,
       CDCEventOffsetContext offsetContext,
       Envelope.Operation operation,
-      RawKVEntry event)
+      PolymorphicEvent event)
       throws InterruptedException {
     final TableId tableId = tableIdProvider.apply(event);
     if (tableId == null) {
@@ -175,7 +214,7 @@ public class CDCEventSource
       LOG.warn("No table schema found, skipping log message: {}", event);
       return;
     }
-    offsetContext.event(tableId, event.getCrts());
+    offsetContext.event(tableId, event.getCrTs());
 
     Map<String, Integer> fieldIndex =
         fieldIndexMap.computeIfAbsent(
@@ -188,19 +227,21 @@ public class CDCEventSource
                             i -> schema.valueSchema().fields().get(i).name(), i -> i)));
     Serializable[] before = null;
     Serializable[] after = null;
-    final RowKey rowKey = RowKey.decode(event.getKey().toByteArray());
+    final RowKey rowKey = RowKey.decode(event.getRawKVEntry().getKey().toByteArray());
     final long handle = rowKey.getHandle();
-    switch (event.getOpType()) {
+    switch (event.getRawKVEntry().getOpType()) {
       case Delete:
         before = new Serializable[fieldIndex.size()];
         Object[] tikvValue =
-            decodeObjects(event.getOldValue().toByteArray(), handle, event.getTableInfo());
+            decodeObjects(
+                event.getRawKVEntry().getOldValue().toByteArray(), handle, event.getTableInfo());
         for (int i = 0; i < tikvValue.length; i++) {
           before[i] = (Serializable) tikvValue[i];
         }
       case Put:
-        if (event.isUpdate()) {
-          RawKVEntry[] rawKVEntries = event.splitUpdateKVEntry(event);
+        if (event.getRawKVEntry().isUpdate()) {
+          RawKVEntry[] rawKVEntries =
+              event.getRawKVEntry().splitUpdateKVEntry(event.getRawKVEntry());
           RawKVEntry deleteRawKVEntry = rawKVEntries[0];
           before = new Serializable[fieldIndex.size()];
           Object[] tiKVValueBefore =
@@ -221,13 +262,14 @@ public class CDCEventSource
           after = new Serializable[fieldIndex.size()];
           LOG.debug(
               "Receive value is {},key:{}.dbName:{},tableName: {},tableInfo: {}",
-              event.getValue().toByteArray(),
-              event.getKey(),
-              event.getDbName(),
-              event.getTableName(),
+              event.getRawKVEntry().getValue().toByteArray(),
+              event.getRawKVEntry().getKey(),
+              event.getDatabaseName(),
+              event.getTableInfo().getName(),
               event.getTableInfo());
           Object[] tiKVValueAfter =
-              decodeObjects(event.getValue().toByteArray(), handle, event.getTableInfo());
+              decodeObjects(
+                  event.getRawKVEntry().getValue().toByteArray(), handle, event.getTableInfo());
           for (int i = 0; i < tiKVValueAfter.length; i++) {
             after[i] = (Serializable) tiKVValueAfter[i];
           }

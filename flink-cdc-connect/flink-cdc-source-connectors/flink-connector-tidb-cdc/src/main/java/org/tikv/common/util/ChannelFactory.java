@@ -163,12 +163,12 @@ public class ChannelFactory implements AutoCloseable {
                                     mappedAddr.getHost(), mappedAddr.getPort());
 
                     builder.maxInboundMessageSize(maxFrameSize)
-                            //                            .negotiationType(NegotiationType.TLS)
-                            .enableRetry()
                             .keepAliveTime(keepaliveTime, TimeUnit.SECONDS)
                             .keepAliveTimeout(keepaliveTimeout, TimeUnit.SECONDS)
                             .keepAliveWithoutCalls(true)
-                            .idleTimeout(idleTimeout, TimeUnit.SECONDS);
+                            .idleTimeout(idleTimeout, TimeUnit.SECONDS)
+                            .enableRetry();
+
                     try {
                         if (sslContextBuilder == null) {
                             return builder.usePlaintext().build();

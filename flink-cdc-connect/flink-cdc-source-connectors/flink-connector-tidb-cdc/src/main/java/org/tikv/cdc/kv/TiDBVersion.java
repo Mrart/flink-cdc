@@ -1,4 +1,4 @@
-package org.apache.flink.cdc.connectors.tidb.table.utils;
+package org.tikv.cdc.kv;
 
 public enum TiDBVersion {
     V6_5("6.5.11");
