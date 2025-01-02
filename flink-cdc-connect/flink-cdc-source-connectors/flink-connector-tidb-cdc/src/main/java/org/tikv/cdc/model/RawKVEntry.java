@@ -95,6 +95,34 @@ public class RawKVEntry {
         this.tableInfo = tableInfo;
     }
 
+    @Override
+    public String toString() {
+        return "RawKVEntry{"
+                + "opType="
+                + opType
+                + ", key="
+                + key
+                + ", value="
+                + value
+                + ", oldValue="
+                + oldValue
+                + ", startTs="
+                + startTs
+                + ", crts="
+                + crts
+                + ", regionId="
+                + regionId
+                + ", dbName='"
+                + dbName
+                + '\''
+                + ", tableName='"
+                + tableName
+                + '\''
+                + ", tableInfo="
+                + tableInfo
+                + '}';
+    }
+
     public static class Builder {
         private OpType opType;
         private ByteString key;
