@@ -131,6 +131,9 @@ public class CDCEventSource
                             new EventListener() {
                               @Override
                               public void notify(PolymorphicEvent event) {
+                                if (event == null) {
+                                  return;
+                                }
                                 if (!context.isRunning()) {
                                   cdcClientV2.close();
                                   return;
