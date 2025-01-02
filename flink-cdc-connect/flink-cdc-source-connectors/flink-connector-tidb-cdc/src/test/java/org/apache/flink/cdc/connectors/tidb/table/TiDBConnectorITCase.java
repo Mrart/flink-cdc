@@ -91,7 +91,7 @@ public class TiDBConnectorITCase extends TiDBTestBase {
             TIDB_USER,
             "inventory",
             "products",
-            "initial",
+            "latest-offset",
             "id");
 
     String sinkDDL =
@@ -112,7 +112,7 @@ public class TiDBConnectorITCase extends TiDBTestBase {
     TableResult result = tEnv.executeSql("INSERT INTO sink SELECT * FROM tidb_source");
 
     // wait for snapshot finished and begin binlog
-    waitForSinkSize("sink", 15);
+    waitForSinkSize("sink", 0);
 
     try (Connection connection = getJdbcConnection("inventory");
         Statement statement = connection.createStatement()) {

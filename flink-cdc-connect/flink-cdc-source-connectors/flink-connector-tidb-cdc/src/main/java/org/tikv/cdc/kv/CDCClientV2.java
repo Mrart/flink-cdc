@@ -26,6 +26,7 @@ import org.tikv.common.util.BackOffer;
 import org.tikv.common.util.ConcreteBackOffer;
 import org.tikv.common.util.RangeSplitter;
 import org.tikv.kvproto.Cdcpb;
+import org.tikv.kvproto.ChangeDataGrpc;
 import org.tikv.kvproto.Coprocessor.KeyRange;
 import org.tikv.kvproto.Kvrpcpb;
 import org.tikv.shade.io.grpc.stub.StreamObserver;
@@ -400,15 +401,25 @@ public class CDCClientV2 {
             LOGGER.warn("Server completed streaming");
           }
         };
-    BackOffer bo = ConcreteBackOffer.newCustomBackOff(60000, stream.getStreamId());
+    ChangeDataGrpc.ChangeDataStub changeDataStub = stream.getAsyncStub();
+    StreamObserverAdapter<Cdcpb.ChangeDataRequest, Cdcpb.ChangeDataEvent> adapter =
+        getEventStreamObserverAdapter(changeDataStub, stream);
+    StreamObserverAdapter<Cdcpb.ChangeDataRequest, Cdcpb.ChangeDataEvent>.RetryStreamObserver
+        requestObserver = adapter.start(changeDataStub, responseObserver);
+    requestObserver.sendRequest(request);
+  }
+
+  private static StreamObserverAdapter<Cdcpb.ChangeDataRequest, Cdcpb.ChangeDataEvent>
+      getEventStreamObserverAdapter(
+          ChangeDataGrpc.ChangeDataStub changeDataStub, EventFeedStream stream) {
+    BackOffer bo = ConcreteBackOffer.newCustomBackOff(360000, stream.getStreamId());
     StreamObserverAdapter.CallFactory<Cdcpb.ChangeDataRequest, Cdcpb.ChangeDataEvent> callFactory =
         (observer) ->
-            stream.getAsyncStub().withDeadlineAfter(20, TimeUnit.SECONDS).eventFeed(observer);
-    StreamObserverAdapter<Cdcpb.ChangeDataRequest, Cdcpb.ChangeDataEvent> adapter =
-        new StreamObserverAdapter<>(bo, callFactory);
-    StreamObserverAdapter<Cdcpb.ChangeDataRequest, Cdcpb.ChangeDataEvent>.RetryStreamObserver
-        requestObserver = adapter.start(responseObserver);
-    requestObserver.sendRequest(request);
+            changeDataStub
+                .withWaitForReady()
+                .withDeadlineAfter(120, TimeUnit.SECONDS)
+                .eventFeed(observer);
+    return new StreamObserverAdapter<>(bo, callFactory);
   }
 
   private void deleteStream(EventFeedStream deleteStreamClient) {

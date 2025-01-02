@@ -4,6 +4,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tikv.common.log.SlowLogSpan;
 import org.tikv.common.util.BackOffer;
+import org.tikv.kvproto.ChangeDataGrpc;
+import org.tikv.shade.io.grpc.ConnectivityState;
+import org.tikv.shade.io.grpc.ManagedChannel;
 import org.tikv.shade.io.grpc.Status;
 import org.tikv.shade.io.grpc.StatusRuntimeException;
 import org.tikv.shade.io.grpc.stub.StreamObserver;
@@ -20,28 +23,41 @@ import static org.tikv.common.util.BackOffFunction.BackOffFuncType.BoTiKVRPC;
 public class StreamObserverAdapter<ReqT, RespT> {
   private static final Logger LOGGER = LoggerFactory.getLogger(StreamObserverAdapter.class);
   private final BackOffer backOffer;
-  private final CallFactory<ReqT, RespT> callFactory; // Factory for creating gRPC calls
+  private final CallFactory<ReqT, RespT> callFactory;
 
   public StreamObserverAdapter(BackOffer backOffer, CallFactory<ReqT, RespT> callFactory) {
     this.backOffer = backOffer;
     this.callFactory = callFactory;
   }
 
-  public RetryStreamObserver start(StreamObserver<RespT> responseObserver) {
-    return new RetryStreamObserver(responseObserver);
+  public RetryStreamObserver start(
+      ChangeDataGrpc.ChangeDataStub stub, StreamObserver<RespT> responseObserver) {
+    return new RetryStreamObserver(stub, responseObserver);
   }
 
   public class RetryStreamObserver implements StreamObserver<RespT> {
 
     private final StreamObserver<RespT> responseObserver;
     private StreamObserver<ReqT> requestObserver;
+    private final ChangeDataGrpc.ChangeDataStub stub;
 
-    public RetryStreamObserver(StreamObserver<RespT> responseObserver) {
+    public RetryStreamObserver(
+        ChangeDataGrpc.ChangeDataStub stub, StreamObserver<RespT> responseObserver) {
       this.responseObserver = responseObserver;
+      this.stub = stub;
       initializeCall();
     }
 
     private void initializeCall() {
+      ManagedChannel channel = (ManagedChannel) this.stub.getChannel();
+      ConnectivityState state = channel.getState(false);
+      if (ConnectivityState.TRANSIENT_FAILURE == state) {
+        channel.resetConnectBackoff();
+      }
+
+      if (channel.isShutdown() || channel.isTerminated()) {
+        channel.resetConnectBackoff();
+      }
       this.requestObserver = callFactory.createCall(this);
     }
 
@@ -78,10 +94,10 @@ public class StreamObserverAdapter<ReqT, RespT> {
           }
         } else {
           LOGGER.error("Stream observer is failed.", t);
-          return;
         }
+      } else {
+        LOGGER.error("Failed Retry stream observer!", t);
       }
-      LOGGER.error("Failed Retry stream observer!", t);
       // todo , try notify user, restart.
     }
 

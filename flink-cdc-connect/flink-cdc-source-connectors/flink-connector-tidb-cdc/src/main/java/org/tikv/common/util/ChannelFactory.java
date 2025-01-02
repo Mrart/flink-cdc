@@ -21,6 +21,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tikv.common.HostMapping;
 import org.tikv.common.pd.PDUtils;
+import org.tikv.shade.com.google.gson.Gson;
+import org.tikv.shade.com.google.gson.stream.JsonReader;
 import org.tikv.shade.io.grpc.ManagedChannel;
 import org.tikv.shade.io.grpc.netty.GrpcSslContexts;
 import org.tikv.shade.io.grpc.netty.NettyChannelBuilder;
@@ -30,11 +32,14 @@ import org.tikv.shade.io.netty.handler.ssl.SslContextBuilder;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLException;
 import javax.net.ssl.TrustManagerFactory;
-
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.InputStreamReader;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.security.KeyStore;
+import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
@@ -43,151 +48,157 @@ import java.util.concurrent.TimeUnit;
  * https://github.com/tikv/client-java/issues/600 for 3.2.0 version.
  */
 public class ChannelFactory implements AutoCloseable {
-    private static final Logger logger = LoggerFactory.getLogger(ChannelFactory.class);
+  private static final Logger logger = LoggerFactory.getLogger(ChannelFactory.class);
 
-    private final int maxFrameSize;
-    private final int keepaliveTime;
-    private final int keepaliveTimeout;
-    private final int idleTimeout;
-    private final ConcurrentHashMap<String, ManagedChannel> connPool = new ConcurrentHashMap<>();
-    private final SslContextBuilder sslContextBuilder;
-    private static final String PUB_KEY_INFRA = "PKIX";
+  private final int maxFrameSize;
+  private final int keepaliveTime;
+  private final int keepaliveTimeout;
+  private final int idleTimeout;
+  private final ConcurrentHashMap<String, ManagedChannel> connPool = new ConcurrentHashMap<>();
+  private final SslContextBuilder sslContextBuilder;
+  private static final String PUB_KEY_INFRA = "PKIX";
 
-    public ChannelFactory(
-            int maxFrameSize, int keepaliveTime, int keepaliveTimeout, int idleTimeout) {
-        this.maxFrameSize = maxFrameSize;
-        this.keepaliveTime = keepaliveTime;
-        this.keepaliveTimeout = keepaliveTimeout;
-        this.idleTimeout = idleTimeout;
-        this.sslContextBuilder = null;
+  public ChannelFactory(
+      int maxFrameSize, int keepaliveTime, int keepaliveTimeout, int idleTimeout) {
+    this.maxFrameSize = maxFrameSize;
+    this.keepaliveTime = keepaliveTime;
+    this.keepaliveTimeout = keepaliveTimeout;
+    this.idleTimeout = idleTimeout;
+    this.sslContextBuilder = null;
+  }
+
+  public ChannelFactory(
+      int maxFrameSize,
+      int keepaliveTime,
+      int keepaliveTimeout,
+      int idleTimeout,
+      String trustCertCollectionFilePath,
+      String keyCertChainFilePath,
+      String keyFilePath) {
+    this.maxFrameSize = maxFrameSize;
+    this.keepaliveTime = keepaliveTime;
+    this.keepaliveTimeout = keepaliveTimeout;
+    this.idleTimeout = idleTimeout;
+    this.sslContextBuilder =
+        getSslContextBuilder(trustCertCollectionFilePath, keyCertChainFilePath, keyFilePath);
+  }
+
+  public ChannelFactory(
+      int maxFrameSize,
+      int keepaliveTime,
+      int keepaliveTimeout,
+      int idleTimeout,
+      String jksKeyPath,
+      String jksKeyPassword,
+      String jkstrustPath,
+      String jksTrustPassword) {
+    this.maxFrameSize = maxFrameSize;
+    this.keepaliveTime = keepaliveTime;
+    this.keepaliveTimeout = keepaliveTimeout;
+    this.idleTimeout = idleTimeout;
+    this.sslContextBuilder =
+        getSslContextBuilder(jksKeyPath, jksKeyPassword, jkstrustPath, jksTrustPassword);
+  }
+
+  private SslContextBuilder getSslContextBuilder(
+      String jksKeyPath, String jksKeyPassword, String jksTrustPath, String jksTrustPassword) {
+    SslContextBuilder builder = GrpcSslContexts.forClient();
+    try {
+      if (jksKeyPath != null && jksKeyPassword != null) {
+        KeyStore keyStore = KeyStore.getInstance("JKS");
+        keyStore.load(new FileInputStream(jksKeyPath), jksKeyPassword.toCharArray());
+        KeyManagerFactory keyManagerFactory =
+            KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
+        keyManagerFactory.init(keyStore, jksKeyPassword.toCharArray());
+        builder.keyManager(keyManagerFactory);
+      }
+      if (jksTrustPath != null && jksTrustPassword != null) {
+        KeyStore trustStore = KeyStore.getInstance("JKS");
+        trustStore.load(new FileInputStream(jksTrustPath), jksTrustPassword.toCharArray());
+        TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(PUB_KEY_INFRA);
+        trustManagerFactory.init(trustStore);
+        builder.trustManager(trustManagerFactory);
+      }
+    } catch (Exception e) {
+      logger.error("JKS SSL context builder failed!", e);
     }
+    return builder;
+  }
 
-    public ChannelFactory(
-            int maxFrameSize,
-            int keepaliveTime,
-            int keepaliveTimeout,
-            int idleTimeout,
-            String trustCertCollectionFilePath,
-            String keyCertChainFilePath,
-            String keyFilePath) {
-        this.maxFrameSize = maxFrameSize;
-        this.keepaliveTime = keepaliveTime;
-        this.keepaliveTimeout = keepaliveTimeout;
-        this.idleTimeout = idleTimeout;
-        this.sslContextBuilder =
-                getSslContextBuilder(
-                        trustCertCollectionFilePath, keyCertChainFilePath, keyFilePath);
+  private SslContextBuilder getSslContextBuilder(
+      String trustCertCollectionFilePath, String keyCertChainFilePath, String keyFilePath) {
+    SslContextBuilder builder = GrpcSslContexts.forClient();
+    if (trustCertCollectionFilePath != null) {
+      builder.trustManager(new File(trustCertCollectionFilePath));
     }
-
-    public ChannelFactory(
-            int maxFrameSize,
-            int keepaliveTime,
-            int keepaliveTimeout,
-            int idleTimeout,
-            String jksKeyPath,
-            String jksKeyPassword,
-            String jkstrustPath,
-            String jksTrustPassword) {
-        this.maxFrameSize = maxFrameSize;
-        this.keepaliveTime = keepaliveTime;
-        this.keepaliveTimeout = keepaliveTimeout;
-        this.idleTimeout = idleTimeout;
-        this.sslContextBuilder =
-                getSslContextBuilder(jksKeyPath, jksKeyPassword, jkstrustPath, jksTrustPassword);
+    if (keyCertChainFilePath != null && keyFilePath != null) {
+      builder.keyManager(new File(keyCertChainFilePath), new File(keyFilePath));
     }
+    return builder;
+  }
 
-    private SslContextBuilder getSslContextBuilder(
-            String jksKeyPath,
-            String jksKeyPassword,
-            String jksTrustPath,
-            String jksTrustPassword) {
-        SslContextBuilder builder = GrpcSslContexts.forClient();
-        try {
-            if (jksKeyPath != null && jksKeyPassword != null) {
-                KeyStore keyStore = KeyStore.getInstance("JKS");
-                keyStore.load(new FileInputStream(jksKeyPath), jksKeyPassword.toCharArray());
-                KeyManagerFactory keyManagerFactory =
-                        KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
-                keyManagerFactory.init(keyStore, jksKeyPassword.toCharArray());
-                builder.keyManager(keyManagerFactory);
+  public ManagedChannel getChannel(String addressStr, HostMapping hostMapping) {
+    // todo check channel state
+    return connPool.computeIfAbsent(
+        addressStr,
+        key -> {
+          URI address;
+          URI mappedAddr;
+          try {
+            address = PDUtils.addrToUri(key);
+          } catch (Exception e) {
+            throw new IllegalArgumentException("failed to form address " + key, e);
+          }
+          try {
+            mappedAddr = hostMapping.getMappedURI(address);
+          } catch (Exception e) {
+            throw new IllegalArgumentException("failed to get mapped address " + address, e);
+          }
+
+          // Channel should be lazy without actual connection until first call
+          // So a coarse grain lock is ok here
+          NettyChannelBuilder builder =
+              NettyChannelBuilder.forAddress(mappedAddr.getHost(), mappedAddr.getPort());
+          Gson gson = new Gson();
+          Map<String, ?> serviceConfig =
+              gson.fromJson(
+                  new JsonReader(
+                      new InputStreamReader(
+                          Objects.requireNonNull(
+                              ChannelFactory.class
+                                  .getClassLoader()
+                                  .getResourceAsStream("service_config.json")),
+                          StandardCharsets.UTF_8)),
+                  Map.class);
+
+          builder
+              .maxInboundMessageSize(maxFrameSize)
+              .keepAliveTime(keepaliveTime, TimeUnit.SECONDS)
+              .keepAliveTimeout(keepaliveTimeout, TimeUnit.SECONDS)
+              .keepAliveWithoutCalls(true)
+              .idleTimeout(idleTimeout, TimeUnit.SECONDS)
+              .defaultServiceConfig(serviceConfig)
+              .enableRetry();
+
+          try {
+            if (sslContextBuilder == null) {
+              return builder.usePlaintext().build();
+            } else {
+              SslContext sslContext = sslContextBuilder.build();
+              return builder.sslContext(sslContext).build();
             }
-            if (jksTrustPath != null && jksTrustPassword != null) {
-                KeyStore trustStore = KeyStore.getInstance("JKS");
-                trustStore.load(new FileInputStream(jksTrustPath), jksTrustPassword.toCharArray());
-                TrustManagerFactory trustManagerFactory =
-                        TrustManagerFactory.getInstance(PUB_KEY_INFRA);
-                trustManagerFactory.init(trustStore);
-                builder.trustManager(trustManagerFactory);
-            }
-        } catch (Exception e) {
-            logger.error("JKS SSL context builder failed!", e);
-        }
-        return builder;
+          } catch (SSLException e) {
+            logger.error("create ssl context failed!", e);
+            return null;
+          }
+        });
+  }
+
+  @Override
+  public void close() {
+    for (ManagedChannel ch : connPool.values()) {
+      ch.shutdown();
     }
-
-    private SslContextBuilder getSslContextBuilder(
-            String trustCertCollectionFilePath, String keyCertChainFilePath, String keyFilePath) {
-        SslContextBuilder builder = GrpcSslContexts.forClient();
-        if (trustCertCollectionFilePath != null) {
-            builder.trustManager(new File(trustCertCollectionFilePath));
-        }
-        if (keyCertChainFilePath != null && keyFilePath != null) {
-            builder.keyManager(new File(keyCertChainFilePath), new File(keyFilePath));
-        }
-        return builder;
-    }
-
-    public ManagedChannel getChannel(String addressStr, HostMapping hostMapping) {
-        // todo check channel state
-        return connPool.computeIfAbsent(
-                addressStr,
-                key -> {
-                    URI address;
-                    URI mappedAddr;
-                    try {
-                        address = PDUtils.addrToUri(key);
-                    } catch (Exception e) {
-                        throw new IllegalArgumentException("failed to form address " + key, e);
-                    }
-                    try {
-                        mappedAddr = hostMapping.getMappedURI(address);
-                    } catch (Exception e) {
-                        throw new IllegalArgumentException(
-                                "failed to get mapped address " + address, e);
-                    }
-
-                    // Channel should be lazy without actual connection until first call
-                    // So a coarse grain lock is ok here
-                    NettyChannelBuilder builder =
-                            NettyChannelBuilder.forAddress(
-                                    mappedAddr.getHost(), mappedAddr.getPort());
-
-                    builder.maxInboundMessageSize(maxFrameSize)
-                            .keepAliveTime(keepaliveTime, TimeUnit.SECONDS)
-                            .keepAliveTimeout(keepaliveTimeout, TimeUnit.SECONDS)
-                            .keepAliveWithoutCalls(true)
-                            .idleTimeout(idleTimeout, TimeUnit.SECONDS)
-                            .enableRetry();
-
-                    try {
-                        if (sslContextBuilder == null) {
-                            return builder.usePlaintext().build();
-                        } else {
-                            SslContext sslContext = sslContextBuilder.build();
-                            return builder.sslContext(sslContext).build();
-                        }
-                    } catch (SSLException e) {
-                        logger.error("create ssl context failed!", e);
-                        return null;
-                    }
-                });
-    }
-
-    @Override
-    public void close() {
-        for (ManagedChannel ch : connPool.values()) {
-            ch.shutdown();
-        }
-        connPool.clear();
-    }
+    connPool.clear();
+  }
 }
