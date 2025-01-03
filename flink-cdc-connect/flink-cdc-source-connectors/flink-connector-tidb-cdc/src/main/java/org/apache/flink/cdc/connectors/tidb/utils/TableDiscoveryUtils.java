@@ -27,7 +27,8 @@ public class TableDiscoveryUtils {
                 allTableIds.stream()
                         .filter(t -> tableFilters.dataCollectionFilter().isIncluded(t))
                         .collect(Collectors.toSet());
-        LOG.info("listTables include paramaters：database:{}",database);
+        LOG.info("listTables include paramaters：database:{}",
+                database);
         LOG.info(
                 "TiDB captured tables : {} .",
                 capturedTables.stream().map(TableId::toString).collect(Collectors.joining(",")));

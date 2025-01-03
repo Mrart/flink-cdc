@@ -443,11 +443,6 @@ public class TiDBUtils {
         return tiDBDatabaseSchema;
     }
 
-    public static TiDBConnection createMySqlConnection(
-            Configuration dbzConfiguration, Properties jdbcProperties) {
-        return new TiDBConnection(
-                new TiDBConnection.TiDBConnectionConfiguration(dbzConfiguration, jdbcProperties));
-    }
 
     public static RowType getSplitType(Table table) {
         List<Column> primaryKeys = table.primaryKeyColumns();
