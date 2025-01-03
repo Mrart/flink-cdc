@@ -57,7 +57,7 @@ public class TiDBConnectorITCase extends TiDBTestBase {
   public void before() {
     TestValuesTableFactory.clearAllData();
     //        env.setRestartStrategy(RestartStrategies.noRestart());
-    env.setParallelism(2);
+    env.setParallelism(1);
   }
 
   @Test
@@ -91,7 +91,7 @@ public class TiDBConnectorITCase extends TiDBTestBase {
             TIDB_USER,
             "inventory",
             "products",
-            "latest-offset",
+            "initial",
             "id");
 
     String sinkDDL =
