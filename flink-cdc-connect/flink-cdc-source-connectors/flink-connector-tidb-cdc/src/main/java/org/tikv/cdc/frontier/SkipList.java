@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tikv.common.util.BytesUtils;
 
+import java.util.Arrays;
 import java.util.Random;
 
 public class SkipList {
@@ -40,7 +41,7 @@ public class SkipList {
     public SkipListNode[] seek(byte[] key) {
         SkipListNode current = this.head;
         SkipListNode[] result = new SkipListNode[MAX_HEIGHT];
-        //    Arrays.fill(result, new SkipListNode(null, null, MAX_HEIGHT));
+        Arrays.fill(result, null);
 
         for (int level = height - 1; level >= 0; level--) {
             while (true) {

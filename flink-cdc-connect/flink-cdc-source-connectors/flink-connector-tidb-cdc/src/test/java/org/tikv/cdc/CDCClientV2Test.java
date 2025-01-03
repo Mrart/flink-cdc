@@ -3,6 +3,7 @@ package org.tikv.cdc;
 import org.apache.flink.cdc.connectors.tidb.TiDBTestBase;
 import org.apache.flink.cdc.connectors.tidb.source.config.TiDBSourceConfig;
 import org.apache.flink.cdc.connectors.tidb.source.config.TiDBSourceConfigFactory;
+import org.apache.flink.cdc.connectors.tidb.source.config.TiDBSourceOptions;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -18,6 +19,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.time.Instant;
+import java.util.HashMap;
 import java.util.Optional;
 
 public class CDCClientV2Test extends TiDBTestBase {
@@ -30,11 +32,15 @@ public class CDCClientV2Test extends TiDBTestBase {
         initializeTidbTable("customer");
         TiDBSourceConfigFactory configFactoryOfCustomDatabase =
                 getMockTiDBSourceConfigFactory(databaseName, null, tableName, 10);
+        configFactoryOfCustomDatabase.tiConfiguration(
+                TiDBSourceOptions.getTiConfiguration(
+                        PD.getHost() + ":" + PD.getMappedPort(PD_PORT_ORIGIN),
+                        null,
+                        new HashMap<>()));
         // set pd add;
-        configFactoryOfCustomDatabase.pdAddresses(
-                PD.getContainerIpAddress() + ":" + PD.getMappedPort(PD_PORT_ORIGIN));
         TiDBSourceConfig tiDBSourceConfig = configFactoryOfCustomDatabase.create(0);
-        //    tiDBSourceConfig.
+
+        //   tiDBSourceConfig.
         CDCClientV2 icdcClientV2 =
                 new CDCClientV2(tiDBSourceConfig.getTiConfiguration(), databaseName, tableName);
         try (Connection connection = getJdbcConnection(databaseName);

@@ -48,7 +48,8 @@ public class SkipListTest {
             if (lastKey.length != 0) {
                 int cmp = BytesUtils.compare(lastKey, node.getKey());
                 if (cmp > 0) {
-                    LOGGER.error("error");
+                    LOGGER.error(
+                            "error,{},lastKey {}", new String(node.getKey()), new String(lastKey));
                 } else {
                     Assert.assertTrue(cmp <= 0);
                 }

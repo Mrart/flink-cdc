@@ -71,6 +71,28 @@ public class FibonacciHeap {
         }
     }
 
+    public void entries(HeapConsumer fn) {
+        heapNodeIterator(this.root, fn);
+    }
+
+    private void heapNodeIterator(FibonacciHeapNode node, HeapConsumer fn) {
+        boolean firstStep = true;
+        for (FibonacciHeapNode next = node;
+                next != null && (next != node || firstStep);
+                next = next.right) {
+            firstStep = false;
+            if (!fn.accept(next)) return;
+            if (next.children != null) {
+                heapNodeIterator(next.children, fn);
+            }
+        }
+    }
+
+    @FunctionalInterface
+    public interface HeapConsumer {
+        boolean accept(FibonacciHeapNode node);
+    }
+
     private void increaseKey(FibonacciHeapNode x, long key) {
         if (x == min) dirty = true;
         x.key = key;
@@ -270,25 +292,5 @@ public class FibonacciHeap {
         public boolean isMarked() {
             return marked;
         }
-    }
-
-    // Main method for testing the FibonacciHeap implementation
-    public static void main(String[] args) {
-        FibonacciHeap heap = new FibonacciHeap();
-
-        // Insert some values into the Fibonacci heap
-        FibonacciHeapNode node1 = heap.insert(5);
-        FibonacciHeapNode node2 = heap.insert(3);
-        FibonacciHeapNode node3 = heap.insert(7);
-
-        System.out.println("Minimum key: " + heap.getMinKey()); // Expected: 3
-
-        // Update key of a node
-        heap.updateKey(node1, 2);
-        System.out.println("Updated minimum key: " + heap.getMinKey()); // Expected: 2
-
-        // Remove a node
-        heap.remove(node2);
-        System.out.println("Minimum key after removal: " + heap.getMinKey()); // Expected: 2
     }
 }

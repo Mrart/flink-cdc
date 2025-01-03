@@ -5,7 +5,6 @@ import org.slf4j.LoggerFactory;
 import org.tikv.common.util.BytesUtils;
 import org.tikv.kvproto.Coprocessor;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -38,6 +37,14 @@ public class KeyRangeFrontier implements Frontier {
         }
     }
 
+    public SkipList getSpanList() {
+        return spanList;
+    }
+
+    public FibonacciHeap getMinTsHeap() {
+        return minTsHeap;
+    }
+
     @Override
     public long frontier() {
         return minTsHeap.getMinKey();
@@ -48,24 +55,26 @@ public class KeyRangeFrontier implements Frontier {
         SkipListNode node = cachedRegions.get(regionID);
         if (node != null
                 && node.getRegion() == regionID
-                && Arrays.equals(node.getKey(), span.getStart().toByteArray())
-                && Arrays.equals(node.getEnd(), span.getEnd().toByteArray())) {
-            // Update the timestamp for the region
-            minTsHeap.updateKey(node.getValue(), ts);
-        }
+                && span.getEnd() != null
+                && !span.getEnd().isEmpty())
+            if (BytesUtils.equal(node.getKey(), span.getStart().toByteArray())
+                    && BytesUtils.equal(node.getEnd(), span.getEnd().toByteArray())) {
+                // Update the timestamp for the region
+                minTsHeap.updateKey(node.getValue(), ts);
+            }
         insert(regionID, span, ts);
     }
 
     private void insert(long regionId, Coprocessor.KeyRange span, long ts) {
+
         // Insert or update the span in the list
-        //    Arrays.fill(seekTempResult, null);
         SkipListNode[] seekRes = spanList.seek(span.getStart().toByteArray());
         SkipListNode next = seekRes[0].nextAtLevel(0);
         if (next != null) {
             if (BytesUtils.compare(next.getKey(), span.getStart().toByteArray()) == 0
                     && BytesUtils.compare(next.getKey(), span.getEnd().toByteArray()) == 0) {
                 minTsHeap.updateKey(seekRes[0].getValue(), ts);
-                cachedRegions.remove(regionId);
+                cachedRegions.remove(seekRes[0].getRegion());
                 if (regionId != FAKE_REGION_ID) {
                     seekRes[0].setRegion(regionId);
                     seekRes[0].setEnd(next.getKey());
@@ -75,7 +84,7 @@ public class KeyRangeFrontier implements Frontier {
             }
         }
         SkipListNode node = seekRes[0];
-        cachedRegions.remove(regionId);
+        cachedRegions.remove(node.getRegion());
         long lastNodeTs = Long.MAX_VALUE;
         boolean shouldInsertStartNode = true;
         if (node.getValue() != null) {
@@ -83,39 +92,29 @@ public class KeyRangeFrontier implements Frontier {
         }
 
         for (; node != null; node = node.nextAtLevel(0)) {
-            cachedRegions.remove(regionId);
+            cachedRegions.remove(node.getRegion());
             int cmpStart = BytesUtils.compare(node.getKey(), span.getStart().toByteArray());
             if (cmpStart < 0) {
                 continue;
             }
             if (BytesUtils.compare(node.getKey(), span.getEnd().toByteArray()) > 0) {
-                continue;
+                break;
             }
             lastNodeTs = node.getValue().getKey();
             if (cmpStart == 0) {
                 minTsHeap.updateKey(node.getValue(), ts);
                 shouldInsertStartNode = false;
             } else {
-                SkipListNode[] seekNodes = spanList.seek(node.getKey());
-                spanList.remove(seekNodes, node);
+                spanList.remove(seekRes, node);
                 minTsHeap.remove(node.getValue());
             }
-            if (shouldInsertStartNode) {
-                spanList.insertNextToNode(
-                        seekRes, span.getStart().toByteArray(), minTsHeap.insert(ts));
-                seekRes = next(seekRes);
-            }
-            spanList.insertNextToNode(
-                    seekRes, span.getEnd().toByteArray(), minTsHeap.insert(lastNodeTs));
         }
-    }
-
-    public SkipListNode[] next(SkipListNode[] seekResult) {
-        SkipListNode next = seekResult[0].nextAtLevel(0);
-        for (int i = 0; i < next.next().length; i++) {
-            seekResult[i] = next.next()[i];
+        if (shouldInsertStartNode) {
+            spanList.insertNextToNode(seekRes, span.getStart().toByteArray(), minTsHeap.insert(ts));
+            seekRes = spanList.seek(span.getStart().toByteArray()); // re seek.
         }
-        return seekResult;
+        spanList.insertNextToNode(
+                seekRes, span.getEnd().toByteArray(), minTsHeap.insert(lastNodeTs));
     }
 
     @Override
