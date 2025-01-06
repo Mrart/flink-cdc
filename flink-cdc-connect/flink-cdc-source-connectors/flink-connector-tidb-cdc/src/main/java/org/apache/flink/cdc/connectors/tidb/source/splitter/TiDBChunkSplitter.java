@@ -3,7 +3,6 @@ package org.apache.flink.cdc.connectors.tidb.source.splitter;
 import io.debezium.connector.mysql.MySqlConnectorConfig;
 import io.debezium.relational.*;
 import io.debezium.relational.history.TableChanges;
-import jdk.jpackage.internal.Log;
 import org.apache.flink.cdc.connectors.base.dialect.JdbcDataSourceDialect;
 import org.apache.flink.cdc.connectors.base.source.assigner.splitter.ChunkRange;
 import org.apache.flink.cdc.connectors.base.source.assigner.splitter.ChunkSplitter;
