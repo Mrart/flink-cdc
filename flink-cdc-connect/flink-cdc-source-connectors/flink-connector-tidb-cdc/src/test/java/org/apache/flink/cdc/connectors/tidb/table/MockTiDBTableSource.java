@@ -1,6 +1,7 @@
 package org.apache.flink.cdc.connectors.tidb.table;
 
 import org.apache.flink.cdc.connectors.base.options.StartupOptions;
+import org.apache.flink.table.catalog.ObjectPath;
 import org.apache.flink.table.catalog.ResolvedSchema;
 import org.apache.flink.util.FlinkRuntimeException;
 
@@ -37,6 +38,7 @@ public class MockTiDBTableSource extends TiDBTableSource {
                 (double) get(tiDBTableSource, "distributionFactorUpper"),
                 (double) get(tiDBTableSource, "distributionFactorLower"),
                 (String) get(tiDBTableSource, "chunkKeyColumn"),
+                (Map<ObjectPath, String>) get(tiDBTableSource, "chunkKeyColumn"),
                 (String) get(tiDBTableSource, "jdbcDriver"),
                 (StartupOptions) get(tiDBTableSource, "startupOptions"));
     }

@@ -110,6 +110,7 @@ public class TiDBTableSourceFactoryTest {
                         SPLIT_KEY_EVEN_DISTRIBUTION_FACTOR_UPPER_BOUND.defaultValue(),
                         SPLIT_KEY_EVEN_DISTRIBUTION_FACTOR_LOWER_BOUND.defaultValue(),
                         null,
+                        null,
                         JDBC_DRIVER.defaultValue(),
                         StartupOptions.initial());
         assertEquals(expectedSource, actualSource);
@@ -162,6 +163,7 @@ public class TiDBTableSourceFactoryTest {
                         CONNECTION_POOL_SIZE.defaultValue(),
                         SPLIT_KEY_EVEN_DISTRIBUTION_FACTOR_UPPER_BOUND.defaultValue(),
                         SPLIT_KEY_EVEN_DISTRIBUTION_FACTOR_LOWER_BOUND.defaultValue(),
+                        null,
                         null,
                         JDBC_DRIVER.defaultValue(),
                         StartupOptions.initial());

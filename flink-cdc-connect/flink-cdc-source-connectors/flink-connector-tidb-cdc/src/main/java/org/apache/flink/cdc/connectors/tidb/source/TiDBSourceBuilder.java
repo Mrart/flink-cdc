@@ -9,9 +9,11 @@ import org.apache.flink.cdc.connectors.tidb.source.config.TiDBSourceConfigFactor
 import org.apache.flink.cdc.connectors.tidb.source.offset.CDCEventOffsetFactory;
 import org.apache.flink.cdc.debezium.DebeziumDeserializationSchema;
 
+import org.apache.flink.table.catalog.ObjectPath;
 import org.tikv.common.TiConfiguration;
 
 import java.time.Duration;
+import java.util.Map;
 import java.util.Properties;
 
 import static org.apache.flink.cdc.common.utils.Preconditions.checkNotNull;
@@ -98,6 +100,12 @@ public class TiDBSourceBuilder<T> {
 
     public TiDBSourceBuilder<T> chunkKeyColumn(String chunkKeyColumn) {
         this.configFactory.chunkKeyColumn(chunkKeyColumn);
+        return this;
+    }
+
+
+    public TiDBSourceBuilder<T> chunkKeyColumns(Map<ObjectPath, String> chunkKeyColumns) {
+        this.configFactory.chunkKeyColumns(chunkKeyColumns);
         return this;
     }
 

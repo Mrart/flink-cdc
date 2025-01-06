@@ -59,9 +59,11 @@ public class TiDBPipelineITCase extends TiDBTestBase {
                                 .username(TiDBTestBase.TIDB_USER)
                                 .password(TiDBTestBase.TIDB_PASSWORD)
                                 .databaseList(databaseName)
+                                .chunkKeyColumn("name")
                                 .tableList(this.databaseName + "." + this.tableName)
                                 .startupOptions(StartupOptions.snapshot())
                                 .includeSchemaChanges(false)
+                                .chunkKeyColumn("inventory.table1:column1;inventory.table2:column2")
                                 .splitSize(10);
         FlinkSourceProvider eventSourceProvider =
                 (FlinkSourceProvider)

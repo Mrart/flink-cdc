@@ -72,7 +72,7 @@ public class TiDBDialect implements JdbcDataSourceDialect {
 
     @Override
     public ChunkSplitter createChunkSplitter(JdbcSourceConfig sourceConfig) {
-        return new TiDBChunkSplitter(sourceConfig, this);
+        return new TiDBChunkSplitter(this.sourceConfig, this);
     }
 
     @Override

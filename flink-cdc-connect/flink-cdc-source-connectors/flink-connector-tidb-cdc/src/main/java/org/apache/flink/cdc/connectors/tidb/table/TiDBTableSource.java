@@ -8,6 +8,7 @@ import org.apache.flink.cdc.connectors.tidb.source.config.TiDBSourceOptions;
 import org.apache.flink.cdc.debezium.DebeziumDeserializationSchema;
 import org.apache.flink.cdc.debezium.table.MetadataConverter;
 import org.apache.flink.cdc.debezium.table.RowDataDebeziumDeserializeSchema;
+import org.apache.flink.table.catalog.ObjectPath;
 import org.apache.flink.table.catalog.ResolvedSchema;
 import org.apache.flink.table.connector.ChangelogMode;
 import org.apache.flink.table.connector.source.DynamicTableSource;
@@ -35,7 +36,6 @@ import java.util.stream.Stream;
 
 import static org.apache.flink.util.Preconditions.checkNotNull;
 
-@Deprecated
 public class TiDBTableSource implements ScanTableSource, SupportsReadingMetadata {
 
     private final ResolvedSchema physicalSchema;
@@ -66,6 +66,7 @@ public class TiDBTableSource implements ScanTableSource, SupportsReadingMetadata
     private final double distributionFactorUpper;
     private final double distributionFactorLower;
     private final String chunkKeyColumn;
+    private final  Map<ObjectPath, String> chunkKeyColumns;
 
     private final Properties jdbcProperties;
     private final Map<String, String> options;
@@ -102,6 +103,7 @@ public class TiDBTableSource implements ScanTableSource, SupportsReadingMetadata
             double distributionFactorUpper,
             double distributionFactorLower,
             @Nullable String chunkKeyColumn,
+            @Nullable Map<ObjectPath,String> chunkKeyColumns,
             String jdbcDriver,
             StartupOptions startupOptions) {
         this.physicalSchema = physicalSchema;
@@ -126,7 +128,7 @@ public class TiDBTableSource implements ScanTableSource, SupportsReadingMetadata
         this.distributionFactorUpper = distributionFactorUpper;
         this.distributionFactorLower = distributionFactorLower;
         this.chunkKeyColumn = chunkKeyColumn;
-
+        this.chunkKeyColumns = chunkKeyColumns;
         this.heartbeatInterval = heartbeatInterval;
         this.jdbcDriver = jdbcDriver;
         this.connectTimeout = connectTimeout;
@@ -224,6 +226,7 @@ public class TiDBTableSource implements ScanTableSource, SupportsReadingMetadata
                         .connectTimeout(connectTimeout)
                         .connectionPoolSize(connectionPoolSize)
                         .chunkKeyColumn(chunkKeyColumn)
+                        .chunkKeyColumns(chunkKeyColumns)
                         .driverClassName(jdbcDriver)
                         .connectMaxRetries(connectMaxRetries)
                         .jdbcProperties(jdbcProperties)
@@ -268,6 +271,7 @@ public class TiDBTableSource implements ScanTableSource, SupportsReadingMetadata
                         distributionFactorUpper,
                         distributionFactorLower,
                         chunkKeyColumn,
+                        chunkKeyColumns,
                         jdbcDriver,
                         startupOptions);
         source.producedDataType = producedDataType;

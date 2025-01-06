@@ -1,5 +1,6 @@
 package org.apache.flink.cdc.connectors.tidb.table;
 
+import com.sun.org.apache.bcel.internal.generic.IF_ACMPEQ;
 import org.apache.flink.cdc.connectors.base.options.StartupOptions;
 import org.apache.flink.cdc.connectors.base.utils.OptionUtils;
 import org.apache.flink.cdc.debezium.table.DebeziumOptions;
@@ -8,6 +9,7 @@ import org.apache.flink.configuration.ConfigOption;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.configuration.ReadableConfig;
 import org.apache.flink.table.api.ValidationException;
+import org.apache.flink.table.catalog.ObjectPath;
 import org.apache.flink.table.catalog.ResolvedSchema;
 import org.apache.flink.table.connector.source.DynamicTableSource;
 import org.apache.flink.table.factories.DynamicTableSourceFactory;
@@ -46,7 +48,6 @@ import static org.apache.flink.cdc.connectors.tidb.source.config.TiDBSourceOptio
 import static org.apache.flink.cdc.debezium.table.DebeziumOptions.getDebeziumProperties;
 import static org.apache.flink.cdc.debezium.utils.ResolvedSchemaUtils.getPhysicalSchema;
 
-@Deprecated
 public class TiDBTableSourceFactory implements DynamicTableSourceFactory {
     private static final String IDENTIFIER = "tidb-cdc";
 
@@ -164,6 +165,11 @@ public class TiDBTableSourceFactory implements DynamicTableSourceFactory {
         int connectMaxRetries = config.get(CONNECT_MAX_RETRIES);
         String chunkKeyColumn =
                 config.getOptional(SCAN_INCREMENTAL_SNAPSHOT_CHUNK_KEY_COLUMN).orElse(null);
+        Map<ObjectPath, String> chunkKeyColumns = new HashMap<>();
+        if (chunkKeyColumn !=null){
+            chunkKeyColumns.put( new ObjectPath(databaseName,tableName),chunkKeyColumn);
+        }
+
         double distributionFactorUpper = config.get(SPLIT_KEY_EVEN_DISTRIBUTION_FACTOR_UPPER_BOUND);
         double distributionFactorLower = config.get(SPLIT_KEY_EVEN_DISTRIBUTION_FACTOR_LOWER_BOUND);
 
@@ -201,6 +207,7 @@ public class TiDBTableSourceFactory implements DynamicTableSourceFactory {
                 distributionFactorUpper,
                 distributionFactorLower,
                 chunkKeyColumn,
+                chunkKeyColumns,
                 jdbcDriver,
                 startupOptions);
     }

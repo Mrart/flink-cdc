@@ -4,10 +4,13 @@ import org.apache.flink.cdc.connectors.base.config.JdbcSourceConfig;
 import org.apache.flink.cdc.connectors.base.options.StartupOptions;
 
 import io.debezium.config.Configuration;
+import org.apache.flink.table.catalog.ObjectPath;
 import org.tikv.common.TiConfiguration;
 
 import java.time.Duration;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 public class TiDBSourceConfig extends JdbcSourceConfig {
@@ -18,6 +21,8 @@ public class TiDBSourceConfig extends JdbcSourceConfig {
     private final String hostMapping;
     private TiConfiguration tiConfiguration;
     private final Properties jdbcProperties;
+    private Map<ObjectPath, String> chunkKeyColumns ;
+
 
     public TiDBSourceConfig(
             String compatibleMode,
@@ -46,6 +51,7 @@ public class TiDBSourceConfig extends JdbcSourceConfig {
             int connectMaxRetries,
             int connectionPoolSize,
             String chunkKeyColumn,
+            Map<ObjectPath,String> chunkKeyColumns,
             boolean skipSnapshotBackfill,
             boolean isScanNewlyAddedTableEnabled) {
         super(
@@ -72,6 +78,7 @@ public class TiDBSourceConfig extends JdbcSourceConfig {
                 connectMaxRetries,
                 connectionPoolSize,
                 chunkKeyColumn,
+
                 skipSnapshotBackfill,
                 isScanNewlyAddedTableEnabled);
         this.compatibleMode = compatibleMode;
@@ -79,6 +86,7 @@ public class TiDBSourceConfig extends JdbcSourceConfig {
         this.hostMapping = hostMapping;
         this.jdbcProperties = jdbcProperties;
         this.tiConfiguration = tiConfiguration;
+        this.chunkKeyColumns = chunkKeyColumns;
     }
 
     public String getCompatibleMode() {
@@ -99,6 +107,10 @@ public class TiDBSourceConfig extends JdbcSourceConfig {
 
     public TiConfiguration getTiConfiguration() {
         return this.tiConfiguration;
+    }
+
+    public Map<ObjectPath,String> getChunkKeyColumns(){
+        return this.chunkKeyColumns;
     }
 
     @Override

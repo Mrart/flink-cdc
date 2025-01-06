@@ -66,8 +66,7 @@ public class TiDBDataSourceFactory implements DataSourceFactory {
         int fetchSize = config.get(SCAN_SNAPSHOT_FETCH_SIZE);
         int connectionPoolSize = config.get(CONNECTION_POOL_SIZE);
         int connectMaxRetries = config.get(CONNECT_MAX_RETRIES);
-        String chunkKeyColumn =
-                config.getOptional(SCAN_INCREMENTAL_SNAPSHOT_CHUNK_KEY_COLUMN).orElse(null);
+
         double distributionFactorUpper = config.get(SPLIT_KEY_EVEN_DISTRIBUTION_FACTOR_UPPER_BOUND);
         double distributionFactorLower = config.get(SPLIT_KEY_EVEN_DISTRIBUTION_FACTOR_LOWER_BOUND);
 
@@ -77,6 +76,8 @@ public class TiDBDataSourceFactory implements DataSourceFactory {
         StartupOptions startupOptions = getStartupOptions(config);
         final TiConfiguration tiConf =
                 TiDBSourceOptions.getTiConfiguration(pdAddresses, hostMapping, tidbOption);
+
+
 
         TiDBSourceConfigFactory configFactory = new TiDBSourceConfigFactory();
         configFactory
@@ -91,7 +92,6 @@ public class TiDBDataSourceFactory implements DataSourceFactory {
                 .hostname(hostname)
                 .connectionPoolSize(connectionPoolSize)
                 .connectMaxRetries(connectMaxRetries)
-                .chunkKeyColumn(chunkKeyColumn)
                 .fetchSize(fetchSize)
                 .distributionFactorLower(distributionFactorLower)
                 .distributionFactorUpper(distributionFactorUpper)
@@ -120,6 +120,36 @@ public class TiDBDataSourceFactory implements DataSourceFactory {
             }
         }
         configFactory.tableList(capturedTables.toArray(new String[0]));
+
+
+        String chunkKeyColumns =
+                config.getOptional(SCAN_INCREMENTAL_SNAPSHOT_CHUNK_KEY_COLUMN).orElse(null);
+        if (chunkKeyColumns != null) {
+            Map<ObjectPath, String> chunkKeyColumnMap = new HashMap<>();
+
+            for (String chunkKeyColumn : chunkKeyColumns.split(";")) {
+                String[] splits = chunkKeyColumn.split(":");
+                if (splits.length == 2) {
+                    Selectors chunkKeySelector =
+                            new Selectors.SelectorsBuilder().includeTables(splits[0]).build();
+                    List<ObjectPath> tableList =
+                            getChunkKeyColumnTableList(tableIds, chunkKeySelector);
+                    for (ObjectPath table : tableList) {
+                        chunkKeyColumnMap.put(table, splits[1]);
+                    }
+                } else {
+                    throw new IllegalArgumentException(
+                            SCAN_INCREMENTAL_SNAPSHOT_CHUNK_KEY_COLUMN.key()
+                                    + " = "
+                                    + chunkKeyColumns
+                                    + " failed to be parsed in this part '"
+                                    + chunkKeyColumn
+                                    + "'.");
+                }
+            }
+            LOG.info("Add chunkKeyColumn {}.", chunkKeyColumnMap);
+            configFactory.chunkKeyColumns(chunkKeyColumnMap);
+        }
 
         return new TiDBDataSource(configFactory);
     }
