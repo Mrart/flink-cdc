@@ -39,7 +39,6 @@ import org.tikv.shade.io.netty.util.concurrent.FastThreadLocalThread;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLException;
 import javax.net.ssl.TrustManagerFactory;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.net.URI;
@@ -226,10 +225,10 @@ public class ChannelFactory implements AutoCloseable {
     public static Map<String, List<Map<String, Object>>> getServiceConfig() {
         // Retry policy
         Map<String, Object> retryPolicy = new HashMap<>();
-        retryPolicy.put("maxAttempts", 50);
+        retryPolicy.put("maxAttempts", "50");
         retryPolicy.put("initialBackoff", "0.5s");
         retryPolicy.put("maxBackoff", "30s");
-        retryPolicy.put("backoffMultiplier", 2);
+        retryPolicy.put("backoffMultiplier", "2");
         retryPolicy.put("retryableStatusCodes", Arrays.asList("UNAVAILABLE", "DEADLINE_EXCEEDED"));
 
         // Name configuration
