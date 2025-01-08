@@ -270,8 +270,8 @@ public class GRPCClient {
                 // here either finished or it's an unexpected new stream
                 if (!finished) {
                     LOG.info(
-                            "Closing unexpected new stream of method "
-                                    + method.getFullMethodName());
+                            "Closing unexpected new stream of method {}",
+                            method.getFullMethodName());
                 }
                 closeStream(stream, error);
                 return false;
@@ -373,23 +373,13 @@ public class GRPCClient {
                         }
                         if (!finalError) {
                             int errCount = -1;
-                            String msg;
+
                             errCount = ++errCounter;
-                            msg =
-                                    "Retryable onError #"
-                                            + errCount
-                                            + " on underlying stream of method "
-                                            + method.getFullMethodName();
-                            if (LOG.isDebugEnabled()) {
-                                LOG.info(msg, t);
-                            } else {
-                                LOG.info(
-                                        msg
-                                                + ": "
-                                                + t.getClass().getName()
-                                                + ": "
-                                                + t.getMessage());
-                            }
+                            LOG.error(
+                                    "Retryable onError #{} on underlying stream of method {}",
+                                    errCount,
+                                    method.getFullMethodName(),
+                                    t);
 
                             RequestSubStream userStreamBefore = userReqStream;
                             if (userStreamBefore.isEstablished()) {

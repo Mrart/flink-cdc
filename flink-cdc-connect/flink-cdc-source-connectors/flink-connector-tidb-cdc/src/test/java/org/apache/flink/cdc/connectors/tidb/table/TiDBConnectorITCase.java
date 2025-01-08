@@ -38,9 +38,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 /** Integration tests for TiDB change stream event SQL source. */
 public class TiDBConnectorITCase extends TiDBTestBase {
