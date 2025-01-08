@@ -28,12 +28,7 @@ import org.tikv.cdc.model.RawKVEntry;
 import org.tikv.common.key.RowKey;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.EnumMap;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -217,6 +212,9 @@ public class CDCEventSource
                                                                                     })
                                                                             .accept(event);
                                                                 } catch (Exception e) {
+                                                                    LOG.error(
+                                                                            "Event Handler failed!",
+                                                                            e);
                                                                     errorHandler
                                                                             .setProducerThrowable(
                                                                                     e);
@@ -309,6 +307,7 @@ public class CDCEventSource
                 for (int i = 0; i < tikvValue.length; i++) {
                     before[i] = (Serializable) tikvValue[i];
                 }
+                break;
             case Put:
                 if (event.getRawKVEntry().isUpdate()) {
                     RawKVEntry[] rawKVEntries =
@@ -352,6 +351,7 @@ public class CDCEventSource
                         after[i] = (Serializable) tiKVValueAfter[i];
                     }
                 }
+                break;
         }
         eventDispatcher.dispatchDataChangeEvent(
                 partition,

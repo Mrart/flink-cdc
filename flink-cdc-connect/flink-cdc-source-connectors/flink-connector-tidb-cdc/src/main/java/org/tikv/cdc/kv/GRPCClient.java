@@ -1,9 +1,10 @@
 package org.tikv.cdc.kv;
 
+import org.apache.flink.shaded.netty4.io.netty.util.concurrent.OrderedEventExecutor;
+
 import com.google.common.base.Preconditions;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.common.util.concurrent.RateLimiter;
-import org.apache.flink.shaded.netty4.io.netty.util.concurrent.OrderedEventExecutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tikv.shade.io.grpc.CallOptions;
@@ -269,7 +270,8 @@ public class GRPCClient {
                 // here either finished or it's an unexpected new stream
                 if (!finished) {
                     LOG.info(
-                            "Closing unexpected new stream of method {}", method.getFullMethodName());
+                            "Closing unexpected new stream of method {}",
+                            method.getFullMethodName());
                 }
                 closeStream(stream, error);
                 return false;
@@ -415,7 +417,8 @@ public class GRPCClient {
                     public void onCompleted() {
                         if (!finished) {
                             LOG.warn(
-                                    "Unexpected onCompleted received for stream of method {}",method.getFullMethodName());
+                                    "Unexpected onCompleted received for stream of method {}",
+                                    method.getFullMethodName());
                             // TODO(maybe) reestablish stream in this case?
                         }
                         sentCallOptions = null;
@@ -445,7 +448,8 @@ public class GRPCClient {
     }
     /** @param failedAttemptNumber number of the attempt which just failed, 1-based */
     static long delayAfterFailureMs(int failedAttemptNumber) {
-        // backoff delay pattern: 0, [500ms - 1sec), 2sec, 4sec, 8sec, 8sec, ... (jitter after first retry)
+        // backoff delay pattern: 0, [500ms - 1sec), 2sec, 4sec, 8sec, 8sec, ... (jitter after first
+        // retry)
         if (failedAttemptNumber <= 1) {
             return 0L;
         }

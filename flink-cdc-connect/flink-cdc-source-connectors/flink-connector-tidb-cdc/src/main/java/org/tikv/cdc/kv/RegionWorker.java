@@ -9,8 +9,6 @@ import org.tikv.cdc.model.RegionKeyRange;
 import org.tikv.cdc.model.RegionStatefulEvent;
 import org.tikv.common.TiSession;
 import org.tikv.kvproto.Cdcpb;
-import org.tikv.kvproto.Coprocessor;
-import org.tikv.shade.com.google.protobuf.ByteString;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -94,10 +92,8 @@ public class RegionWorker {
 
     public void handleEventEntry(
             Cdcpb.Event.Entries entries, RegionStateManager.RegionFeedState state) {
-        Coprocessor.KeyRange keyRange = state.getKeyRange();
         long regionId = state.getRegionId();
         for (Cdcpb.Event.Row event : entries.getEntriesList()) {
-            ByteString key = event.getKey();
             switch (event.getType()) {
                 case INITIALIZED:
                     state.isInitialized();
@@ -107,6 +103,7 @@ public class RegionWorker {
                         eventConsumer.accept(regionFeedEvent);
                     }
                     state.getMatcher().matchCachedRollbackRow(true);
+                    break;
                 case COMMITTED:
                     long resolveTs = state.getLastResolvedTs();
                     if (event.getCommitTs() <= resolveTs) {
@@ -117,13 +114,14 @@ public class RegionWorker {
                                 resolveTs,
                                 regionId);
                         // todo
-                        RegionFeedEvent regionFeedEvent =
-                                RegionFeedEvent.assembleRowEvent(regionId, event);
-                        eventConsumer.accept(regionFeedEvent);
                     }
-
+                    RegionFeedEvent regionFeedEvent =
+                            RegionFeedEvent.assembleRowEvent(regionId, event);
+                    eventConsumer.accept(regionFeedEvent);
+                    break;
                 case PREWRITE:
                     state.getMatcher().putPrewriteRow(event);
+                    break;
                 case COMMIT:
                     if (!state.getMatcher().matchRow(event, state.isInitialized())) {
                         if (!state.isInitialized()) {
@@ -145,21 +143,22 @@ public class RegionWorker {
                         return;
                         // todo errUnreachable
                     }
-                    RegionFeedEvent regionFeedEvent =
-                            RegionFeedEvent.assembleRowEvent(regionId, event);
-                    eventConsumer.accept(regionFeedEvent);
+                    eventConsumer.accept(RegionFeedEvent.assembleRowEvent(regionId, event));
+                    break;
                 case ROLLBACK:
                     if (!state.isInitialized()) {
                         state.getMatcher().cacheRollbackRow(event);
                         continue;
                     }
                     state.getMatcher().rollbackRow(event);
+                    break;
                 default:
                     LOGGER.warn(
                             "Unhandler event entry.eventType:{},eventKey:{}, regionId:{}",
                             event.getType(),
                             event.getKey(),
                             regionId);
+                    break;
             }
         }
     }

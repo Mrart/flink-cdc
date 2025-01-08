@@ -1,8 +1,9 @@
 package org.tikv.cdc.kv;
 
+import org.apache.flink.cdc.connectors.tidb.table.utils.TableKeyRangeUtils;
+
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import org.apache.flink.cdc.connectors.tidb.table.utils.TableKeyRangeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tikv.cdc.CDCConfig;
@@ -112,8 +113,7 @@ public class CDCClientV2 {
                                 Optional<TiTableInfo> tableInfoOptional =
                                         getTableInfo(dbName, tableName);
                                 if (!tableInfoOptional.isPresent()) {
-                                    LOG.error(
-                                            "Get tableInfo for {}.{} failed!", dbName, tableName);
+                                    LOG.error("Get tableInfo for {}.{} failed!", dbName, tableName);
                                     throw new ClientException(
                                             String.format(
                                                     "Get tableInfo for %s.%s failed.",
@@ -403,7 +403,10 @@ public class CDCClientV2 {
                         }
 
                         if (event.hasResolvedTs()) {
-                            LOG.debug("Current resolved ts is {},region {}",event.getResolvedTs().getTs(), event.getResolvedTs().getRegionsList());
+                            LOG.debug(
+                                    "Current resolved ts is {},region {}",
+                                    event.getResolvedTs().getTs(),
+                                    event.getResolvedTs().getRegionsList());
                             sendResolveTs(event.getResolvedTs(), worker);
                         }
                     }
