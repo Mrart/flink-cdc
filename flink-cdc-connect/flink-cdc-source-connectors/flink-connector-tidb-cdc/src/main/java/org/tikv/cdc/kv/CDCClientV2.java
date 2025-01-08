@@ -399,9 +399,9 @@ public class CDCClientV2 {
                                     maxCommitTs = commitTs;
                                 }
                             }
+                            sendRegionChangeEvent(event.getEventsList(), worker);
                         }
 
-                        sendRegionChangeEvent(event.getEventsList(), worker);
                         if (event.hasResolvedTs()) {
                             LOG.debug("Current resolved ts is {},region {}",event.getResolvedTs().getTs(), event.getResolvedTs().getRegionsList());
                             sendResolveTs(event.getResolvedTs(), worker);

@@ -174,7 +174,7 @@ public class RawKVEntry {
     }
 
     public boolean isUpdate() {
-        return this.opType.equals(OpType.Put) && this.oldValue == null && this.value != null;
+        return this.opType.equals(OpType.Put) && this.oldValue != null && this.value != null;
     }
 
     public RawKVEntry[] splitUpdateKVEntry(RawKVEntry raw) {
