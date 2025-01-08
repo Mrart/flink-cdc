@@ -26,6 +26,7 @@ import org.tikv.cdc.model.PolymorphicEvent;
 import org.tikv.cdc.model.RawKVEntry;
 import org.tikv.common.key.RowKey;
 import org.tikv.common.meta.TiColumnInfo;
+import org.tikv.common.meta.TiTableInfo;
 
 import java.io.Serializable;
 import java.util.*;
@@ -285,51 +286,19 @@ public class CDCEventSource
         final long handle = rowKey.getHandle();
         switch (event.getRawKVEntry().getOpType()) {
             case Delete:
-                before = new Serializable[fieldIndex.size()];
-                Object[] tikvValue =
-                        decodeObjects(
-                                event.getRawKVEntry().getOldValue().toByteArray(),
-                                handle,
-                                event.getTableInfo());
-                for (int index: fieldIndex) {
-                    before[index] = (Serializable) tikvValue[index];
-                }
+                before = (Serializable[]) getSerializableObject(handle, event.getRawKVEntry(), event.getTableInfo(), fieldIndex);
                 break;
             case Put:
                 if (event.getRawKVEntry().isUpdate()) {
                     RawKVEntry[] rawKVEntries =
                             event.getRawKVEntry().splitUpdateKVEntry(event.getRawKVEntry());
                     RawKVEntry deleteRawKVEntry = rawKVEntries[0];
-                    before = new Serializable[fieldIndex.size()];
-                    Object[] tiKVValueBefore =
-                            decodeObjects(
-                                    deleteRawKVEntry.getOldValue().toByteArray(),
-                                    handle,
-                                    event.getTableInfo());
-                    for (int index: fieldIndex) {
-                        before[index] = (Serializable) tiKVValueBefore[index];
-                    }
+                    before = (Serializable[]) getSerializableObject(handle, deleteRawKVEntry, event.getTableInfo(), fieldIndex);
                     RawKVEntry insertKVEntry = rawKVEntries[1];
-                    after = new Serializable[fieldIndex.size()];
-                    Object[] tiKVValueAfter =
-                            decodeObjects(
-                                    insertKVEntry.getValue().toByteArray(),
-                                    handle,
-                                    event.getTableInfo());
-                    for (int index: fieldIndex) {
-                        after[index] = (Serializable) tiKVValueAfter[index];
-                    }
+                    after = (Serializable[]) getSerializableObject(handle, insertKVEntry, event.getTableInfo(), fieldIndex);
                 } else {
                     // insert
-                    after = new Serializable[fieldIndex.size()];
-                    Object[] tiKVValueAfter =
-                            decodeObjects(
-                                    event.getRawKVEntry().getValue().toByteArray(),
-                                    handle,
-                                    event.getTableInfo());
-                    for (int index: fieldIndex) {
-                        after[index] = (Serializable) tiKVValueAfter[index];
-                    }
+                    after = (Serializable[]) getSerializableObject(handle, event.getRawKVEntry(), event.getTableInfo(), fieldIndex);
                 }
                 break;
         }
@@ -340,8 +309,21 @@ public class CDCEventSource
                         partition, offsetContext, Clock.SYSTEM, operation, before, after));
     }
 
-    private Set<Integer> fieldIndexConverter(List<TiColumnInfo> tiColumnInfos, TableSchema tableSchema) {
+    private Object[] getSerializableObject(long handle, RawKVEntry rawKVEntry, TiTableInfo tableInfo, Set<Integer> fieldIndex ) {
+        Object[] serializableObject = new Serializable[fieldIndex.size()];
 
+        Object[] tiKVValueAfter =
+                decodeObjects(
+                        rawKVEntry.getValue().toByteArray(),
+                        handle,
+                        tableInfo);
+        for (int index: fieldIndex) {
+            serializableObject[index] = tiKVValueAfter[index];
+        }
+        return serializableObject;
+    }
+
+    private Set<Integer> fieldIndexConverter(List<TiColumnInfo> tiColumnInfos, TableSchema tableSchema) {
         Map<String, Integer> fieldIndex =
                 fieldIndexMap.computeIfAbsent(
                         tableSchema,
