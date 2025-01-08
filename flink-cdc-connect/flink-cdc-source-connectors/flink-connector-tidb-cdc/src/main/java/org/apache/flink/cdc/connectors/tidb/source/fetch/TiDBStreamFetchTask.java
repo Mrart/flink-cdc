@@ -58,6 +58,7 @@ public class TiDBStreamFetchTask implements FetchTask<SourceSplitBase> {
 
     @Override
     public void close() {
+        stopped = false;
         taskRunning = false;
     }
 }

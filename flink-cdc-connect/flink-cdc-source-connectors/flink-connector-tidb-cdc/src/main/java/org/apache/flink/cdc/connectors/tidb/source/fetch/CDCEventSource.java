@@ -1,5 +1,13 @@
 package org.apache.flink.cdc.connectors.tidb.source.fetch;
 
+import org.apache.flink.cdc.connectors.base.relational.JdbcSourceEventDispatcher;
+import org.apache.flink.cdc.connectors.base.source.meta.split.StreamSplit;
+import org.apache.flink.cdc.connectors.base.source.meta.wartermark.WatermarkKind;
+import org.apache.flink.cdc.connectors.tidb.source.config.TiDBConnectorConfig;
+import org.apache.flink.cdc.connectors.tidb.source.offset.CDCEventOffset;
+import org.apache.flink.cdc.connectors.tidb.source.offset.CDCEventOffsetContext;
+import org.apache.flink.util.function.SerializableFunction;
+
 import io.debezium.connector.tidb.TiDBPartition;
 import io.debezium.data.Envelope;
 import io.debezium.function.BlockingConsumer;
@@ -9,13 +17,6 @@ import io.debezium.relational.TableId;
 import io.debezium.relational.TableSchema;
 import io.debezium.util.Clock;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.flink.cdc.connectors.base.relational.JdbcSourceEventDispatcher;
-import org.apache.flink.cdc.connectors.base.source.meta.split.StreamSplit;
-import org.apache.flink.cdc.connectors.base.source.meta.wartermark.WatermarkKind;
-import org.apache.flink.cdc.connectors.tidb.source.config.TiDBConnectorConfig;
-import org.apache.flink.cdc.connectors.tidb.source.offset.CDCEventOffset;
-import org.apache.flink.cdc.connectors.tidb.source.offset.CDCEventOffsetContext;
-import org.apache.flink.util.function.SerializableFunction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tikv.cdc.exception.ClientException;
@@ -279,26 +280,51 @@ public class CDCEventSource
         }
         offsetContext.event(tableId, event.getCrTs());
 
-        Set<Integer> fieldIndex = fieldIndexConverter(event.getTableInfo().getColumns(), tableSchema);
+        Set<Integer> fieldIndex =
+                fieldIndexConverter(event.getTableInfo().getColumns(), tableSchema);
         Serializable[] before = null;
         Serializable[] after = null;
         final RowKey rowKey = RowKey.decode(event.getRawKVEntry().getKey().toByteArray());
         final long handle = rowKey.getHandle();
         switch (event.getRawKVEntry().getOpType()) {
             case Delete:
-                before = (Serializable[]) getSerializableObject(handle, event.getRawKVEntry(), event.getTableInfo(), fieldIndex);
+                before =
+                        (Serializable[])
+                                getSerializableObject(
+                                        handle,
+                                        event.getRawKVEntry(),
+                                        event.getTableInfo(),
+                                        fieldIndex);
                 break;
             case Put:
                 if (event.getRawKVEntry().isUpdate()) {
                     RawKVEntry[] rawKVEntries =
                             event.getRawKVEntry().splitUpdateKVEntry(event.getRawKVEntry());
                     RawKVEntry deleteRawKVEntry = rawKVEntries[0];
-                    before = (Serializable[]) getSerializableObject(handle, deleteRawKVEntry, event.getTableInfo(), fieldIndex);
+                    before =
+                            (Serializable[])
+                                    getSerializableObject(
+                                            handle,
+                                            deleteRawKVEntry,
+                                            event.getTableInfo(),
+                                            fieldIndex);
                     RawKVEntry insertKVEntry = rawKVEntries[1];
-                    after = (Serializable[]) getSerializableObject(handle, insertKVEntry, event.getTableInfo(), fieldIndex);
+                    after =
+                            (Serializable[])
+                                    getSerializableObject(
+                                            handle,
+                                            insertKVEntry,
+                                            event.getTableInfo(),
+                                            fieldIndex);
                 } else {
                     // insert
-                    after = (Serializable[]) getSerializableObject(handle, event.getRawKVEntry(), event.getTableInfo(), fieldIndex);
+                    after =
+                            (Serializable[])
+                                    getSerializableObject(
+                                            handle,
+                                            event.getRawKVEntry(),
+                                            event.getTableInfo(),
+                                            fieldIndex);
                 }
                 break;
         }
@@ -309,21 +335,20 @@ public class CDCEventSource
                         partition, offsetContext, Clock.SYSTEM, operation, before, after));
     }
 
-    private Object[] getSerializableObject(long handle, RawKVEntry rawKVEntry, TiTableInfo tableInfo, Set<Integer> fieldIndex ) {
+    private Object[] getSerializableObject(
+            long handle, RawKVEntry rawKVEntry, TiTableInfo tableInfo, Set<Integer> fieldIndex) {
         Object[] serializableObject = new Serializable[fieldIndex.size()];
 
         Object[] tiKVValueAfter =
-                decodeObjects(
-                        rawKVEntry.getValue().toByteArray(),
-                        handle,
-                        tableInfo);
-        for (int index: fieldIndex) {
+                decodeObjects(rawKVEntry.getValue().toByteArray(), handle, tableInfo);
+        for (int index : fieldIndex) {
             serializableObject[index] = tiKVValueAfter[index];
         }
         return serializableObject;
     }
 
-    private Set<Integer> fieldIndexConverter(List<TiColumnInfo> tiColumnInfos, TableSchema tableSchema) {
+    private Set<Integer> fieldIndexConverter(
+            List<TiColumnInfo> tiColumnInfos, TableSchema tableSchema) {
         Map<String, Integer> fieldIndex =
                 fieldIndexMap.computeIfAbsent(
                         tableSchema,
@@ -344,6 +369,6 @@ public class CDCEventSource
                 fieldIndexSet.add(tiColumnInfo.getOffset());
             }
         }
-     return fieldIndexSet;
+        return fieldIndexSet;
     }
 }

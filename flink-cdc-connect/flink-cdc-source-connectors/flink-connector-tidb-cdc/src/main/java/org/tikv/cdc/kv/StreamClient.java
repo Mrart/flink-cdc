@@ -2,7 +2,7 @@ package org.tikv.cdc.kv;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.tikv.cdc.IDAllocator;
+import org.tikv.common.util.IDAllocator;
 import org.tikv.kvproto.Cdcpb;
 import org.tikv.kvproto.ChangeDataGrpc;
 import org.tikv.shade.io.grpc.MethodDescriptor;

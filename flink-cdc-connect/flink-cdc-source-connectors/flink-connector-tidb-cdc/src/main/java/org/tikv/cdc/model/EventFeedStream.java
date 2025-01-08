@@ -1,7 +1,7 @@
 package org.tikv.cdc.model;
 
-import org.tikv.cdc.IDAllocator;
 import org.tikv.cdc.kv.RegionStateManager;
+import org.tikv.common.util.IDAllocator;
 import org.tikv.kvproto.ChangeDataGrpc;
 import org.tikv.shade.io.grpc.ManagedChannel;
 

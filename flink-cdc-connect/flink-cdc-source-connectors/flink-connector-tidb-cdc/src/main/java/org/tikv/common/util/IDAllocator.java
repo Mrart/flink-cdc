@@ -1,4 +1,4 @@
-package org.tikv.cdc;
+package org.tikv.common.util;
 
 import java.util.concurrent.atomic.AtomicLong;
 

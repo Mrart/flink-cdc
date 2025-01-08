@@ -146,38 +146,4 @@ public class SkipList {
                 });
         return sb.toString();
     }
-
-    // SeekResult class represents the result of a seek operation
-    //  public static class SeekResult {
-    //    private final SkipListNode[] nodes;
-    //
-    //    public SeekResult(int maxHeight) {
-    //      nodes = new SkipListNode[maxHeight];
-    //    }
-    //
-    //    public SkipListNode get(int level) {
-    //      return nodes[level];
-    //    }
-    //
-    //    public void set(int level, SkipListNode node) {
-    //      nodes[level] = node;
-    //    }
-    //
-    //    // todo 测试案例覆盖。
-    //    public SeekResult next() {
-    //      SkipListNode next = getNode();
-    //      SeekResult sResult = new SeekResult(next.getNexts().length);
-    //      for (int level = 0; level < next.getNexts().length; level++) {
-    //        sResult.set(level, next);
-    //      }
-    //      return sResult;
-    //    }
-    //
-    //    public SkipListNode getNode() {
-    //      if (nodes.length == 0) {
-    //        return null;
-    //      }
-    //      return nodes[0];
-    //    }
-    //  }
 }
