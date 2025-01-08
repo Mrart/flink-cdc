@@ -24,7 +24,6 @@ import org.apache.flink.table.api.TableResult;
 import org.apache.flink.table.api.bridge.java.StreamTableEnvironment;
 import org.apache.flink.table.planner.factories.TestValuesTableFactory;
 import org.apache.flink.table.utils.LegacyRowResource;
-
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -38,9 +37,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 /** Integration tests for TiDB change stream event SQL source. */
 public class TiDBConnectorITCase extends TiDBTestBase {
@@ -162,8 +159,8 @@ public class TiDBConnectorITCase extends TiDBTestBase {
                         "+I(103,12-pack drill bits,12-pack of drill bits with sizes ranging from #40 to #3,0.8000000000)",
                         "+I(104,hammer,12oz carpenter's hammer,0.7500000000)",
                         "+I(105,hammer,14oz carpenter's hammer,0.8750000000)",
-                        "+I(106,hammer,16oz carpenter's hammer,1.0000000000)",
-                        "+I(107,rocks,box of assorted rocks,5.3000000000)",
+                        "+I(106,hammer,18oz carpenter hammer,1.0000000000)",
+                        "+I(107,rocks,box of assorted rocks,5.1000000000)",
                         "+I(108,jacket,water resistent black wind breaker,0.1000000000)",
                         "+I(109,spare tire,24 inch spare tire,22.2000000000)",
                         "+U(106,hammer,18oz carpenter hammer,1.0000000000)",

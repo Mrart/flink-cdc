@@ -196,10 +196,9 @@ public class StreamClient implements Closeable {
                                 StreamObserver<Cdcpb.ChangeDataRequest> newStreamRequestObserver) {
                             if (!closed) {
                                 LOG.info(
-                                        "onReplaced called for watch request stream"
-                                                + (newStreamRequestObserver == null
-                                                        ? " with newReqStream == null"
-                                                        : ""));
+                                        "onReplaced called for watch request stream {}",(newStreamRequestObserver == null
+                                                ? " with newReqStream == null"
+                                                : ""));
                             }
                             onReplacedOrFailed(newStreamRequestObserver, null);
                         }
