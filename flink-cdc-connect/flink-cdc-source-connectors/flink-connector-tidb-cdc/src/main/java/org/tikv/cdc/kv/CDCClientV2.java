@@ -1,9 +1,8 @@
 package org.tikv.cdc.kv;
 
-import org.apache.flink.cdc.connectors.tidb.table.utils.TableKeyRangeUtils;
-
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import org.apache.flink.cdc.connectors.tidb.table.utils.TableKeyRangeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tikv.cdc.CDCConfig;
@@ -46,7 +45,7 @@ import java.util.stream.IntStream;
 import static java.lang.Thread.sleep;
 
 public class CDCClientV2 {
-    private static final Logger LOGGER = LoggerFactory.getLogger(CDCClientV2.class);
+    private static final Logger LOG = LoggerFactory.getLogger(CDCClientV2.class);
     private final CDCConfig cdcConfig;
     private final TiSession tiSession;
     private final BlockingQueue<RegionFeedEvent> eventsBuffer;
@@ -65,6 +64,8 @@ public class CDCClientV2 {
     private final String dbName;
     private final String tableName;
     private Frontier tsTracker;
+
+    private final AtomicLong readNum = new AtomicLong(0);
 
     public CDCClientV2(TiConfiguration tiConf, String dbName, String tableName) {
         this(tiConf, new CDCConfig(), dbName, tableName);
@@ -94,13 +95,13 @@ public class CDCClientV2 {
                     try {
                         eventsBuffer.put(event);
                     } catch (InterruptedException e) {
-                        LOGGER.error("Events buffer put error!", e);
+                        LOG.error("Events buffer put error!", e);
                     }
                 };
     }
 
     public void start(final long startTs) {
-        LOGGER.debug(
+        LOG.debug(
                 "Start cdc client at time {},database {} table {} listening.",
                 startTs,
                 dbName,
@@ -113,7 +114,7 @@ public class CDCClientV2 {
                                 Optional<TiTableInfo> tableInfoOptional =
                                         getTableInfo(dbName, tableName);
                                 if (!tableInfoOptional.isPresent()) {
-                                    LOGGER.error(
+                                    LOG.error(
                                             "Get tableInfo for {}.{} failed!", dbName, tableName);
                                     throw new ClientException(
                                             String.format(
@@ -165,7 +166,7 @@ public class CDCClientV2 {
                                             this.resolvedTs.getAndSet(tsTracker.frontier());
                                             if (resolvedTs.get() > 0 && !initialized) {
                                                 initialized = true;
-                                                LOGGER.info("puller is initialized.");
+                                                LOG.info("puller is initialized.");
                                             }
                                             if (!initialized) {
                                                 continue;
@@ -198,7 +199,7 @@ public class CDCClientV2 {
         if (raw.getCrts() < this.resolvedTs.get()
                 || (raw.getCrts() == this.resolvedTs.get()
                         && OpType.Resolved.equals(raw.getOpType()))) {
-            LOGGER.warn(
+            LOG.warn(
                     "The crts is fallen back in puller.Schema is {}.{}. ResolveTs is {}",
                     dbName,
                     tableName,
@@ -242,12 +243,12 @@ public class CDCClientV2 {
             clientExecutor.shutdown();
             long clientClosedTimeoutSeconds = 30L;
             if (!clientExecutor.awaitTermination(clientClosedTimeoutSeconds, TimeUnit.SECONDS)) {
-                LOGGER.error(
+                LOG.error(
                         "Failed to close the cdc client in {} seconds.",
                         clientClosedTimeoutSeconds);
             }
         } catch (InterruptedException e) {
-            LOGGER.error("Closed Client exception.", e);
+            LOG.error("Closed Client exception.", e);
             throw new ClientException(e);
         }
     }
@@ -329,7 +330,7 @@ public class CDCClientV2 {
             EventFeedStream stream =
                     new EventFeedStream(storeAddr, storeId, sri.getRpcCtx().getChannel());
             storeStreamCache.put(storeAddr, stream);
-            LOGGER.info(
+            LOG.info(
                     "creating new stream {} to store {} to send request",
                     stream.getStreamId(),
                     storeAddr);
@@ -340,7 +341,7 @@ public class CDCClientV2 {
         streamClient.getRegions().setByRequestID(requestId, state);
         try {
             receiveFromStream(streamClient, request, tableId);
-            LOGGER.debug(
+            LOG.debug(
                     "start new request.tableID {},regionID {}, storeAdd {}",
                     tableId,
                     sri.getRpcCtx().getRegion().getId(),
@@ -377,13 +378,14 @@ public class CDCClientV2 {
 
                     @Override
                     public void onNext(Cdcpb.ChangeDataEvent event) {
+                        LOG.info("Read event Metric num, {}",readNum.getAndIncrement());
                         long size = event.getSerializedSize();
                         if (size > cdcConfig.getMaxRowKeySize()) {
                             int regionCount = 0;
                             if (event.hasResolvedTs()) {
                                 regionCount = event.getResolvedTs().getRegionsCount();
                             }
-                            LOGGER.warn(
+                            LOG.warn(
                                     "change data event size too large. size:{},resolvedRegionCount:{}",
                                     size,
                                     regionCount);
@@ -411,12 +413,12 @@ public class CDCClientV2 {
                     @Override
                     public void onError(Throwable t) {
                         // kvClientStreamRevError.
-                        LOGGER.error("kvClientStreamRevError.", t);
+                        LOG.error("kvClientStreamRevError.", t);
                     }
 
                     @Override
                     public void onCompleted() {
-                        LOGGER.warn("Server completed streaming");
+                        LOG.warn("Server completed streaming");
                     }
                 };
         GRPCClient grpcClient = buildGrpcClient(stream.getChannel());
@@ -457,36 +459,36 @@ public class CDCClientV2 {
         EventFeedStream regionStreamClientInMap =
                 storeStreamCache.get(deleteStreamClient.getAddr());
         if (regionStreamClientInMap == null) {
-            LOGGER.warn(
+            LOG.warn(
                     "Delete stream {} failed, stream not found,ignore it",
                     deleteStreamClient.getAddr());
             return;
         }
         if (regionStreamClientInMap.getStreamId() != deleteStreamClient.getStreamId()) {
-            LOGGER.warn(
+            LOG.warn(
                     "Delete stream {} failed, stream id mismatch,ignore it",
                     deleteStreamClient.getAddr());
             return;
         }
         if (Duration.between(deleteStreamClient.getCreateTime(), Instant.now()).getSeconds() < 1) {
-            LOGGER.warn(
+            LOG.warn(
                     "It's too soon to delete a stream {}, wait for a while,sinceCreateDuration {}",
                     deleteStreamClient.getStreamId(),
                     deleteStreamClient.getCreateTime());
             try {
                 sleep(1000);
             } catch (InterruptedException e) {
-                LOGGER.error("InterruptedException", e);
+                LOG.error("InterruptedException", e);
             }
         }
         try {
             deleteStreamClient.close();
         } catch (Exception e) {
-            LOGGER.error("Region stream client {} closed failed.", deleteStreamClient.getAddr(), e);
+            LOG.error("Region stream client {} closed failed.", deleteStreamClient.getAddr(), e);
             throw new RuntimeException(e);
         }
         storeStreamCache.remove(deleteStreamClient.getAddr());
-        LOGGER.info(
+        LOG.info(
                 "Region stream client id {}, storeId {} has been removed.",
                 deleteStreamClient.getStreamId(),
                 deleteStreamClient.getAddr());
@@ -514,7 +516,7 @@ public class CDCClientV2 {
             //      boolean valid = true;
             if (state != null) {
                 if (state.getRequestID() < event.getRequestId()) {
-                    LOGGER.debug(
+                    LOG.debug(
                             "region state entry will be replaced because received message of newer requestID.regionId {}, oldRequestId {}, requestId{}, add {},streamId {}",
                             event.getRegionId(),
                             state.getRequestID(),
@@ -522,7 +524,7 @@ public class CDCClientV2 {
                             worker.getStream().getAddr(),
                             worker.getStream().getStreamId());
                 } else if (state.getRequestID() > event.getRequestId()) {
-                    LOGGER.debug(
+                    LOG.debug(
                             "drop event due to event belongs to a stale request.regionId {}, oldRequestId {}, requestId{}, add {},streamId {}",
                             event.getRegionId(),
                             state.getRequestID(),
@@ -532,7 +534,7 @@ public class CDCClientV2 {
                     continue;
                 }
                 if (state.isStale()) {
-                    LOGGER.warn(
+                    LOG.warn(
                             "drop event due to region feed is stopped.regionId {}, oldRequestId {}, requestId{}, add {},streamId {}",
                             event.getRegionId(),
                             state.getRequestID(),
@@ -546,7 +548,7 @@ public class CDCClientV2 {
                 RegionStateManager.RegionFeedState newState =
                         worker.getStream().getRegions().takeByRequestID(event.getRequestId());
                 if (newState == null) {
-                    LOGGER.warn(
+                    LOG.warn(
                             "drop event due to region feed is removed.regionId {}, oldRequestId {}, requestId{}, add {},streamId {}",
                             event.getRegionId(),
                             state.getRequestID(),
@@ -560,7 +562,7 @@ public class CDCClientV2 {
                 worker.setRegionState(event.getRegionId(), newState);
             }
             if (event.hasError()) {
-                LOGGER.error(
+                LOG.error(
                         "event feed receives a region error.regionId {}, oldRequestId {}, requestId{}, add {},streamId {}",
                         event.getRegionId(),
                         state.getRequestID(),

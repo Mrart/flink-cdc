@@ -2,6 +2,7 @@ package org.tikv.cdc.kv;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.tikv.cdc.IDAllocator;
 import org.tikv.kvproto.Cdcpb;
 import org.tikv.kvproto.ChangeDataGrpc;
 import org.tikv.shade.io.grpc.MethodDescriptor;
@@ -66,8 +67,6 @@ public class StreamClient implements Closeable {
         private final StreamObserver<Cdcpb.ChangeDataEvent> observer;
         private final Cdcpb.ChangeDataRequest request;
         private final Executor receiveExecutor;
-
-        long upToRevision;
         boolean finished;
 
         private final AtomicLong currentCheckpointTs = new AtomicLong();
@@ -79,7 +78,6 @@ public class StreamClient implements Closeable {
             this.observer = observer;
             this.request = request;
             long rev = request.getRequestId();
-            this.upToRevision = rev - 1;
             // bounded for back-pressure
             this.receiveExecutor = GRPCClient.serialized(parentExecutor);
         }
@@ -90,7 +88,7 @@ public class StreamClient implements Closeable {
 
         public Cdcpb.ChangeDataRequest newCreateChangeDateRequest() {
             return request.toBuilder()
-                    .setRequestId(this.upToRevision)
+                    .setRequestId(IDAllocator.allocateRequestID())
                     .setCheckpointTs(this.currentCheckpointTs.get())
                     .build();
         }
