@@ -1,9 +1,10 @@
 package org.tikv.cdc.kv;
 
+import org.apache.flink.shaded.netty4.io.netty.util.concurrent.OrderedEventExecutor;
+
 import com.google.common.base.Preconditions;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.common.util.concurrent.RateLimiter;
-import org.apache.flink.shaded.netty4.io.netty.util.concurrent.OrderedEventExecutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tikv.shade.io.grpc.CallOptions;
@@ -268,7 +269,9 @@ public class GRPCClient {
 
                 // here either finished or it's an unexpected new stream
                 if (!finished) {
-                    LOG.info("Closing unexpected new stream of method {}",method.getFullMethodName());
+                    LOG.info(
+                            "Closing unexpected new stream of method {}",
+                            method.getFullMethodName());
                 }
                 closeStream(stream, error);
                 return false;
@@ -372,7 +375,11 @@ public class GRPCClient {
                             int errCount = -1;
 
                             errCount = ++errCounter;
-                            LOG.error("Retryable onError #{} on underlying stream of method {}", errCount, method.getFullMethodName(), t);
+                            LOG.error(
+                                    "Retryable onError #{} on underlying stream of method {}",
+                                    errCount,
+                                    method.getFullMethodName(),
+                                    t);
 
                             RequestSubStream userStreamBefore = userReqStream;
                             if (userStreamBefore.isEstablished()) {

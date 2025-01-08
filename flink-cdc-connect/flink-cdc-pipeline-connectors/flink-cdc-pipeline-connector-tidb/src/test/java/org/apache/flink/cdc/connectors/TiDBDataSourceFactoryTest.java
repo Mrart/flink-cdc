@@ -29,7 +29,9 @@ public class TiDBDataSourceFactoryTest extends TiDBTestBase {
         options.put(HOSTNAME.key(), TIDB.getHost());
         options.put(TiDB_PORT.key(), String.valueOf(TIDB.getMappedPort(TIDB_PORT)));
         options.put(USERNAME.key(), TiDBTestBase.TIDB_USER);
-        options.put(SCAN_INCREMENTAL_SNAPSHOT_CHUNK_KEY_COLUMN.key(), "inventory.products:id;inventory.table2:column2");
+        options.put(
+                SCAN_INCREMENTAL_SNAPSHOT_CHUNK_KEY_COLUMN.key(),
+                "inventory.products:id;inventory.table2:column2");
         options.put(PASSWORD.key(), TiDBTestBase.TIDB_PASSWORD);
         options.put(TABLE_LIST.key(), this.databaseName + "." + this.tableName);
         options.put(DATABASE_NAME.key(), databaseName);
@@ -47,31 +49,30 @@ public class TiDBDataSourceFactoryTest extends TiDBTestBase {
                 .isEqualTo(Arrays.asList(databaseName + ".products"));
     }
 
-        @Test
-        public void testNoMatchedTable() {
-            initializeTidbTable("inventory_pipeline");
+    @Test
+    public void testNoMatchedTable() {
+        initializeTidbTable("inventory_pipeline");
 
-            String tables = this.databaseName + ".test";
-            Map<String, String> options = new HashMap<>();
-            options.put(HOSTNAME.key(), TIDB.getHost());
-            options.put(TiDB_PORT.key(), String.valueOf(TIDB.getMappedPort(TIDB_PORT)));
-            options.put(USERNAME.key(), TiDBTestBase.TIDB_USER);
-            options.put(PASSWORD.key(), TiDBTestBase.TIDB_PASSWORD);
-            options.put(TABLE_LIST.key(), tables);
-            options.put(SCAN_INCREMENTAL_SNAPSHOT_CHUNK_KEY_COLUMN.key(), databaseName + ".id");
-            options.put(DATABASE_NAME.key(), databaseName);
-            options.put(TABLES.key(), databaseName + ".prod\\.*");
-            options.put(
-                    PD_ADDRESSES.key(),
-                    PD.getContainerIpAddress() + ":" + PD.getMappedPort(PD_PORT_ORIGIN));
-            Factory.Context context = new MockContext(Configuration.fromMap(options));
+        String tables = this.databaseName + ".test";
+        Map<String, String> options = new HashMap<>();
+        options.put(HOSTNAME.key(), TIDB.getHost());
+        options.put(TiDB_PORT.key(), String.valueOf(TIDB.getMappedPort(TIDB_PORT)));
+        options.put(USERNAME.key(), TiDBTestBase.TIDB_USER);
+        options.put(PASSWORD.key(), TiDBTestBase.TIDB_PASSWORD);
+        options.put(TABLE_LIST.key(), tables);
+        options.put(SCAN_INCREMENTAL_SNAPSHOT_CHUNK_KEY_COLUMN.key(), databaseName + ".id");
+        options.put(DATABASE_NAME.key(), databaseName);
+        options.put(TABLES.key(), databaseName + ".prod\\.*");
+        options.put(
+                PD_ADDRESSES.key(),
+                PD.getContainerIpAddress() + ":" + PD.getMappedPort(PD_PORT_ORIGIN));
+        Factory.Context context = new MockContext(Configuration.fromMap(options));
 
-            TiDBDataSourceFactory factory = new TiDBDataSourceFactory();
-            assertThatThrownBy(() -> factory.createDataSource(context))
-                    .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessageContaining("Cannot find any table by the option 'tables' = " +
-     tables);
-        }
+        TiDBDataSourceFactory factory = new TiDBDataSourceFactory();
+        assertThatThrownBy(() -> factory.createDataSource(context))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Cannot find any table by the option 'tables' = " + tables);
+    }
 
     class MockContext implements Factory.Context {
 

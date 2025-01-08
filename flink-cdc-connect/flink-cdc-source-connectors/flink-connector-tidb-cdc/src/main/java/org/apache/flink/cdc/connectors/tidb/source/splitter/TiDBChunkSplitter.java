@@ -1,8 +1,5 @@
 package org.apache.flink.cdc.connectors.tidb.source.splitter;
 
-import io.debezium.connector.mysql.MySqlConnectorConfig;
-import io.debezium.relational.*;
-import io.debezium.relational.history.TableChanges;
 import org.apache.flink.cdc.connectors.base.dialect.JdbcDataSourceDialect;
 import org.apache.flink.cdc.connectors.base.source.assigner.splitter.ChunkRange;
 import org.apache.flink.cdc.connectors.base.source.assigner.splitter.ChunkSplitter;
@@ -14,15 +11,19 @@ import org.apache.flink.cdc.connectors.tidb.utils.TiDBUtils;
 import org.apache.flink.table.api.ValidationException;
 import org.apache.flink.table.catalog.ObjectPath;
 import org.apache.flink.table.types.DataType;
-
-import io.debezium.jdbc.JdbcConnection;
 import org.apache.flink.table.types.logical.LogicalTypeRoot;
 import org.apache.flink.table.types.logical.RowType;
 import org.apache.flink.util.FlinkRuntimeException;
+
+import io.debezium.connector.mysql.MySqlConnectorConfig;
+import io.debezium.jdbc.JdbcConnection;
+import io.debezium.relational.*;
+import io.debezium.relational.history.TableChanges;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
+
 import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.util.*;
@@ -39,9 +40,8 @@ public class TiDBChunkSplitter implements ChunkSplitter {
     protected final JdbcDataSourceDialect dialect;
     private static final Logger LOG = LoggerFactory.getLogger(TiDBChunkSplitter.class);
 
-
     public TiDBChunkSplitter(TiDBSourceConfig sourceConfig, JdbcDataSourceDialect dialect) {
-       this.dialect = dialect;
+        this.dialect = dialect;
         this.tiDBSourceConfig = sourceConfig;
     }
 
@@ -56,7 +56,7 @@ public class TiDBChunkSplitter implements ChunkSplitter {
 
             Table table =
                     Objects.requireNonNull(dialect.queryTableSchema(jdbc, tableId)).getTable();
-            Column splitColumn = getChunkKeyColumn(table,tiDBSourceConfig.getChunkKeyColumns());
+            Column splitColumn = getChunkKeyColumn(table, tiDBSourceConfig.getChunkKeyColumns());
             final List<ChunkRange> chunks;
             try {
                 chunks = splitTableIntoChunks(jdbc, tableId, splitColumn);
@@ -96,7 +96,7 @@ public class TiDBChunkSplitter implements ChunkSplitter {
     public static Column getChunkKeyColumn(Table table, Map<ObjectPath, String> chunkKeyColumns) {
         List<Column> primaryKeys = table.primaryKeyColumns();
         String chunkKeyColumn = findChunkKeyColumn(table.id(), chunkKeyColumns);
-        LOG.info("current table : "+ table.id() +" chunkkeycolumn is "+ chunkKeyColumn);
+        LOG.info("current table : " + table.id() + " chunkkeycolumn is " + chunkKeyColumn);
         if (primaryKeys.isEmpty() && chunkKeyColumn == null) {
             throw new ValidationException(
                     "'scan.incremental.snapshot.chunk.key-column' must be set when the table doesn't have primary keys.");
@@ -129,14 +129,13 @@ public class TiDBChunkSplitter implements ChunkSplitter {
             TableId tableId, Map<ObjectPath, String> chunkKeyColumns) {
         for (ObjectPath table : chunkKeyColumns.keySet()) {
             Tables.TableFilter filter =
-                   createTableFilter(table.getDatabaseName(), table.getFullName());
+                    createTableFilter(table.getDatabaseName(), table.getFullName());
             if (filter.isIncluded(tableId)) {
                 return chunkKeyColumns.get(table);
             }
         }
         return null;
     }
-
 
     /** Create a TableFilter by database name and table name. */
     private static Tables.TableFilter createTableFilter(String database, String table) {
@@ -151,7 +150,6 @@ public class TiDBChunkSplitter implements ChunkSplitter {
                                 ::isIncluded);
         return finalTablePredicate::test;
     }
-
 
     protected Object queryNextChunkMax(
             JdbcConnection jdbc,
@@ -179,11 +177,9 @@ public class TiDBChunkSplitter implements ChunkSplitter {
         return TiDBUtils.queryApproximateRowCnt(jdbc, tableId);
     }
 
-
     protected DataType fromDbzColumn(Column splitColumn) {
         return TiDBUtils.fromDbzColumn(splitColumn);
     }
-
 
     private RowType getSplitType(Column splitColumn) {
         return (RowType)
@@ -230,7 +226,6 @@ public class TiDBChunkSplitter implements ChunkSplitter {
             return splitUnevenlySizedChunks(jdbc, tableId, splitColumn, min, max, chunkSize);
         }
     }
-
 
     /**
      * Split table into evenly sized chunks based on the numeric min and max value of split column,
@@ -322,7 +317,6 @@ public class TiDBChunkSplitter implements ChunkSplitter {
                 schema);
     }
 
-
     private String splitId(TableId tableId, int chunkId) {
         return tableId.toString() + ":" + chunkId;
     }
@@ -361,7 +355,6 @@ public class TiDBChunkSplitter implements ChunkSplitter {
             return chunkEnd;
         }
     }
-
 
     protected Object[] queryMinMax(JdbcConnection jdbc, TableId tableId, Column splitColumn)
             throws SQLException {
@@ -414,10 +407,8 @@ public class TiDBChunkSplitter implements ChunkSplitter {
         return ObjectUtils.compare(chunkEnd, max) <= 0;
     }
 
-
     /** ChunkEnd greater than or equal to max. */
     protected boolean isChunkEndGeMax(Object chunkEnd, Object max, Column splitColumn) {
         return ObjectUtils.compare(chunkEnd, max) >= 0;
     }
-
 }

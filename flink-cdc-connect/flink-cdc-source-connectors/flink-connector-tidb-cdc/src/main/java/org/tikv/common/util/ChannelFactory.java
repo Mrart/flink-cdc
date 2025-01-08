@@ -39,6 +39,7 @@ import org.tikv.shade.io.netty.util.concurrent.FastThreadLocalThread;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLException;
 import javax.net.ssl.TrustManagerFactory;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.net.URI;

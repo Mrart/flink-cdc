@@ -8,8 +8,8 @@ import org.apache.flink.cdc.connectors.tidb.TiKVSnapshotEventDeserializationSche
 import org.apache.flink.cdc.connectors.tidb.source.config.TiDBSourceConfigFactory;
 import org.apache.flink.cdc.connectors.tidb.source.offset.CDCEventOffsetFactory;
 import org.apache.flink.cdc.debezium.DebeziumDeserializationSchema;
-
 import org.apache.flink.table.catalog.ObjectPath;
+
 import org.tikv.common.TiConfiguration;
 
 import java.time.Duration;
@@ -102,7 +102,6 @@ public class TiDBSourceBuilder<T> {
         this.configFactory.chunkKeyColumn(chunkKeyColumn);
         return this;
     }
-
 
     public TiDBSourceBuilder<T> chunkKeyColumns(Map<ObjectPath, String> chunkKeyColumns) {
         this.configFactory.chunkKeyColumns(chunkKeyColumns);

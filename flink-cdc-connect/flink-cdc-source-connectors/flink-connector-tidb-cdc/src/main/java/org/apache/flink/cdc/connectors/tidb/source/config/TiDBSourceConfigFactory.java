@@ -1,9 +1,9 @@
 package org.apache.flink.cdc.connectors.tidb.source.config;
 
 import org.apache.flink.cdc.connectors.base.config.JdbcSourceConfigFactory;
+import org.apache.flink.table.catalog.ObjectPath;
 
 import io.debezium.config.Configuration;
-import org.apache.flink.table.catalog.ObjectPath;
 import org.tikv.common.TiConfiguration;
 
 import java.util.HashMap;
@@ -27,7 +27,6 @@ public class TiDBSourceConfigFactory extends JdbcSourceConfigFactory {
     private Properties jdbcProperties;
     private Map<ObjectPath, String> chunkKeyColumns = new HashMap<>();
 
-
     public TiDBSourceConfigFactory compatibleMode(String compatibleMode) {
         this.compatibleMode = compatibleMode;
         return this;
@@ -38,7 +37,7 @@ public class TiDBSourceConfigFactory extends JdbcSourceConfigFactory {
         return this;
     }
 
-    public TiDBSourceConfigFactory chunkKeyColumns(Map<ObjectPath, String> chunkKeyColumns){
+    public TiDBSourceConfigFactory chunkKeyColumns(Map<ObjectPath, String> chunkKeyColumns) {
         this.chunkKeyColumns.putAll(chunkKeyColumns);
         return this;
     }
