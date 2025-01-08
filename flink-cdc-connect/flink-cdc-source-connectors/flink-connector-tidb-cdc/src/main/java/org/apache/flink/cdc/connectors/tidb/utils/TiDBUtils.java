@@ -11,7 +11,6 @@ import org.apache.flink.table.types.DataType;
 import org.apache.flink.table.types.logical.RowType;
 import org.apache.flink.util.FlinkRuntimeException;
 
-import io.debezium.config.Configuration;
 import io.debezium.jdbc.JdbcConnection;
 import io.debezium.relational.Column;
 import io.debezium.relational.Table;
@@ -24,7 +23,6 @@ import java.sql.SQLException;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
-import java.util.Properties;
 import java.util.stream.Collectors;
 
 import static org.apache.flink.cdc.connectors.tidb.table.utils.TSOUtils.TSOToTimeStamp;
@@ -442,7 +440,6 @@ public class TiDBUtils {
         //        tiDBDatabaseSchema.refresh(connection, false);
         return tiDBDatabaseSchema;
     }
-
 
     public static RowType getSplitType(Table table) {
         List<Column> primaryKeys = table.primaryKeyColumns();

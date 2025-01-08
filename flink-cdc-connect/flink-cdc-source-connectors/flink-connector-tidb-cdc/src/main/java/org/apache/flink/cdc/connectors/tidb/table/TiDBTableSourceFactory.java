@@ -1,6 +1,5 @@
 package org.apache.flink.cdc.connectors.tidb.table;
 
-import com.sun.org.apache.bcel.internal.generic.IF_ACMPEQ;
 import org.apache.flink.cdc.connectors.base.options.StartupOptions;
 import org.apache.flink.cdc.connectors.base.utils.OptionUtils;
 import org.apache.flink.cdc.debezium.table.DebeziumOptions;
@@ -166,8 +165,8 @@ public class TiDBTableSourceFactory implements DynamicTableSourceFactory {
         String chunkKeyColumn =
                 config.getOptional(SCAN_INCREMENTAL_SNAPSHOT_CHUNK_KEY_COLUMN).orElse(null);
         Map<ObjectPath, String> chunkKeyColumns = new HashMap<>();
-        if (chunkKeyColumn !=null){
-            chunkKeyColumns.put( new ObjectPath(databaseName,tableName),chunkKeyColumn);
+        if (chunkKeyColumn != null) {
+            chunkKeyColumns.put(new ObjectPath(databaseName, tableName), chunkKeyColumn);
         }
 
         double distributionFactorUpper = config.get(SPLIT_KEY_EVEN_DISTRIBUTION_FACTOR_UPPER_BOUND);

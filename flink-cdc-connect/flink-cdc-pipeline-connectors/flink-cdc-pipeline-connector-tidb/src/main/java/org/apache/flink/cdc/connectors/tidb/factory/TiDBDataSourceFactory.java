@@ -77,8 +77,6 @@ public class TiDBDataSourceFactory implements DataSourceFactory {
         final TiConfiguration tiConf =
                 TiDBSourceOptions.getTiConfiguration(pdAddresses, hostMapping, tidbOption);
 
-
-
         TiDBSourceConfigFactory configFactory = new TiDBSourceConfigFactory();
         configFactory
                 .tiConfiguration(tiConf)
@@ -120,7 +118,6 @@ public class TiDBDataSourceFactory implements DataSourceFactory {
             }
         }
         configFactory.tableList(capturedTables.toArray(new String[0]));
-
 
         String chunkKeyColumns =
                 config.getOptional(SCAN_INCREMENTAL_SNAPSHOT_CHUNK_KEY_COLUMN).orElse(null);

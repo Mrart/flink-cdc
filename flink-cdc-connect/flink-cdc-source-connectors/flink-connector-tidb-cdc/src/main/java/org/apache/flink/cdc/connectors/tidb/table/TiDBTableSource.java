@@ -66,7 +66,7 @@ public class TiDBTableSource implements ScanTableSource, SupportsReadingMetadata
     private final double distributionFactorUpper;
     private final double distributionFactorLower;
     private final String chunkKeyColumn;
-    private final  Map<ObjectPath, String> chunkKeyColumns;
+    private final Map<ObjectPath, String> chunkKeyColumns;
 
     private final Properties jdbcProperties;
     private final Map<String, String> options;
@@ -103,7 +103,7 @@ public class TiDBTableSource implements ScanTableSource, SupportsReadingMetadata
             double distributionFactorUpper,
             double distributionFactorLower,
             @Nullable String chunkKeyColumn,
-            @Nullable Map<ObjectPath,String> chunkKeyColumns,
+            @Nullable Map<ObjectPath, String> chunkKeyColumns,
             String jdbcDriver,
             StartupOptions startupOptions) {
         this.physicalSchema = physicalSchema;

@@ -2,13 +2,12 @@ package org.apache.flink.cdc.connectors.tidb.source.config;
 
 import org.apache.flink.cdc.connectors.base.config.JdbcSourceConfig;
 import org.apache.flink.cdc.connectors.base.options.StartupOptions;
+import org.apache.flink.table.catalog.ObjectPath;
 
 import io.debezium.config.Configuration;
-import org.apache.flink.table.catalog.ObjectPath;
 import org.tikv.common.TiConfiguration;
 
 import java.time.Duration;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -21,8 +20,7 @@ public class TiDBSourceConfig extends JdbcSourceConfig {
     private final String hostMapping;
     private TiConfiguration tiConfiguration;
     private final Properties jdbcProperties;
-    private Map<ObjectPath, String> chunkKeyColumns ;
-
+    private Map<ObjectPath, String> chunkKeyColumns;
 
     public TiDBSourceConfig(
             String compatibleMode,
@@ -51,7 +49,7 @@ public class TiDBSourceConfig extends JdbcSourceConfig {
             int connectMaxRetries,
             int connectionPoolSize,
             String chunkKeyColumn,
-            Map<ObjectPath,String> chunkKeyColumns,
+            Map<ObjectPath, String> chunkKeyColumns,
             boolean skipSnapshotBackfill,
             boolean isScanNewlyAddedTableEnabled) {
         super(
@@ -78,7 +76,6 @@ public class TiDBSourceConfig extends JdbcSourceConfig {
                 connectMaxRetries,
                 connectionPoolSize,
                 chunkKeyColumn,
-
                 skipSnapshotBackfill,
                 isScanNewlyAddedTableEnabled);
         this.compatibleMode = compatibleMode;
@@ -109,7 +106,7 @@ public class TiDBSourceConfig extends JdbcSourceConfig {
         return this.tiConfiguration;
     }
 
-    public Map<ObjectPath,String> getChunkKeyColumns(){
+    public Map<ObjectPath, String> getChunkKeyColumns() {
         return this.chunkKeyColumns;
     }
 
