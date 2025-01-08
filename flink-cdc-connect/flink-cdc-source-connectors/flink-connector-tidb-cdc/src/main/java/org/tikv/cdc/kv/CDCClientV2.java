@@ -65,8 +65,6 @@ public class CDCClientV2 {
     private final String tableName;
     private Frontier tsTracker;
 
-    private final AtomicLong readNum = new AtomicLong(0);
-
     public CDCClientV2(TiConfiguration tiConf, String dbName, String tableName) {
         this(tiConf, new CDCConfig(), dbName, tableName);
     }
@@ -378,7 +376,6 @@ public class CDCClientV2 {
 
                     @Override
                     public void onNext(Cdcpb.ChangeDataEvent event) {
-                        LOG.info("Read event Metric num, {}",readNum.getAndIncrement());
                         long size = event.getSerializedSize();
                         if (size > cdcConfig.getMaxRowKeySize()) {
                             int regionCount = 0;
@@ -406,6 +403,7 @@ public class CDCClientV2 {
 
                         sendRegionChangeEvent(event.getEventsList(), worker);
                         if (event.hasResolvedTs()) {
+                            LOG.debug("Current resolved ts is {},region {}",event.getResolvedTs().getTs(), event.getResolvedTs().getRegionsList());
                             sendResolveTs(event.getResolvedTs(), worker);
                         }
                     }
@@ -423,7 +421,8 @@ public class CDCClientV2 {
                 };
         GRPCClient grpcClient = buildGrpcClient(stream.getChannel());
         StreamClient streamClient = new StreamClient(grpcClient);
-        streamClient.StartReceiver(request, responseObserver);
+        boolean started = streamClient.StartReceiver(request, responseObserver);
+        LOG.info("Grpc Receiver started status: {}", started);
     }
 
     private GRPCClient buildGrpcClient(ManagedChannel channel) {
@@ -581,7 +580,7 @@ public class CDCClientV2 {
                                     .build());
         }
         for (List<RegionStatefulEvent> rsevents : regionStatefulEeventList) {
-            if (rsevents.size() > 0) {
+            if (!rsevents.isEmpty()) {
                 worker.processEvents(rsevents);
             }
         }
@@ -612,7 +611,7 @@ public class CDCClientV2 {
             }
         }
         for (RegionStatefulEvent rse : regionStatefulEvents) {
-            if (rse.getResolvedTsEvent().getRegions().size() > 0) {
+            if (!rse.getResolvedTsEvent().getRegions().isEmpty()) {
                 worker.processEvents(Lists.newArrayList(rse));
             }
         }

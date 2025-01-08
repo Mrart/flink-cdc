@@ -10,6 +10,7 @@ import org.tikv.shade.io.grpc.stub.StreamObserver;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.Executor;
@@ -29,7 +30,7 @@ public class StreamClient implements Closeable {
     private final GRPCClient client;
     private final Executor observerExecutor; // "parent" executor
     private final Executor eventLoop; // serialized
-    private AtomicReference<ReceiveEvent> receiveEvent;
+    private AtomicReference<ReceiveEvent> receiveEvent = new AtomicReference<>();
 
     protected boolean closed;
 
@@ -205,7 +206,7 @@ public class StreamClient implements Closeable {
                         void onReplacedOrFailed(
                                 StreamObserver<Cdcpb.ChangeDataRequest> newReqStream,
                                 Exception err) {
-                            List<ReceiveEvent> pending = null;
+                            List<ReceiveEvent> pending = new ArrayList<>();
                             synchronized (StreamClient.this) {
                                 requestStream = newReqStream;
                                 if (receiveEvent.get() != null) {
@@ -214,25 +215,24 @@ public class StreamClient implements Closeable {
                                 }
                             }
                             boolean isExist = false;
-                            if (pending != null) {
-                                for (ReceiveEvent rEvent : pending) {
-                                    if (rEvent.finished) {
-                                        continue;
-                                    }
-                                    if (newReqStream != null) {
-                                        Cdcpb.ChangeDataRequest newReq =
-                                                rEvent.newCreateChangeDateRequest();
-                                        synchronized (StreamClient.this) {
-                                            if (!closed) {
-                                                requestStream.onNext(newReq);
-                                                isExist = true;
-                                            }
+                            for (ReceiveEvent rEvent : pending) {
+                                if (rEvent.finished) {
+                                    continue;
+                                }
+                                if (newReqStream != null) {
+                                    Cdcpb.ChangeDataRequest newReq =
+                                            rEvent.newCreateChangeDateRequest();
+                                    synchronized (StreamClient.this) {
+                                        if (!closed) {
+                                            requestStream.onNext(newReq);
+                                            receiveEvent.getAndSet(rEvent);
+                                            isExist = true;
                                         }
                                     }
-                                    if (newReqStream == null || closed) {
-                                        rEvent.finished = true;
-                                        rEvent.publishCompletionEvent(err);
-                                    }
+                                }
+                                if (newReqStream == null || closed) {
+                                    rEvent.finished = true;
+                                    rEvent.publishCompletionEvent(err);
                                 }
                             }
                             if (!isExist) {
