@@ -3,10 +3,7 @@ package org.tikv.cdc.kv;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tikv.cdc.CDCConfig;
-import org.tikv.cdc.model.EventFeedStream;
-import org.tikv.cdc.model.RegionFeedEvent;
-import org.tikv.cdc.model.RegionKeyRange;
-import org.tikv.cdc.model.RegionStatefulEvent;
+import org.tikv.cdc.model.*;
 import org.tikv.common.TiSession;
 import org.tikv.kvproto.Cdcpb;
 
@@ -28,6 +25,7 @@ public class RegionWorker {
     private final TiSession tiSession;
     private final EventFeedStream stream;
     private final Consumer<RegionFeedEvent> eventConsumer;
+    private final Consumer<RegionErrorInfo> regionErrorConsumer;
     private final CDCConfig cdcConfig;
     private final RegionStateManager.RegionStateManagerImpl rstManager;
     private final int workerConcurrency;
@@ -37,10 +35,12 @@ public class RegionWorker {
             TiSession tiSession,
             EventFeedStream stream,
             Consumer<RegionFeedEvent> eventConsumer,
+            Consumer<RegionErrorInfo> regionErrorConsumer,
             CDCConfig cdcConfig) {
         this.tiSession = tiSession;
         this.stream = stream;
         this.eventConsumer = eventConsumer;
+        this.regionErrorConsumer=regionErrorConsumer;
         this.cdcConfig = cdcConfig;
         this.workerConcurrency = cdcConfig.getWorkerPoolSize();
         this.executorService = Executors.newFixedThreadPool(cdcConfig.getWorkerPoolSize());
@@ -79,6 +79,7 @@ public class RegionWorker {
             }
             if (event.getEvent().hasError()) {
                 // 错误处理
+                regionErrorConsumer.accept(new RegionErrorInfo(event.getRegionFeedState().getSri(), event.getEvent().getError()));
             }
             if (event.getEvent().hasResolvedTs()) {
                 RegionStatefulEvent.ResolvedTsEvent resolvedTsEvent =

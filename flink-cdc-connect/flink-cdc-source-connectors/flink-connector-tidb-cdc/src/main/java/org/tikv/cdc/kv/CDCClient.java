@@ -20,6 +20,7 @@ import org.tikv.common.util.IDAllocator;
 import org.tikv.common.util.RangeSplitter;
 import org.tikv.kvproto.Cdcpb;
 import org.tikv.kvproto.Coprocessor.KeyRange;
+import org.tikv.kvproto.Errorpb;
 import org.tikv.kvproto.Kvrpcpb;
 import org.tikv.shade.io.grpc.ManagedChannel;
 import org.tikv.shade.io.grpc.stub.StreamObserver;
@@ -57,6 +58,7 @@ public class CDCClient {
     private final TableStoreStats tableStoreStats = new TableStoreStats();
     private final AtomicLong resolvedTs = new AtomicLong(1735089007000L << 18);
     private final Consumer<RegionFeedEvent> eventConsumer;
+    private final Consumer<RegionErrorInfo> errorInfoConsumer;
     private final List<EventListener> listeners = new ArrayList<>();
     private final AtomicBoolean started = new AtomicBoolean(false);
     private final ExecutorService clientExecutor = Executors.newFixedThreadPool(1);
@@ -96,6 +98,7 @@ public class CDCClient {
                         LOG.error("Events buffer put error!", e);
                     }
                 };
+        errorInfoConsumer = this::handleError;
     }
 
     public void start(final long startTs) {
@@ -368,7 +371,7 @@ public class CDCClient {
             tableStoreStats.put(key, new TableStoreStat());
         }
 
-        RegionWorker worker = new RegionWorker(tiSession, stream, eventConsumer, cdcConfig);
+        RegionWorker worker = new RegionWorker(tiSession, stream, eventConsumer,errorInfoConsumer, cdcConfig);
         StreamObserver<Cdcpb.ChangeDataEvent> responseObserver =
                 new StreamObserver<Cdcpb.ChangeDataEvent>() {
                     long maxCommitTs = 0L;
@@ -617,5 +620,33 @@ public class CDCClient {
                 worker.processEvents(Lists.newArrayList(rse));
             }
         }
+    }
+
+    private void handleError(RegionErrorInfo errorInfo) {
+        if (errorInfo == null || errorInfo.getErrorCode() == null) {
+            LOG.debug("Error info is null.");
+        }
+        if (errorInfo.getErrorCode().hasNotLeader()) {
+            Errorpb.NotLeader notLeader =  errorInfo.getErrorCode().getNotLeader();
+            TiRegion tiRegion = this.tiSession.getRegionManager().getRegionById(notLeader.getRegionId());
+            TiRegion newTiRegion = this.tiSession.getRegionManager().updateLeader(tiRegion, notLeader.getLeader().getStoreId());
+            if(newTiRegion != null) {
+                LOG.info("Switch region {} to leader {} to specific leader due to kv return NotLeader.", notLeader.getRegionId(), newTiRegion.getLeader().getStoreId());
+            } else {
+                LOG.error("Invalidate region {} cache due to cannot find peer when updating leader." ,notLeader.getRegionId());
+                this.tiSession.getRegionManager().invalidateRegion(tiRegion);
+            }
+        } else if (errorInfo.getErrorCode().hasEpochNotMatch()) {
+            divideToRegions(errorInfo.getSingleRegionInfo().getSpan());
+        } else  if (errorInfo.getErrorCode().hasRegionNotFound()) {
+            divideToRegions(errorInfo.getSingleRegionInfo().getSpan());
+        } else if (errorInfo.getErrorCode().hasDuplicateRequest()) {
+            throw new ClientException("kv client unreachable error");
+        } else if (errorInfo.getErrorCode().hasCompatibility()) {
+            throw new ClientException("tikv reported compatibility error, which is not expected");
+        } else  if (errorInfo.getErrorCode().hasClusterIdMismatch()) {
+            ////
+        }
+
     }
 }
