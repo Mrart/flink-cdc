@@ -1,9 +1,8 @@
 package org.tikv.cdc.kv;
 
-import org.apache.flink.cdc.connectors.tidb.table.utils.TableKeyRangeUtils;
-
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import org.apache.flink.cdc.connectors.tidb.table.utils.TableKeyRangeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tikv.cdc.CDCConfig;
@@ -45,8 +44,8 @@ import java.util.stream.IntStream;
 
 import static java.lang.Thread.sleep;
 
-public class CDCClientV2 {
-    private static final Logger LOG = LoggerFactory.getLogger(CDCClientV2.class);
+public class CDCClient {
+    private static final Logger LOG = LoggerFactory.getLogger(CDCClient.class);
     private final CDCConfig cdcConfig;
     private final TiSession tiSession;
     private final BlockingQueue<RegionFeedEvent> eventsBuffer;
@@ -66,11 +65,11 @@ public class CDCClientV2 {
     private final String tableName;
     private Frontier tsTracker;
 
-    public CDCClientV2(TiConfiguration tiConf, String dbName, String tableName) {
+    public CDCClient(TiConfiguration tiConf, String dbName, String tableName) {
         this(tiConf, new CDCConfig(), dbName, tableName);
     }
 
-    public CDCClientV2(
+    public CDCClient(
             TiConfiguration tiConf, CDCConfig cdcConfig, String dbName, String tableName) {
         this.cdcConfig = cdcConfig;
         this.tiSession = new TiSession(tiConf);
@@ -565,12 +564,12 @@ public class CDCClientV2 {
             }
             if (event.hasError()) {
                 LOG.error(
-                        "event feed receives a region error.regionId {}, oldRequestId {}, requestId{}, add {},streamId {}",
+                        "event feed receives a region error.regionId {}, oldRequestId {}, requestId {}, add {},streamId {}，error is {}",
                         event.getRegionId(),
                         state.getRequestID(),
                         event.getRegionId(),
                         worker.getStream().getAddr(),
-                        worker.getStream().getStreamId());
+                        worker.getStream().getStreamId(), event.getError());
             }
             int slot = worker.inputCalcSlot(event.getRegionId());
             // build stateful event;

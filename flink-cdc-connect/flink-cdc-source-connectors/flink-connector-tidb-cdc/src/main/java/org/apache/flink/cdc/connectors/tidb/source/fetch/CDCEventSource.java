@@ -1,13 +1,5 @@
 package org.apache.flink.cdc.connectors.tidb.source.fetch;
 
-import org.apache.flink.cdc.connectors.base.relational.JdbcSourceEventDispatcher;
-import org.apache.flink.cdc.connectors.base.source.meta.split.StreamSplit;
-import org.apache.flink.cdc.connectors.base.source.meta.wartermark.WatermarkKind;
-import org.apache.flink.cdc.connectors.tidb.source.config.TiDBConnectorConfig;
-import org.apache.flink.cdc.connectors.tidb.source.offset.CDCEventOffset;
-import org.apache.flink.cdc.connectors.tidb.source.offset.CDCEventOffsetContext;
-import org.apache.flink.util.function.SerializableFunction;
-
 import io.debezium.connector.tidb.TiDBPartition;
 import io.debezium.data.Envelope;
 import io.debezium.function.BlockingConsumer;
@@ -17,10 +9,17 @@ import io.debezium.relational.TableId;
 import io.debezium.relational.TableSchema;
 import io.debezium.util.Clock;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.flink.cdc.connectors.base.relational.JdbcSourceEventDispatcher;
+import org.apache.flink.cdc.connectors.base.source.meta.split.StreamSplit;
+import org.apache.flink.cdc.connectors.base.source.meta.wartermark.WatermarkKind;
+import org.apache.flink.cdc.connectors.tidb.source.config.TiDBConnectorConfig;
+import org.apache.flink.cdc.connectors.tidb.source.offset.CDCEventOffset;
+import org.apache.flink.cdc.connectors.tidb.source.offset.CDCEventOffsetContext;
+import org.apache.flink.util.function.SerializableFunction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tikv.cdc.exception.ClientException;
-import org.tikv.cdc.kv.CDCClientV2;
+import org.tikv.cdc.kv.CDCClient;
 import org.tikv.cdc.kv.EventListener;
 import org.tikv.cdc.model.OpType;
 import org.tikv.cdc.model.PolymorphicEvent;
@@ -136,8 +135,8 @@ public class CDCEventSource
                             CompletableFuture<Void> cf =
                                     CompletableFuture.runAsync(
                                             () -> {
-                                                CDCClientV2 cdcClientV2 =
-                                                        new CDCClientV2(
+                                                CDCClient cdcClientV2 =
+                                                        new CDCClient(
                                                                 connectorConfig
                                                                         .getSourceConfig()
                                                                         .getTiConfiguration(),

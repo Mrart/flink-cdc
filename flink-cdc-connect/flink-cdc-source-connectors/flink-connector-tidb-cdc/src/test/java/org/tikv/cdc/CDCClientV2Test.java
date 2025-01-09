@@ -4,13 +4,12 @@ import org.apache.flink.cdc.connectors.tidb.TiDBTestBase;
 import org.apache.flink.cdc.connectors.tidb.source.config.TiDBSourceConfig;
 import org.apache.flink.cdc.connectors.tidb.source.config.TiDBSourceConfigFactory;
 import org.apache.flink.cdc.connectors.tidb.source.config.TiDBSourceOptions;
-
 import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tikv.cdc.exception.ClientException;
-import org.tikv.cdc.kv.CDCClientV2;
+import org.tikv.cdc.kv.CDCClient;
 import org.tikv.cdc.kv.EventListener;
 import org.tikv.cdc.model.PolymorphicEvent;
 import org.tikv.common.meta.TiTableInfo;
@@ -41,8 +40,8 @@ public class CDCClientV2Test extends TiDBTestBase {
         TiDBSourceConfig tiDBSourceConfig = configFactoryOfCustomDatabase.create(0);
 
         //   tiDBSourceConfig.
-        CDCClientV2 icdcClientV2 =
-                new CDCClientV2(tiDBSourceConfig.getTiConfiguration(), databaseName, tableName);
+        CDCClient icdcClientV2 =
+                new CDCClient(tiDBSourceConfig.getTiConfiguration(), databaseName, tableName);
         try (Connection connection = getJdbcConnection(databaseName);
                 Statement statement = connection.createStatement()) {
             // update tidb.
