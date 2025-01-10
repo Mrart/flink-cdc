@@ -624,9 +624,11 @@ public class CDCClient {
     }
 
     private void handleError(RegionErrorInfo errorInfo) {
-        if (errorInfo == null || errorInfo.getErrorCode() == null) {
+        if (errorInfo == null || errorInfo.getErrorCode() == null || errorInfo.getSingleRegionInfo() == null) {
             LOG.debug("Error info is null.");
+            return;
         }
+        LOG.error("Region {} error is {}", errorInfo.getSingleRegionInfo().getVerID(), errorInfo.getErrorCode());
         if (errorInfo.getErrorCode().hasNotLeader()) {
             Errorpb.NotLeader notLeader = errorInfo.getErrorCode().getNotLeader();
             TiRegion tiRegion =
@@ -642,8 +644,8 @@ public class CDCClient {
                         newTiRegion.getLeader().getStoreId());
             } else {
                 LOG.error(
-                        "Invalidate region {} cache due to cannot find peer when updating leader.",
-                        notLeader.getRegionId());
+                        "Invalidate region {} cache due to cannot find peer when updating leader.error is {}",
+                        notLeader.getRegionId(), errorInfo.getErrorCode());
                 this.tiSession.getRegionManager().invalidateRegion(tiRegion);
             }
         } else if (errorInfo.getErrorCode().hasEpochNotMatch()) {
