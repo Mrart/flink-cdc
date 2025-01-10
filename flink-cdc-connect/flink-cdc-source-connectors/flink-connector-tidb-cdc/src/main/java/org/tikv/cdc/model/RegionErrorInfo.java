@@ -7,7 +7,8 @@ public class RegionErrorInfo {
     private RegionStateManager.SingleRegionInfo singleRegionInfo;
     private Cdcpb.Error errorCode;
 
-    public RegionErrorInfo(RegionStateManager.SingleRegionInfo singleRegionInfo, Cdcpb.Error errorCode) {
+    public RegionErrorInfo(
+            RegionStateManager.SingleRegionInfo singleRegionInfo, Cdcpb.Error errorCode) {
         this.singleRegionInfo = singleRegionInfo;
         this.errorCode = errorCode;
     }

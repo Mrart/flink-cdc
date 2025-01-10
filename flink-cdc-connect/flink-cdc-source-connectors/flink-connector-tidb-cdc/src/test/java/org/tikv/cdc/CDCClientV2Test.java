@@ -4,6 +4,7 @@ import org.apache.flink.cdc.connectors.tidb.TiDBTestBase;
 import org.apache.flink.cdc.connectors.tidb.source.config.TiDBSourceConfig;
 import org.apache.flink.cdc.connectors.tidb.source.config.TiDBSourceConfigFactory;
 import org.apache.flink.cdc.connectors.tidb.source.config.TiDBSourceOptions;
+
 import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;

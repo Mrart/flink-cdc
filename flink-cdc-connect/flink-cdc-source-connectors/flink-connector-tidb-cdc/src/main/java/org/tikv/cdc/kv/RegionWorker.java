@@ -40,7 +40,7 @@ public class RegionWorker {
         this.tiSession = tiSession;
         this.stream = stream;
         this.eventConsumer = eventConsumer;
-        this.regionErrorConsumer=regionErrorConsumer;
+        this.regionErrorConsumer = regionErrorConsumer;
         this.cdcConfig = cdcConfig;
         this.workerConcurrency = cdcConfig.getWorkerPoolSize();
         this.executorService = Executors.newFixedThreadPool(cdcConfig.getWorkerPoolSize());
@@ -79,7 +79,9 @@ public class RegionWorker {
             }
             if (event.getEvent().hasError()) {
                 // 错误处理
-                regionErrorConsumer.accept(new RegionErrorInfo(event.getRegionFeedState().getSri(), event.getEvent().getError()));
+                regionErrorConsumer.accept(
+                        new RegionErrorInfo(
+                                event.getRegionFeedState().getSri(), event.getEvent().getError()));
             }
             if (event.getEvent().hasResolvedTs()) {
                 RegionStatefulEvent.ResolvedTsEvent resolvedTsEvent =

@@ -7,6 +7,7 @@ import org.apache.flink.cdc.connectors.tidb.source.config.TiDBSourceConfigFactor
 import org.apache.flink.cdc.connectors.tidb.source.offset.CDCEventOffsetFactory;
 import org.apache.flink.cdc.debezium.DebeziumDeserializationSchema;
 import org.apache.flink.table.catalog.ObjectPath;
+
 import org.tikv.common.TiConfiguration;
 
 import java.time.Duration;

@@ -1,8 +1,9 @@
 package org.tikv.cdc.kv;
 
+import org.apache.flink.cdc.connectors.tidb.table.utils.TableKeyRangeUtils;
+
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import org.apache.flink.cdc.connectors.tidb.table.utils.TableKeyRangeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tikv.cdc.CDCConfig;
@@ -71,8 +72,7 @@ public class CDCClient {
         this(tiConf, new CDCConfig(), dbName, tableName);
     }
 
-    public CDCClient(
-            TiConfiguration tiConf, CDCConfig cdcConfig, String dbName, String tableName) {
+    public CDCClient(TiConfiguration tiConf, CDCConfig cdcConfig, String dbName, String tableName) {
         this.cdcConfig = cdcConfig;
         this.tiSession = new TiSession(tiConf);
         this.dbName = dbName;
@@ -371,7 +371,8 @@ public class CDCClient {
             tableStoreStats.put(key, new TableStoreStat());
         }
 
-        RegionWorker worker = new RegionWorker(tiSession, stream, eventConsumer,errorInfoConsumer, cdcConfig);
+        RegionWorker worker =
+                new RegionWorker(tiSession, stream, eventConsumer, errorInfoConsumer, cdcConfig);
         StreamObserver<Cdcpb.ChangeDataEvent> responseObserver =
                 new StreamObserver<Cdcpb.ChangeDataEvent>() {
                     long maxCommitTs = 0L;
@@ -572,7 +573,8 @@ public class CDCClient {
                         state.getRequestID(),
                         event.getRegionId(),
                         worker.getStream().getAddr(),
-                        worker.getStream().getStreamId(), event.getError());
+                        worker.getStream().getStreamId(),
+                        event.getError());
             }
             int slot = worker.inputCalcSlot(event.getRegionId());
             // build stateful event;
@@ -627,28 +629,37 @@ public class CDCClient {
             LOG.debug("Error info is null.");
         }
         if (errorInfo.getErrorCode().hasNotLeader()) {
-            Errorpb.NotLeader notLeader =  errorInfo.getErrorCode().getNotLeader();
-            TiRegion tiRegion = this.tiSession.getRegionManager().getRegionById(notLeader.getRegionId());
-            TiRegion newTiRegion = this.tiSession.getRegionManager().updateLeader(tiRegion, notLeader.getLeader().getStoreId());
-            if(newTiRegion != null) {
-                LOG.info("Switch region {} to leader {} to specific leader due to kv return NotLeader.", notLeader.getRegionId(), newTiRegion.getLeader().getStoreId());
+            Errorpb.NotLeader notLeader = errorInfo.getErrorCode().getNotLeader();
+            TiRegion tiRegion =
+                    this.tiSession.getRegionManager().getRegionById(notLeader.getRegionId());
+            TiRegion newTiRegion =
+                    this.tiSession
+                            .getRegionManager()
+                            .updateLeader(tiRegion, notLeader.getLeader().getStoreId());
+            if (newTiRegion != null) {
+                LOG.info(
+                        "Switch region {} to leader {} to specific leader due to kv return NotLeader.",
+                        notLeader.getRegionId(),
+                        newTiRegion.getLeader().getStoreId());
             } else {
-                LOG.error("Invalidate region {} cache due to cannot find peer when updating leader." ,notLeader.getRegionId());
+                LOG.error(
+                        "Invalidate region {} cache due to cannot find peer when updating leader.",
+                        notLeader.getRegionId());
                 this.tiSession.getRegionManager().invalidateRegion(tiRegion);
             }
         } else if (errorInfo.getErrorCode().hasEpochNotMatch()) {
             divideToRegions(errorInfo.getSingleRegionInfo().getSpan());
-        } else  if (errorInfo.getErrorCode().hasRegionNotFound()) {
+        } else if (errorInfo.getErrorCode().hasRegionNotFound()) {
             divideToRegions(errorInfo.getSingleRegionInfo().getSpan());
         } else if (errorInfo.getErrorCode().hasDuplicateRequest()) {
             throw new ClientException("kv client unreachable error");
         } else if (errorInfo.getErrorCode().hasCompatibility()) {
             throw new ClientException("tikv reported compatibility error, which is not expected");
-        } else  if (errorInfo.getErrorCode().hasClusterIdMismatch()){
-            throw new ClientException("tikv reported the request cluster ID mismatch error, which is not expected");
+        } else if (errorInfo.getErrorCode().hasClusterIdMismatch()) {
+            throw new ClientException(
+                    "tikv reported the request cluster ID mismatch error, which is not expected");
         } else {
             throw new ClientException("receive empty or unknown error msg");
         }
-
     }
 }

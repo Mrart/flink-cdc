@@ -2,6 +2,7 @@ package org.tikv.cdc.exception;
 
 public class CDCException extends RuntimeException {
     private final ErrorType errorCode;
+
     public CDCException(Throwable e, ErrorType errorCode) {
         super(e);
         this.errorCode = errorCode;
@@ -16,6 +17,7 @@ public class CDCException extends RuntimeException {
         super(msg, e);
         this.errorCode = errorCode;
     }
+
     public ErrorType getErrorCode() {
         return errorCode;
     }
