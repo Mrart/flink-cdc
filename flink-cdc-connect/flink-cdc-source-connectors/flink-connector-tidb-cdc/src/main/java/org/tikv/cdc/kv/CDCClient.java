@@ -1,13 +1,11 @@
 package org.tikv.cdc.kv;
 
-import org.apache.flink.cdc.connectors.tidb.table.utils.TableKeyRangeUtils;
-
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import org.apache.flink.cdc.connectors.tidb.table.utils.TableKeyRangeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tikv.cdc.CDCConfig;
-import org.tikv.cdc.IDAllocator;
 import org.tikv.cdc.TableStoreStat;
 import org.tikv.cdc.TableStoreStats;
 import org.tikv.cdc.exception.ClientException;
@@ -18,9 +16,11 @@ import org.tikv.common.TiConfiguration;
 import org.tikv.common.TiSession;
 import org.tikv.common.meta.TiTableInfo;
 import org.tikv.common.region.TiRegion;
+import org.tikv.common.util.IDAllocator;
 import org.tikv.common.util.RangeSplitter;
 import org.tikv.kvproto.Cdcpb;
 import org.tikv.kvproto.Coprocessor.KeyRange;
+import org.tikv.kvproto.Errorpb;
 import org.tikv.kvproto.Kvrpcpb;
 import org.tikv.shade.io.grpc.ManagedChannel;
 import org.tikv.shade.io.grpc.stub.StreamObserver;
@@ -45,8 +45,8 @@ import java.util.stream.IntStream;
 
 import static java.lang.Thread.sleep;
 
-public class CDCClientV2 {
-    private static final Logger LOGGER = LoggerFactory.getLogger(CDCClientV2.class);
+public class CDCClient {
+    private static final Logger LOG = LoggerFactory.getLogger(CDCClient.class);
     private final CDCConfig cdcConfig;
     private final TiSession tiSession;
     private final BlockingQueue<RegionFeedEvent> eventsBuffer;
@@ -58,6 +58,7 @@ public class CDCClientV2 {
     private final TableStoreStats tableStoreStats = new TableStoreStats();
     private final AtomicLong resolvedTs = new AtomicLong(1735089007000L << 18);
     private final Consumer<RegionFeedEvent> eventConsumer;
+    private final Consumer<RegionErrorInfo> errorInfoConsumer;
     private final List<EventListener> listeners = new ArrayList<>();
     private final AtomicBoolean started = new AtomicBoolean(false);
     private final ExecutorService clientExecutor = Executors.newFixedThreadPool(1);
@@ -66,12 +67,11 @@ public class CDCClientV2 {
     private final String tableName;
     private Frontier tsTracker;
 
-    public CDCClientV2(TiConfiguration tiConf, String dbName, String tableName) {
+    public CDCClient(TiConfiguration tiConf, String dbName, String tableName) {
         this(tiConf, new CDCConfig(), dbName, tableName);
     }
 
-    public CDCClientV2(
-            TiConfiguration tiConf, CDCConfig cdcConfig, String dbName, String tableName) {
+    public CDCClient(TiConfiguration tiConf, CDCConfig cdcConfig, String dbName, String tableName) {
         this.cdcConfig = cdcConfig;
         this.tiSession = new TiSession(tiConf);
         this.dbName = dbName;
@@ -94,13 +94,14 @@ public class CDCClientV2 {
                     try {
                         eventsBuffer.put(event);
                     } catch (InterruptedException e) {
-                        LOGGER.error("Events buffer put error!", e);
+                        LOG.error("Events buffer put error!", e);
                     }
                 };
+        errorInfoConsumer = this::handleError;
     }
 
     public void start(final long startTs) {
-        LOGGER.debug(
+        LOG.debug(
                 "Start cdc client at time {},database {} table {} listening.",
                 startTs,
                 dbName,
@@ -113,8 +114,7 @@ public class CDCClientV2 {
                                 Optional<TiTableInfo> tableInfoOptional =
                                         getTableInfo(dbName, tableName);
                                 if (!tableInfoOptional.isPresent()) {
-                                    LOGGER.error(
-                                            "Get tableInfo for {}.{} failed!", dbName, tableName);
+                                    LOG.error("Get tableInfo for {}.{} failed!", dbName, tableName);
                                     throw new ClientException(
                                             String.format(
                                                     "Get tableInfo for %s.%s failed.",
@@ -165,7 +165,7 @@ public class CDCClientV2 {
                                             this.resolvedTs.getAndSet(tsTracker.frontier());
                                             if (resolvedTs.get() > 0 && !initialized) {
                                                 initialized = true;
-                                                LOGGER.info("puller is initialized.");
+                                                LOG.info("puller is initialized.");
                                             }
                                             if (!initialized) {
                                                 continue;
@@ -198,7 +198,7 @@ public class CDCClientV2 {
         if (raw.getCrts() < this.resolvedTs.get()
                 || (raw.getCrts() == this.resolvedTs.get()
                         && OpType.Resolved.equals(raw.getOpType()))) {
-            LOGGER.warn(
+            LOG.warn(
                     "The crts is fallen back in puller.Schema is {}.{}. ResolveTs is {}",
                     dbName,
                     tableName,
@@ -242,12 +242,12 @@ public class CDCClientV2 {
             clientExecutor.shutdown();
             long clientClosedTimeoutSeconds = 30L;
             if (!clientExecutor.awaitTermination(clientClosedTimeoutSeconds, TimeUnit.SECONDS)) {
-                LOGGER.error(
+                LOG.error(
                         "Failed to close the cdc client in {} seconds.",
                         clientClosedTimeoutSeconds);
             }
         } catch (InterruptedException e) {
-            LOGGER.error("Closed Client exception.", e);
+            LOG.error("Closed Client exception.", e);
             throw new ClientException(e);
         }
     }
@@ -329,7 +329,7 @@ public class CDCClientV2 {
             EventFeedStream stream =
                     new EventFeedStream(storeAddr, storeId, sri.getRpcCtx().getChannel());
             storeStreamCache.put(storeAddr, stream);
-            LOGGER.info(
+            LOG.info(
                     "creating new stream {} to store {} to send request",
                     stream.getStreamId(),
                     storeAddr);
@@ -340,7 +340,7 @@ public class CDCClientV2 {
         streamClient.getRegions().setByRequestID(requestId, state);
         try {
             receiveFromStream(streamClient, request, tableId);
-            LOGGER.debug(
+            LOG.debug(
                     "start new request.tableID {},regionID {}, storeAdd {}",
                     tableId,
                     sri.getRpcCtx().getRegion().getId(),
@@ -370,7 +370,8 @@ public class CDCClientV2 {
             tableStoreStats.put(key, new TableStoreStat());
         }
 
-        RegionWorker worker = new RegionWorker(tiSession, stream, eventConsumer, cdcConfig);
+        RegionWorker worker =
+                new RegionWorker(tiSession, stream, eventConsumer, errorInfoConsumer, cdcConfig);
         StreamObserver<Cdcpb.ChangeDataEvent> responseObserver =
                 new StreamObserver<Cdcpb.ChangeDataEvent>() {
                     long maxCommitTs = 0L;
@@ -383,7 +384,7 @@ public class CDCClientV2 {
                             if (event.hasResolvedTs()) {
                                 regionCount = event.getResolvedTs().getRegionsCount();
                             }
-                            LOGGER.warn(
+                            LOG.warn(
                                     "change data event size too large. size:{},resolvedRegionCount:{}",
                                     size,
                                     regionCount);
@@ -400,10 +401,14 @@ public class CDCClientV2 {
                                     maxCommitTs = commitTs;
                                 }
                             }
+                            sendRegionChangeEvent(event.getEventsList(), worker);
                         }
 
-                        sendRegionChangeEvent(event.getEventsList(), worker);
                         if (event.hasResolvedTs()) {
+                            LOG.info(
+                                    "Current resolved ts is {},region {}",
+                                    event.getResolvedTs().getTs(),
+                                    event.getResolvedTs().getRegionsList());
                             sendResolveTs(event.getResolvedTs(), worker);
                         }
                     }
@@ -411,17 +416,18 @@ public class CDCClientV2 {
                     @Override
                     public void onError(Throwable t) {
                         // kvClientStreamRevError.
-                        LOGGER.error("kvClientStreamRevError.", t);
+                        LOG.error("kvClientStreamRevError.", t);
                     }
 
                     @Override
                     public void onCompleted() {
-                        LOGGER.warn("Server completed streaming");
+                        LOG.warn("Server completed streaming");
                     }
                 };
         GRPCClient grpcClient = buildGrpcClient(stream.getChannel());
         StreamClient streamClient = new StreamClient(grpcClient);
-        streamClient.StartReceiver(request, responseObserver);
+        boolean started = streamClient.StartReceiver(request, responseObserver);
+        LOG.info("Grpc Receiver started status: {}", started);
     }
 
     private GRPCClient buildGrpcClient(ManagedChannel channel) {
@@ -457,36 +463,36 @@ public class CDCClientV2 {
         EventFeedStream regionStreamClientInMap =
                 storeStreamCache.get(deleteStreamClient.getAddr());
         if (regionStreamClientInMap == null) {
-            LOGGER.warn(
+            LOG.warn(
                     "Delete stream {} failed, stream not found,ignore it",
                     deleteStreamClient.getAddr());
             return;
         }
         if (regionStreamClientInMap.getStreamId() != deleteStreamClient.getStreamId()) {
-            LOGGER.warn(
+            LOG.warn(
                     "Delete stream {} failed, stream id mismatch,ignore it",
                     deleteStreamClient.getAddr());
             return;
         }
         if (Duration.between(deleteStreamClient.getCreateTime(), Instant.now()).getSeconds() < 1) {
-            LOGGER.warn(
+            LOG.warn(
                     "It's too soon to delete a stream {}, wait for a while,sinceCreateDuration {}",
                     deleteStreamClient.getStreamId(),
                     deleteStreamClient.getCreateTime());
             try {
                 sleep(1000);
             } catch (InterruptedException e) {
-                LOGGER.error("InterruptedException", e);
+                LOG.error("InterruptedException", e);
             }
         }
         try {
             deleteStreamClient.close();
         } catch (Exception e) {
-            LOGGER.error("Region stream client {} closed failed.", deleteStreamClient.getAddr(), e);
+            LOG.error("Region stream client {} closed failed.", deleteStreamClient.getAddr(), e);
             throw new RuntimeException(e);
         }
         storeStreamCache.remove(deleteStreamClient.getAddr());
-        LOGGER.info(
+        LOG.info(
                 "Region stream client id {}, storeId {} has been removed.",
                 deleteStreamClient.getStreamId(),
                 deleteStreamClient.getAddr());
@@ -514,7 +520,7 @@ public class CDCClientV2 {
             //      boolean valid = true;
             if (state != null) {
                 if (state.getRequestID() < event.getRequestId()) {
-                    LOGGER.debug(
+                    LOG.debug(
                             "region state entry will be replaced because received message of newer requestID.regionId {}, oldRequestId {}, requestId{}, add {},streamId {}",
                             event.getRegionId(),
                             state.getRequestID(),
@@ -522,7 +528,7 @@ public class CDCClientV2 {
                             worker.getStream().getAddr(),
                             worker.getStream().getStreamId());
                 } else if (state.getRequestID() > event.getRequestId()) {
-                    LOGGER.debug(
+                    LOG.debug(
                             "drop event due to event belongs to a stale request.regionId {}, oldRequestId {}, requestId{}, add {},streamId {}",
                             event.getRegionId(),
                             state.getRequestID(),
@@ -532,7 +538,7 @@ public class CDCClientV2 {
                     continue;
                 }
                 if (state.isStale()) {
-                    LOGGER.warn(
+                    LOG.warn(
                             "drop event due to region feed is stopped.regionId {}, oldRequestId {}, requestId{}, add {},streamId {}",
                             event.getRegionId(),
                             state.getRequestID(),
@@ -546,7 +552,7 @@ public class CDCClientV2 {
                 RegionStateManager.RegionFeedState newState =
                         worker.getStream().getRegions().takeByRequestID(event.getRequestId());
                 if (newState == null) {
-                    LOGGER.warn(
+                    LOG.warn(
                             "drop event due to region feed is removed.regionId {}, oldRequestId {}, requestId{}, add {},streamId {}",
                             event.getRegionId(),
                             state.getRequestID(),
@@ -560,13 +566,14 @@ public class CDCClientV2 {
                 worker.setRegionState(event.getRegionId(), newState);
             }
             if (event.hasError()) {
-                LOGGER.error(
-                        "event feed receives a region error.regionId {}, oldRequestId {}, requestId{}, add {},streamId {}",
+                LOG.error(
+                        "event feed receives a region error.regionId {}, oldRequestId {}, requestId {}, add {},streamId {}，error is {}",
                         event.getRegionId(),
                         state.getRequestID(),
                         event.getRegionId(),
                         worker.getStream().getAddr(),
-                        worker.getStream().getStreamId());
+                        worker.getStream().getStreamId(),
+                        event.getError());
             }
             int slot = worker.inputCalcSlot(event.getRegionId());
             // build stateful event;
@@ -579,7 +586,7 @@ public class CDCClientV2 {
                                     .build());
         }
         for (List<RegionStatefulEvent> rsevents : regionStatefulEeventList) {
-            if (rsevents.size() > 0) {
+            if (!rsevents.isEmpty()) {
                 worker.processEvents(rsevents);
             }
         }
@@ -610,9 +617,49 @@ public class CDCClientV2 {
             }
         }
         for (RegionStatefulEvent rse : regionStatefulEvents) {
-            if (rse.getResolvedTsEvent().getRegions().size() > 0) {
+            if (!rse.getResolvedTsEvent().getRegions().isEmpty()) {
                 worker.processEvents(Lists.newArrayList(rse));
             }
+        }
+    }
+
+    private void handleError(RegionErrorInfo errorInfo) {
+        if (errorInfo == null || errorInfo.getErrorCode() == null || errorInfo.getSingleRegionInfo() == null) {
+            LOG.debug("Error info is null.");
+            return;
+        }
+        LOG.error("Region {} error is {}", errorInfo.getSingleRegionInfo().getVerID(), errorInfo.getErrorCode());
+        if (errorInfo.getErrorCode().hasNotLeader()) {
+            Errorpb.NotLeader notLeader = errorInfo.getErrorCode().getNotLeader();
+            TiRegion tiRegion =
+                    this.tiSession.getRegionManager().getRegionById(notLeader.getRegionId());
+            TiRegion newTiRegion =
+                    this.tiSession
+                            .getRegionManager()
+                            .updateLeader(tiRegion, notLeader.getLeader().getStoreId());
+            if (newTiRegion != null) {
+                LOG.info(
+                        "Switch region {} to new region {} to specific leader due to kv return NotLeader.",
+                        notLeader.getRegionId(),newTiRegion.getId());
+            } else {
+                LOG.error(
+                        "Invalidate region {} cache due to cannot find peer when updating leader.error is {}",
+                        notLeader.getRegionId(), errorInfo.getErrorCode());
+                this.tiSession.getRegionManager().invalidateRegion(tiRegion);
+            }
+        } else if (errorInfo.getErrorCode().hasEpochNotMatch()) {
+            divideToRegions(errorInfo.getSingleRegionInfo().getSpan());
+        } else if (errorInfo.getErrorCode().hasRegionNotFound()) {
+            divideToRegions(errorInfo.getSingleRegionInfo().getSpan());
+        } else if (errorInfo.getErrorCode().hasDuplicateRequest()) {
+            throw new ClientException("kv client unreachable error");
+        } else if (errorInfo.getErrorCode().hasCompatibility()) {
+            throw new ClientException("tikv reported compatibility error, which is not expected");
+        } else if (errorInfo.getErrorCode().hasClusterIdMismatch()) {
+            throw new ClientException(
+                    "tikv reported the request cluster ID mismatch error, which is not expected");
+        } else {
+            throw new ClientException("receive empty or unknown error msg");
         }
     }
 }

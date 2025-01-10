@@ -3,14 +3,9 @@ package org.tikv.cdc.kv;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tikv.cdc.CDCConfig;
-import org.tikv.cdc.model.EventFeedStream;
-import org.tikv.cdc.model.RegionFeedEvent;
-import org.tikv.cdc.model.RegionKeyRange;
-import org.tikv.cdc.model.RegionStatefulEvent;
+import org.tikv.cdc.model.*;
 import org.tikv.common.TiSession;
 import org.tikv.kvproto.Cdcpb;
-import org.tikv.kvproto.Coprocessor;
-import org.tikv.shade.com.google.protobuf.ByteString;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -30,6 +25,7 @@ public class RegionWorker {
     private final TiSession tiSession;
     private final EventFeedStream stream;
     private final Consumer<RegionFeedEvent> eventConsumer;
+    private final Consumer<RegionErrorInfo> regionErrorConsumer;
     private final CDCConfig cdcConfig;
     private final RegionStateManager.RegionStateManagerImpl rstManager;
     private final int workerConcurrency;
@@ -39,10 +35,12 @@ public class RegionWorker {
             TiSession tiSession,
             EventFeedStream stream,
             Consumer<RegionFeedEvent> eventConsumer,
+            Consumer<RegionErrorInfo> regionErrorConsumer,
             CDCConfig cdcConfig) {
         this.tiSession = tiSession;
         this.stream = stream;
         this.eventConsumer = eventConsumer;
+        this.regionErrorConsumer = regionErrorConsumer;
         this.cdcConfig = cdcConfig;
         this.workerConcurrency = cdcConfig.getWorkerPoolSize();
         this.executorService = Executors.newFixedThreadPool(cdcConfig.getWorkerPoolSize());
@@ -81,6 +79,9 @@ public class RegionWorker {
             }
             if (event.getEvent().hasError()) {
                 // 错误处理
+                regionErrorConsumer.accept(
+                        new RegionErrorInfo(
+                                event.getRegionFeedState().getSri(), event.getEvent().getError()));
             }
             if (event.getEvent().hasResolvedTs()) {
                 RegionStatefulEvent.ResolvedTsEvent resolvedTsEvent =
@@ -94,10 +95,8 @@ public class RegionWorker {
 
     public void handleEventEntry(
             Cdcpb.Event.Entries entries, RegionStateManager.RegionFeedState state) {
-        Coprocessor.KeyRange keyRange = state.getKeyRange();
         long regionId = state.getRegionId();
         for (Cdcpb.Event.Row event : entries.getEntriesList()) {
-            ByteString key = event.getKey();
             switch (event.getType()) {
                 case INITIALIZED:
                     state.isInitialized();
@@ -107,6 +106,7 @@ public class RegionWorker {
                         eventConsumer.accept(regionFeedEvent);
                     }
                     state.getMatcher().matchCachedRollbackRow(true);
+                    break;
                 case COMMITTED:
                     long resolveTs = state.getLastResolvedTs();
                     if (event.getCommitTs() <= resolveTs) {
@@ -117,13 +117,14 @@ public class RegionWorker {
                                 resolveTs,
                                 regionId);
                         // todo
-                        RegionFeedEvent regionFeedEvent =
-                                RegionFeedEvent.assembleRowEvent(regionId, event);
-                        eventConsumer.accept(regionFeedEvent);
                     }
-
+                    RegionFeedEvent regionFeedEvent =
+                            RegionFeedEvent.assembleRowEvent(regionId, event);
+                    eventConsumer.accept(regionFeedEvent);
+                    break;
                 case PREWRITE:
                     state.getMatcher().putPrewriteRow(event);
+                    break;
                 case COMMIT:
                     if (!state.getMatcher().matchRow(event, state.isInitialized())) {
                         if (!state.isInitialized()) {
@@ -145,21 +146,22 @@ public class RegionWorker {
                         return;
                         // todo errUnreachable
                     }
-                    RegionFeedEvent regionFeedEvent =
-                            RegionFeedEvent.assembleRowEvent(regionId, event);
-                    eventConsumer.accept(regionFeedEvent);
+                    eventConsumer.accept(RegionFeedEvent.assembleRowEvent(regionId, event));
+                    break;
                 case ROLLBACK:
                     if (!state.isInitialized()) {
                         state.getMatcher().cacheRollbackRow(event);
                         continue;
                     }
                     state.getMatcher().rollbackRow(event);
+                    break;
                 default:
                     LOGGER.warn(
                             "Unhandler event entry.eventType:{},eventKey:{}, regionId:{}",
                             event.getType(),
                             event.getKey(),
                             regionId);
+                    break;
             }
         }
     }

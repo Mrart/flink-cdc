@@ -40,6 +40,10 @@ public class RegionStateManager {
         public KeyRange getSpan() {
             return span;
         }
+
+        public TiRegion.RegionVerID getVerID() {
+            return verID;
+        }
     }
 
     public static class RegionFeedState {

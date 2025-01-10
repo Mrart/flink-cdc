@@ -325,7 +325,6 @@ public class GRPCClient {
                     return;
                 }
                 grpcReqStream = empty;
-                // assert preConnectBuffer == null;
                 if (fromUser) {
                     closeStream(curStream, err);
                 } else {
@@ -372,7 +371,7 @@ public class GRPCClient {
                             finalError = !retryableStreamError(t);
                         }
                         if (!finalError) {
-                            int errCount = -1;
+                            int errCount;
 
                             errCount = ++errCounter;
                             LOG.error(
@@ -418,9 +417,8 @@ public class GRPCClient {
                     public void onCompleted() {
                         if (!finished) {
                             LOG.warn(
-                                    "Unexpected onCompleted received"
-                                            + " for stream of method "
-                                            + method.getFullMethodName());
+                                    "Unexpected onCompleted received for stream of method {}",
+                                    method.getFullMethodName());
                             // TODO(maybe) reestablish stream in this case?
                         }
                         sentCallOptions = null;
@@ -435,6 +433,7 @@ public class GRPCClient {
             if (finished) {
                 return;
             }
+            LOG.debug("Refreshing backing stream");
             CallOptions callOpts = getCallOptions();
             sentCallOptions = callOpts;
             callOpts = callOpts.withExecutor(responseExecutor);

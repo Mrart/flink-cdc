@@ -1,13 +1,5 @@
 package org.apache.flink.cdc.connectors.tidb.source.fetch;
 
-import org.apache.flink.cdc.connectors.base.relational.JdbcSourceEventDispatcher;
-import org.apache.flink.cdc.connectors.base.source.meta.split.StreamSplit;
-import org.apache.flink.cdc.connectors.base.source.meta.wartermark.WatermarkKind;
-import org.apache.flink.cdc.connectors.tidb.source.config.TiDBConnectorConfig;
-import org.apache.flink.cdc.connectors.tidb.source.offset.CDCEventOffset;
-import org.apache.flink.cdc.connectors.tidb.source.offset.CDCEventOffsetContext;
-import org.apache.flink.util.function.SerializableFunction;
-
 import io.debezium.connector.tidb.TiDBPartition;
 import io.debezium.data.Envelope;
 import io.debezium.function.BlockingConsumer;
@@ -17,23 +9,27 @@ import io.debezium.relational.TableId;
 import io.debezium.relational.TableSchema;
 import io.debezium.util.Clock;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.flink.cdc.connectors.base.relational.JdbcSourceEventDispatcher;
+import org.apache.flink.cdc.connectors.base.source.meta.split.StreamSplit;
+import org.apache.flink.cdc.connectors.base.source.meta.wartermark.WatermarkKind;
+import org.apache.flink.cdc.connectors.tidb.source.config.TiDBConnectorConfig;
+import org.apache.flink.cdc.connectors.tidb.source.offset.CDCEventOffset;
+import org.apache.flink.cdc.connectors.tidb.source.offset.CDCEventOffsetContext;
+import org.apache.flink.util.function.SerializableFunction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tikv.cdc.exception.ClientException;
-import org.tikv.cdc.kv.CDCClientV2;
+import org.tikv.cdc.kv.CDCClient;
 import org.tikv.cdc.kv.EventListener;
 import org.tikv.cdc.model.OpType;
 import org.tikv.cdc.model.PolymorphicEvent;
 import org.tikv.cdc.model.RawKVEntry;
 import org.tikv.common.key.RowKey;
+import org.tikv.common.meta.TiColumnInfo;
+import org.tikv.common.meta.TiTableInfo;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.EnumMap;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -139,8 +135,8 @@ public class CDCEventSource
                             CompletableFuture<Void> cf =
                                     CompletableFuture.runAsync(
                                             () -> {
-                                                CDCClientV2 cdcClientV2 =
-                                                        new CDCClientV2(
+                                                CDCClient cdcClientV2 =
+                                                        new CDCClient(
                                                                 connectorConfig
                                                                         .getSourceConfig()
                                                                         .getTiConfiguration(),
@@ -217,6 +213,9 @@ public class CDCEventSource
                                                                                     })
                                                                             .accept(event);
                                                                 } catch (Exception e) {
+                                                                    LOG.error(
+                                                                            "Event Handler failed!",
+                                                                            e);
                                                                     errorHandler
                                                                             .setProducerThrowable(
                                                                                     e);
@@ -280,6 +279,86 @@ public class CDCEventSource
         }
         offsetContext.event(tableId, event.getCrTs());
 
+        Set<Integer> fieldIndex =
+                fieldIndexConverter(event.getTableInfo().getColumns(), tableSchema);
+        Serializable[] before = null;
+        Serializable[] after = null;
+        final RowKey rowKey = RowKey.decode(event.getRawKVEntry().getKey().toByteArray());
+        final long handle = rowKey.getHandle();
+        switch (event.getRawKVEntry().getOpType()) {
+            case Delete:
+                before =
+                        (Serializable[])
+                                getSerializableObject(
+                                        handle,
+                                        event.getRawKVEntry(),
+                                        event.getTableInfo(),
+                                        fieldIndex);
+                break;
+            case Put:
+                if (event.getRawKVEntry().isUpdate()) {
+                    RawKVEntry[] rawKVEntries =
+                            event.getRawKVEntry().splitUpdateKVEntry(event.getRawKVEntry());
+                    RawKVEntry deleteRawKVEntry = rawKVEntries[0];
+                    before =
+                            (Serializable[])
+                                    getSerializableObject(
+                                            handle,
+                                            deleteRawKVEntry,
+                                            event.getTableInfo(),
+                                            fieldIndex);
+                    RawKVEntry insertKVEntry = rawKVEntries[1];
+                    after =
+                            (Serializable[])
+                                    getSerializableObject(
+                                            handle,
+                                            insertKVEntry,
+                                            event.getTableInfo(),
+                                            fieldIndex);
+                } else {
+                    // insert
+                    after =
+                            (Serializable[])
+                                    getSerializableObject(
+                                            handle,
+                                            event.getRawKVEntry(),
+                                            event.getTableInfo(),
+                                            fieldIndex);
+                }
+                break;
+        }
+        if (before == null && after == null){
+            return;
+        }
+        eventDispatcher.dispatchDataChangeEvent(
+                partition,
+                tableId,
+                new CDCEventEmitter(
+                        partition, offsetContext, Clock.SYSTEM, operation, before, after));
+    }
+
+    private Object[] getSerializableObject(
+            long handle, RawKVEntry rawKVEntry, TiTableInfo tableInfo, Set<Integer> fieldIndex) {
+        Object[] serializableObject = new Serializable[fieldIndex.size()];
+        try {
+            if (
+                rawKVEntry == null || rawKVEntry.getValue() == null){
+                return null;
+            }
+
+            Object[] tiKVValueAfter =
+                    decodeObjects(rawKVEntry.getValue().toByteArray(), handle, tableInfo);
+            for (int index : fieldIndex) {
+                serializableObject[index] = tiKVValueAfter[index];
+            }
+        }catch (Exception e){
+            LOG.error("decode object error",e);
+        }
+        return serializableObject;
+    }
+
+    private Set<Integer> fieldIndexConverter(
+            List<TiColumnInfo> tiColumnInfos, TableSchema tableSchema) {
         Map<String, Integer> fieldIndex =
                 fieldIndexMap.computeIfAbsent(
                         tableSchema,
@@ -294,69 +373,12 @@ public class CDCEventSource
                                                                         .get(i)
                                                                         .name(),
                                                         i -> i)));
-        Serializable[] before = null;
-        Serializable[] after = null;
-        final RowKey rowKey = RowKey.decode(event.getRawKVEntry().getKey().toByteArray());
-        final long handle = rowKey.getHandle();
-        switch (event.getRawKVEntry().getOpType()) {
-            case Delete:
-                before = new Serializable[fieldIndex.size()];
-                Object[] tikvValue =
-                        decodeObjects(
-                                event.getRawKVEntry().getOldValue().toByteArray(),
-                                handle,
-                                event.getTableInfo());
-                for (int i = 0; i < tikvValue.length; i++) {
-                    before[i] = (Serializable) tikvValue[i];
-                }
-            case Put:
-                if (event.getRawKVEntry().isUpdate()) {
-                    RawKVEntry[] rawKVEntries =
-                            event.getRawKVEntry().splitUpdateKVEntry(event.getRawKVEntry());
-                    RawKVEntry deleteRawKVEntry = rawKVEntries[0];
-                    before = new Serializable[fieldIndex.size()];
-                    Object[] tiKVValueBefore =
-                            decodeObjects(
-                                    deleteRawKVEntry.getOldValue().toByteArray(),
-                                    handle,
-                                    event.getTableInfo());
-                    for (int i = 0; i < tiKVValueBefore.length; i++) {
-                        before[i] = (Serializable) tiKVValueBefore[i];
-                    }
-                    RawKVEntry insertKVEntry = rawKVEntries[1];
-                    after = new Serializable[fieldIndex.size()];
-                    Object[] tiKVValueAfter =
-                            decodeObjects(
-                                    insertKVEntry.getValue().toByteArray(),
-                                    handle,
-                                    event.getTableInfo());
-                    for (int i = 0; i < tiKVValueBefore.length; i++) {
-                        after[i] = (Serializable) tiKVValueAfter[i];
-                    }
-                } else {
-                    // insert
-                    after = new Serializable[fieldIndex.size()];
-                    LOG.debug(
-                            "Receive value is {},key:{}.dbName:{},tableName: {},tableInfo: {}",
-                            event.getRawKVEntry().getValue().toByteArray(),
-                            event.getRawKVEntry().getKey(),
-                            event.getDatabaseName(),
-                            event.getTableInfo().getName(),
-                            event.getTableInfo());
-                    Object[] tiKVValueAfter =
-                            decodeObjects(
-                                    event.getRawKVEntry().getValue().toByteArray(),
-                                    handle,
-                                    event.getTableInfo());
-                    for (int i = 0; i < tiKVValueAfter.length; i++) {
-                        after[i] = (Serializable) tiKVValueAfter[i];
-                    }
-                }
+        Set<Integer> fieldIndexSet = new HashSet<>();
+        for (TiColumnInfo tiColumnInfo : tiColumnInfos) {
+            if (fieldIndex.containsKey(tiColumnInfo.getName())) {
+                fieldIndexSet.add(tiColumnInfo.getOffset());
+            }
         }
-        eventDispatcher.dispatchDataChangeEvent(
-                partition,
-                tableId,
-                new CDCEventEmitter(
-                        partition, offsetContext, Clock.SYSTEM, operation, before, after));
+        return fieldIndexSet;
     }
 }

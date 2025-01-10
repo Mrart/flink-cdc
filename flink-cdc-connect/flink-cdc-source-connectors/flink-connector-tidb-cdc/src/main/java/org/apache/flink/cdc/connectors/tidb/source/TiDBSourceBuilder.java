@@ -3,8 +3,6 @@ package org.apache.flink.cdc.connectors.tidb.source;
 import org.apache.flink.cdc.connectors.base.config.JdbcSourceConfigFactory;
 import org.apache.flink.cdc.connectors.base.options.StartupOptions;
 import org.apache.flink.cdc.connectors.base.source.jdbc.JdbcIncrementalSource;
-import org.apache.flink.cdc.connectors.tidb.TiKVChangeEventDeserializationSchema;
-import org.apache.flink.cdc.connectors.tidb.TiKVSnapshotEventDeserializationSchema;
 import org.apache.flink.cdc.connectors.tidb.source.config.TiDBSourceConfigFactory;
 import org.apache.flink.cdc.connectors.tidb.source.offset.CDCEventOffsetFactory;
 import org.apache.flink.cdc.debezium.DebeziumDeserializationSchema;
@@ -22,8 +20,6 @@ public class TiDBSourceBuilder<T> {
     private final TiDBSourceConfigFactory configFactory = new TiDBSourceConfigFactory();
     private CDCEventOffsetFactory offsetFactory;
     private DebeziumDeserializationSchema<T> deserializer;
-    private TiKVSnapshotEventDeserializationSchema<T> snapshotEventDeserializationSchema;
-    private TiKVChangeEventDeserializationSchema<T> changeEventDeserializationSchema;
     private TiDBDialect dialect;
 
     private TiDBSourceBuilder() {}
@@ -158,20 +154,6 @@ public class TiDBSourceBuilder<T> {
 
     public TiDBSourceBuilder<T> deserializer(DebeziumDeserializationSchema<T> deserializer) {
         this.deserializer = deserializer;
-        return this;
-    }
-
-    /** The deserializer used to convert from consumed snapshot event from TiKV. */
-    public TiDBSourceBuilder<T> snapshotEventDeserializer(
-            TiKVSnapshotEventDeserializationSchema<T> snapshotEventDeserializationSchema) {
-        this.snapshotEventDeserializationSchema = snapshotEventDeserializationSchema;
-        return this;
-    }
-
-    /** The deserializer used to convert from consumed change event from TiKV. */
-    public TiDBSourceBuilder<T> changeEventDeserializer(
-            TiKVChangeEventDeserializationSchema<T> changeEventDeserializationSchema) {
-        this.changeEventDeserializationSchema = changeEventDeserializationSchema;
         return this;
     }
 

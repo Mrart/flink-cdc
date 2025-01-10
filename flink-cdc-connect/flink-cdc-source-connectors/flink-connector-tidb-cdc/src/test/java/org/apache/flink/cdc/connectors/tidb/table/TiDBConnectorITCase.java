@@ -129,7 +129,7 @@ public class TiDBConnectorITCase extends TiDBTestBase {
             statement.execute("DELETE FROM products WHERE id=111;");
         }
 
-        waitForSinkSize("sink", 16);
+        waitForSinkSize("sink", 20);
 
         /*
          * <pre>
