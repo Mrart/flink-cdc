@@ -639,9 +639,8 @@ public class CDCClient {
                             .updateLeader(tiRegion, notLeader.getLeader().getStoreId());
             if (newTiRegion != null) {
                 LOG.info(
-                        "Switch region {} to new leader region {} to specific leader due to kv return NotLeader.",
-                        notLeader.getRegionId(),
-                        newTiRegion.getLeader().getStoreId());
+                        "Switch region {} to new region {} to specific leader due to kv return NotLeader.",
+                        notLeader.getRegionId(),newTiRegion.getId());
             } else {
                 LOG.error(
                         "Invalidate region {} cache due to cannot find peer when updating leader.error is {}",
