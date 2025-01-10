@@ -328,6 +328,9 @@ public class CDCEventSource
                 }
                 break;
         }
+        if (before == null && after == null){
+            return;
+        }
         eventDispatcher.dispatchDataChangeEvent(
                 partition,
                 tableId,
@@ -338,11 +341,19 @@ public class CDCEventSource
     private Object[] getSerializableObject(
             long handle, RawKVEntry rawKVEntry, TiTableInfo tableInfo, Set<Integer> fieldIndex) {
         Object[] serializableObject = new Serializable[fieldIndex.size()];
+        try {
+            if (
+                rawKVEntry == null || rawKVEntry.getValue() == null){
+                return null;
+            }
 
-        Object[] tiKVValueAfter =
-                decodeObjects(rawKVEntry.getValue().toByteArray(), handle, tableInfo);
-        for (int index : fieldIndex) {
-            serializableObject[index] = tiKVValueAfter[index];
+            Object[] tiKVValueAfter =
+                    decodeObjects(rawKVEntry.getValue().toByteArray(), handle, tableInfo);
+            for (int index : fieldIndex) {
+                serializableObject[index] = tiKVValueAfter[index];
+            }
+        }catch (Exception e){
+            LOG.error("decode object error",e);
         }
         return serializableObject;
     }
