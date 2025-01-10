@@ -318,7 +318,7 @@ public class TiDBValueConverters extends JdbcValueConverters {
                 return (data) -> convertString(column, fieldDefn, StandardCharsets.UTF_8, data);
             case Types.TIME:
                 if (adaptiveTimeMicrosecondsPrecisionMode) {
-                    return data -> convertDurationToMicroseconds(column, fieldDefn, data);
+                    return (data) -> convertTime(column, fieldDefn, data);
                 }
             case Types.TIMESTAMP:
                 return ((ValueConverter)
@@ -714,5 +714,13 @@ public class TiDBValueConverters extends JdbcValueConverters {
         } else {
             return !(data instanceof Timestamp) ? data : ((Timestamp) data).toLocalDateTime();
         }
+    }
+
+    @Override
+    protected Object convertTime(Column column, Field fieldDefn, Object data) {
+        if (data instanceof String) {
+            data = Strings.asDuration((String) data);
+        }
+        return super.convertTime(column, fieldDefn, data);
     }
 }

@@ -320,7 +320,7 @@ public class PostgresSourceITCase extends PostgresTestBase {
                                 + " 'scan.startup.mode' = '%s',"
                                 + " 'scan.incremental.snapshot.chunk.size' = '100',"
                                 + " 'slot.name' = '%s', "
-                                + " 'debezium.slot.drop.on.stop' = 'true'"
+                                + " 'debezium.slot.drop.on.stop' = 'false'"
                                 + ")",
                         customDatabase.getHost(),
                         customDatabase.getDatabasePort(),

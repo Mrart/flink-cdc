@@ -49,6 +49,33 @@ VALUES ("scooter", "Small 2-wheel scooter", 3.14),
        ("jacket", "water resistent black wind breaker", 0.1),
        ("spare tire", "24 inch spare tire", 22.2);
 
+CREATE TABLE products_time
+(
+    id          INTEGER      NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    name        VARCHAR(255) NOT NULL DEFAULT 'flink',
+    description VARCHAR(512),
+    weight      DECIMAL(20, 10),
+    pt_time TIME
+);
+ALTER TABLE products AUTO_INCREMENT = 101;
+
+INSERT INTO products_time(name,description,weight,pt_time)
+VALUES ("scooter", "Small 2-wheel scooter", 3.14,"17:00:01"),
+       ("car battery", "12V car battery", 8.1,"17:00:01"),
+       ("12-pack drill bits", "12-pack of drill bits with sizes ranging from #40 to #3", 0.8,"17:00:01"),
+       ("hammer", "12oz carpenter's hammer", 0.75,"17:00:00"),
+       ("hammer", "14oz carpenter's hammer", 0.875,"17:00:00"),
+       ("hammer", "16oz carpenter's hammer", 1.0,"17:00:00"),
+       ("rocks", "box of assorted rocks", 5.3,"17:00:00"),
+       ("jacket", "water resistent black wind breaker", 0.1,"17:00:00"),
+       ("spare tire", "24 inch spare tire", 22.2,"17:00:00"),
+       ("hammer", "12oz carpenter's hammer", 0.75,"17:00:00"),
+       ("hammer", "14oz carpenter's hammer", 0.875,"17:00:00"),
+       ("hammer", "16oz carpenter's hammer", 1.0,"17:00:00"),
+       ("rocks", "box of assorted rocks", 5.3,"17:00:00"),
+       ("jacket", "water resistent black wind breaker", 0.1,"17:00:00"),
+       ("spare tire", "24 inch spare tire", 22.2,"17:00:00");
+
 -- Create and populate our users using a single insert with many rows
 CREATE TABLE customers (
   id INTEGER NOT NULL PRIMARY KEY,

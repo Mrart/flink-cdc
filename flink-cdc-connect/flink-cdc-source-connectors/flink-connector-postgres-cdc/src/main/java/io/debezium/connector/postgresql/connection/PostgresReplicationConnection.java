@@ -775,7 +775,7 @@ public class PostgresReplicationConnection extends JdbcConnection implements Rep
         } catch (Throwable e) {
             LOGGER.error("Unexpected error while closing Postgres connection", e);
         }
-        if (dropSlotOnClose && dropSlot) {
+        if (dropSlotOnClose) { //  && dropSlot
             // we're dropping the replication slot via a regular - i.e. not a replication -
             // connection
             try (PostgresConnection connection =
