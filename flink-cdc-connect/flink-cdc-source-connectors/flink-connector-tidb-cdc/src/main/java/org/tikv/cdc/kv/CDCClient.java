@@ -639,7 +639,7 @@ public class CDCClient {
                             .updateLeader(tiRegion, notLeader.getLeader().getStoreId());
             if (newTiRegion != null) {
                 LOG.info(
-                        "Switch region {} to leader {} to specific leader due to kv return NotLeader.",
+                        "Switch region {} to new leader region {} to specific leader due to kv return NotLeader.",
                         notLeader.getRegionId(),
                         newTiRegion.getLeader().getStoreId());
             } else {
