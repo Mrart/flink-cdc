@@ -644,8 +644,10 @@ public class CDCClient {
             throw new ClientException("kv client unreachable error");
         } else if (errorInfo.getErrorCode().hasCompatibility()) {
             throw new ClientException("tikv reported compatibility error, which is not expected");
-        } else  if (errorInfo.getErrorCode().hasClusterIdMismatch()) {
-            ////
+        } else  if (errorInfo.getErrorCode().hasClusterIdMismatch()){
+            throw new ClientException("tikv reported the request cluster ID mismatch error, which is not expected");
+        } else {
+            throw new ClientException("receive empty or unknown error msg");
         }
 
     }
