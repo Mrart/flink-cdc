@@ -58,6 +58,7 @@ public class StreamClient implements Closeable {
             if (requestStream == null) {
                 return false;
             }
+            LOG.info("Send change request to {}", createReq);
             requestStream.onNext(createReq);
             this.receiveEvent.getAndSet(rEvent);
         }

@@ -1,9 +1,8 @@
 package org.tikv.cdc.kv;
 
-import org.apache.flink.cdc.connectors.tidb.table.utils.TableKeyRangeUtils;
-
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import org.apache.flink.cdc.connectors.tidb.table.utils.TableKeyRangeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tikv.cdc.CDCConfig;
@@ -406,7 +405,7 @@ public class CDCClient {
                         }
 
                         if (event.hasResolvedTs()) {
-                            LOG.debug(
+                            LOG.info(
                                     "Current resolved ts is {},region {}",
                                     event.getResolvedTs().getTs(),
                                     event.getResolvedTs().getRegionsList());
