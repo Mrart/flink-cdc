@@ -703,7 +703,7 @@ public class CDCClient {
                 tableInfo -> {
                     requestRegionToStore(
                             errorInfo.getSingleRegionInfo(),
-                            this.checkpointTs.get(),
+                            this.checkpointTs.getAndIncrement(),// ignore error massege
                             tableInfo.getId());
                 });
     }
