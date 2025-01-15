@@ -1,13 +1,5 @@
 package org.apache.flink.cdc.connectors.tidb.source.fetch;
 
-import org.apache.flink.cdc.connectors.base.relational.JdbcSourceEventDispatcher;
-import org.apache.flink.cdc.connectors.base.source.meta.split.StreamSplit;
-import org.apache.flink.cdc.connectors.base.source.meta.wartermark.WatermarkKind;
-import org.apache.flink.cdc.connectors.tidb.source.config.TiDBConnectorConfig;
-import org.apache.flink.cdc.connectors.tidb.source.offset.CDCEventOffset;
-import org.apache.flink.cdc.connectors.tidb.source.offset.CDCEventOffsetContext;
-import org.apache.flink.util.function.SerializableFunction;
-
 import io.debezium.connector.tidb.TiDBPartition;
 import io.debezium.data.Envelope;
 import io.debezium.function.BlockingConsumer;
@@ -17,6 +9,13 @@ import io.debezium.relational.TableId;
 import io.debezium.relational.TableSchema;
 import io.debezium.util.Clock;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.flink.cdc.connectors.base.relational.JdbcSourceEventDispatcher;
+import org.apache.flink.cdc.connectors.base.source.meta.split.StreamSplit;
+import org.apache.flink.cdc.connectors.base.source.meta.wartermark.WatermarkKind;
+import org.apache.flink.cdc.connectors.tidb.source.config.TiDBConnectorConfig;
+import org.apache.flink.cdc.connectors.tidb.source.offset.CDCEventOffset;
+import org.apache.flink.cdc.connectors.tidb.source.offset.CDCEventOffsetContext;
+import org.apache.flink.util.function.SerializableFunction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tikv.cdc.exception.ClientException;
@@ -328,7 +327,7 @@ public class CDCEventSource
                 }
                 break;
         }
-        if (before == null && after == null) {
+        if (before == null && after == null){
             return;
         }
         eventDispatcher.dispatchDataChangeEvent(
@@ -342,7 +341,8 @@ public class CDCEventSource
             long handle, RawKVEntry rawKVEntry, TiTableInfo tableInfo, Set<Integer> fieldIndex) {
         Object[] serializableObject = new Serializable[fieldIndex.size()];
         try {
-            if (rawKVEntry == null || rawKVEntry.getValue() == null) {
+            if (
+                rawKVEntry == null || rawKVEntry.getValue() == null){
                 return null;
             }
 
@@ -351,8 +351,8 @@ public class CDCEventSource
             for (int index : fieldIndex) {
                 serializableObject[index] = tiKVValueAfter[index];
             }
-        } catch (Exception e) {
-            LOG.error("decode object error", e);
+        }catch (Exception e){
+            LOG.error("decode object error",e);
         }
         return serializableObject;
     }
