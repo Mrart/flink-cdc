@@ -16,6 +16,7 @@ import org.tikv.common.TiConfiguration;
 import org.tikv.common.TiSession;
 import org.tikv.common.meta.TiTableInfo;
 import org.tikv.common.region.TiRegion;
+import org.tikv.common.region.TiStore;
 import org.tikv.common.util.IDAllocator;
 import org.tikv.common.util.RangeSplitter;
 import org.tikv.kvproto.Cdcpb;
@@ -655,11 +656,18 @@ public class CDCClient {
                             .getRegionManager()
                             .updateLeader(tiRegion, notLeader.getLeader().getStoreId());
             if (newTiRegion != null) {
+                long storeId =  newTiRegion.getLeader().getStoreId();
+                TiStore newStore = this.tiSession
+                        .getRegionManager()
+                        .getStoreById(storeId);
+                errorInfo.getSingleRegionInfo().getRpcCtx().withNewStore(newStore);
+                errorInfo.getSingleRegionInfo().getRpcCtx().withNewAddress(newStore.getStore().getAddress());
                 LOG.info(
                         "Switch region {} to new region {} and new storeId {} to specific leader due to kv return NotLeader.",
                         notLeader.getRegionId(),
                         newTiRegion.getId(), newTiRegion.getLeader().getStoreId());
             } else {
+                errorInfo.getSingleRegionInfo().getRpcCtx().getTiStore()
                 LOG.error(
                         "Invalidate region {} cache due to cannot find peer when updating leader.error is {}",
                         notLeader.getRegionId(),

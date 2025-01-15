@@ -60,6 +60,29 @@ public class RPCContext {
         return this.channelFactory.getChannel(this.address, this.hostMapping);
     }
 
+    public RPCContext withNewAddress(String newAddress) {
+        return new Builder()
+                .setRegion(this.region)
+                .setMeta(this.meta)
+                .setPeer(this.peer)
+                .setTiStore(this.tiStore)
+                .setAddress(newAddress)
+                .setChannel(this.channelFactory)
+                .setHostMapping(this.hostMapping)
+                .build();
+    }
+
+    public RPCContext withNewStore(TiStore store) {
+        return new Builder()
+                .setRegion(this.region)
+                .setMeta(this.meta)
+                .setPeer(this.peer)
+                .setTiStore(store)
+                .setAddress(this.address)
+                .setChannel(this.channelFactory)
+                .setHostMapping(this.hostMapping)
+                .build();
+    }
     // Builder class
     public static class Builder {
         private TiRegion.RegionVerID region;
