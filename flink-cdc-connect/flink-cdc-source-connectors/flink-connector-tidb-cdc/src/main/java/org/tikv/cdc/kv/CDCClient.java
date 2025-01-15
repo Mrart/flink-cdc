@@ -630,7 +630,7 @@ public class CDCClient {
                 || errorInfo.getErrorCode() == null
                 || errorInfo.getSingleRegionInfo() == null) {
             LOG.debug("Error info is null.");
-            return;
+            throw new ClientException("receive empty or unknown error msg");
         }
         LOG.error(
                 "Region {} error is {}",
