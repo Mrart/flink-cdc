@@ -655,6 +655,10 @@ public class CDCClient {
                     this.tiSession
                             .getRegionManager()
                             .updateLeader(tiRegion, notLeader.getLeader().getStoreId());
+            if (tiRegion.getLeader().getStoreId() == notLeader.getLeader().getStoreId()) {
+                LOG.debug("Ignore store id {} has equal error message.", tiRegion.getLeader().getStoreId());
+                return;
+            }
             if (newTiRegion != null) {
                 long storeId =  newTiRegion.getLeader().getStoreId();
                 TiStore newStore = this.tiSession
