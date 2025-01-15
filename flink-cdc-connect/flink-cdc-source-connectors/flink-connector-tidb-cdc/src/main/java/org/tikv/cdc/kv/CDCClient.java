@@ -1,9 +1,8 @@
 package org.tikv.cdc.kv;
 
-import org.apache.flink.cdc.connectors.tidb.table.utils.TableKeyRangeUtils;
-
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import org.apache.flink.cdc.connectors.tidb.table.utils.TableKeyRangeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tikv.cdc.CDCConfig;
@@ -573,7 +572,7 @@ public class CDCClient {
                         "event feed receives a region error.regionId {}, oldRequestId {}, requestId {}, add {},streamId {}，error is {}",
                         event.getRegionId(),
                         state.getRequestID(),
-                        event.getRegionId(),
+                        event.getRequestId(),
                         worker.getStream().getAddr(),
                         worker.getStream().getStreamId(),
                         event.getError());
