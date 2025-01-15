@@ -1,8 +1,9 @@
 package org.tikv.cdc.kv;
 
+import org.apache.flink.cdc.connectors.tidb.table.utils.TableKeyRangeUtils;
+
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import org.apache.flink.cdc.connectors.tidb.table.utils.TableKeyRangeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tikv.cdc.CDCConfig;
@@ -146,7 +147,8 @@ public class CDCClient {
                                         }
                                         // output.
                                         if (regionFeedEvent.getRawKVEntry() != null) {
-                                            checkpointTs.getAndSet(regionFeedEvent.getRawKVEntry().getCrts());
+                                            checkpointTs.getAndSet(
+                                                    regionFeedEvent.getRawKVEntry().getCrts());
                                             eventListener.notify(
                                                     output(
                                                             regionFeedEvent.getRawKVEntry(),
@@ -358,8 +360,7 @@ public class CDCClient {
             // this store is requested, a new stream to this store will be created.
             deleteStream(streamClient);
             // Remove the region from pendingRegions. If it's already removed, it should be already
-            // retried
-            // by `receiveFromStream`, so no need to retry here.
+            // retried by `receiveFromStream`, so no need to retry here.
             streamClient.getRegions().takeByRequestID(requestId);
         }
     }
@@ -638,7 +639,7 @@ public class CDCClient {
                 errorInfo.getErrorCode());
         if (errorInfo.getErrorCode().hasNotLeader()) {
             Errorpb.NotLeader notLeader = errorInfo.getErrorCode().getNotLeader();
-            if(notLeader.getLeader() == null) {
+            if (notLeader.getLeader() == null) {
                 divideToRegions(errorInfo.getSingleRegionInfo().getSpan());
                 return;
             }
@@ -680,12 +681,20 @@ public class CDCClient {
             throw new ClientException(
                     "tikv reported the request cluster ID mismatch error, which is not expected");
         } else {
-            throw new ClientException("receive empty or unknown error msg");
+            TiRegion tiRegion =
+                    this.tiSession
+                            .getRegionManager()
+                            .getRegionById(errorInfo.getSingleRegionInfo().getVerID().getId());
+            this.tiSession.getRegionManager().invalidateRegion(tiRegion);
+            throw new ClientException("Receive empty or unknown error msg");
         }
-        Optional<TiTableInfo> tableInfoOptional =
-                getTableInfo(dbName, tableName);
-        tableInfoOptional.ifPresent(tableInfo -> {
-            requestRegionToStore(errorInfo.getSingleRegionInfo(), this.checkpointTs.get(), tableInfo.getId());
-        });
+        Optional<TiTableInfo> tableInfoOptional = getTableInfo(dbName, tableName);
+        tableInfoOptional.ifPresent(
+                tableInfo -> {
+                    requestRegionToStore(
+                            errorInfo.getSingleRegionInfo(),
+                            this.checkpointTs.get(),
+                            tableInfo.getId());
+                });
     }
 }
