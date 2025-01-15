@@ -667,7 +667,6 @@ public class CDCClient {
                         notLeader.getRegionId(),
                         newTiRegion.getId(), newTiRegion.getLeader().getStoreId());
             } else {
-                errorInfo.getSingleRegionInfo().getRpcCtx().getTiStore()
                 LOG.error(
                         "Invalidate region {} cache due to cannot find peer when updating leader.error is {}",
                         notLeader.getRegionId(),
