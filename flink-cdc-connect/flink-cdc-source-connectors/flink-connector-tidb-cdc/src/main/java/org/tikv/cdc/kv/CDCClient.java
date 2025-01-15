@@ -57,6 +57,7 @@ public class CDCClient {
             new ConcurrentLinkedQueue<>();
     private final TableStoreStats tableStoreStats = new TableStoreStats();
     private final AtomicLong resolvedTs = new AtomicLong(1735089007000L << 18);
+    private final AtomicLong checkpointTs = new AtomicLong(0);
     private final Consumer<RegionFeedEvent> eventConsumer;
     private final Consumer<RegionErrorInfo> errorInfoConsumer;
     private final List<EventListener> listeners = new ArrayList<>();
@@ -145,6 +146,7 @@ public class CDCClient {
                                         }
                                         // output.
                                         if (regionFeedEvent.getRawKVEntry() != null) {
+                                            checkpointTs.getAndSet(regionFeedEvent.getRawKVEntry().getCrts());
                                             eventListener.notify(
                                                     output(
                                                             regionFeedEvent.getRawKVEntry(),
@@ -624,15 +626,30 @@ public class CDCClient {
     }
 
     private void handleError(RegionErrorInfo errorInfo) {
-        if (errorInfo == null || errorInfo.getErrorCode() == null || errorInfo.getSingleRegionInfo() == null) {
+        if (errorInfo == null
+                || errorInfo.getErrorCode() == null
+                || errorInfo.getSingleRegionInfo() == null) {
             LOG.debug("Error info is null.");
             return;
         }
-        LOG.error("Region {} error is {}", errorInfo.getSingleRegionInfo().getVerID(), errorInfo.getErrorCode());
+        LOG.error(
+                "Region {} error is {}",
+                errorInfo.getSingleRegionInfo().getVerID(),
+                errorInfo.getErrorCode());
         if (errorInfo.getErrorCode().hasNotLeader()) {
             Errorpb.NotLeader notLeader = errorInfo.getErrorCode().getNotLeader();
+            if(notLeader.getLeader() == null) {
+                divideToRegions(errorInfo.getSingleRegionInfo().getSpan());
+                return;
+            }
             TiRegion tiRegion =
                     this.tiSession.getRegionManager().getRegionById(notLeader.getRegionId());
+            LOG.warn(
+                    String.format(
+                            "NotLeader Error with region id %d and store id %d, new store id %d",
+                            tiRegion.getId(),
+                            tiRegion.getLeader().getStoreId(),
+                            notLeader.getLeader().getStoreId()));
             TiRegion newTiRegion =
                     this.tiSession
                             .getRegionManager()
@@ -640,17 +657,21 @@ public class CDCClient {
             if (newTiRegion != null) {
                 LOG.info(
                         "Switch region {} to new region {} to specific leader due to kv return NotLeader.",
-                        notLeader.getRegionId(),newTiRegion.getId());
+                        notLeader.getRegionId(),
+                        newTiRegion.getId());
             } else {
                 LOG.error(
                         "Invalidate region {} cache due to cannot find peer when updating leader.error is {}",
-                        notLeader.getRegionId(), errorInfo.getErrorCode());
+                        notLeader.getRegionId(),
+                        errorInfo.getErrorCode());
                 this.tiSession.getRegionManager().invalidateRegion(tiRegion);
             }
         } else if (errorInfo.getErrorCode().hasEpochNotMatch()) {
             divideToRegions(errorInfo.getSingleRegionInfo().getSpan());
+            return;
         } else if (errorInfo.getErrorCode().hasRegionNotFound()) {
             divideToRegions(errorInfo.getSingleRegionInfo().getSpan());
+            return;
         } else if (errorInfo.getErrorCode().hasDuplicateRequest()) {
             throw new ClientException("kv client unreachable error");
         } else if (errorInfo.getErrorCode().hasCompatibility()) {
@@ -661,5 +682,10 @@ public class CDCClient {
         } else {
             throw new ClientException("receive empty or unknown error msg");
         }
+        Optional<TiTableInfo> tableInfoOptional =
+                getTableInfo(dbName, tableName);
+        tableInfoOptional.ifPresent(tableInfo -> {
+            requestRegionToStore(errorInfo.getSingleRegionInfo(), this.checkpointTs.get(), tableInfo.getId());
+        });
     }
 }
