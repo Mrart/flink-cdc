@@ -78,8 +78,6 @@ public class RegionWorker {
                 LOGGER.info("receive admin event.requestId:{}", event.getEvent().getRequestId());
             }
             if (event.getEvent().hasError()) {
-                // 错误处理
-                LOGGER.info("receive error event.error:{}", event.getEvent().getError());
                 regionErrorConsumer.accept(
                         new RegionErrorInfo(
                                 event.getRegionFeedState().getSri(), event.getEvent().getError()));

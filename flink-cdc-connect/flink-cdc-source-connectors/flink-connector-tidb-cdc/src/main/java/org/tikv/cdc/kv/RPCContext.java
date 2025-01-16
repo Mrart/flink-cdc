@@ -11,8 +11,8 @@ public class RPCContext {
     private final TiRegion.RegionVerID region;
     private final Metapb.Region meta;
     private final Metapb.Peer peer;
-    private final TiStore tiStore;
-    private final String address;
+    private TiStore tiStore;
+    private String address;
     private final HostMapping hostMapping;
     private final ChannelFactory channelFactory;
 
@@ -52,6 +52,14 @@ public class RPCContext {
         return address;
     }
 
+    public void setTiStore(TiStore tiStore) {
+        this.tiStore = tiStore;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
+    }
+
     public ChannelFactory getChannelFactory() {
         return channelFactory;
     }
@@ -60,29 +68,6 @@ public class RPCContext {
         return this.channelFactory.getChannel(this.address, this.hostMapping);
     }
 
-    public RPCContext withNewAddress(String newAddress) {
-        return new Builder()
-                .setRegion(this.region)
-                .setMeta(this.meta)
-                .setPeer(this.peer)
-                .setTiStore(this.tiStore)
-                .setAddress(newAddress)
-                .setChannel(this.channelFactory)
-                .setHostMapping(this.hostMapping)
-                .build();
-    }
-
-    public RPCContext withNewStore(TiStore store) {
-        return new Builder()
-                .setRegion(this.region)
-                .setMeta(this.meta)
-                .setPeer(this.peer)
-                .setTiStore(store)
-                .setAddress(this.address)
-                .setChannel(this.channelFactory)
-                .setHostMapping(this.hostMapping)
-                .build();
-    }
     // Builder class
     public static class Builder {
         private TiRegion.RegionVerID region;

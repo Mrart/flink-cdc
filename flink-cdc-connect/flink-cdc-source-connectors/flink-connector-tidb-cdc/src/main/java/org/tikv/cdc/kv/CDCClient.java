@@ -1,8 +1,9 @@
 package org.tikv.cdc.kv;
 
+import org.apache.flink.cdc.connectors.tidb.table.utils.TableKeyRangeUtils;
+
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import org.apache.flink.cdc.connectors.tidb.table.utils.TableKeyRangeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tikv.cdc.CDCConfig;
@@ -62,6 +63,7 @@ public class CDCClient {
     private final Consumer<RegionFeedEvent> eventConsumer;
     private final Consumer<RegionErrorInfo> errorInfoConsumer;
     private final List<EventListener> listeners = new ArrayList<>();
+    public static final int NO_LEADER_STORE_ID = 0;
     private final AtomicBoolean started = new AtomicBoolean(false);
     private final ExecutorService clientExecutor = Executors.newFixedThreadPool(1);
     private final List<CompletableFuture> completableFutures = new ArrayList<>(1);
@@ -639,43 +641,60 @@ public class CDCClient {
                 errorInfo.getErrorCode());
         if (errorInfo.getErrorCode().hasNotLeader()) {
             Errorpb.NotLeader notLeader = errorInfo.getErrorCode().getNotLeader();
-            if (notLeader.getLeader() == null) {
-                divideToRegions(errorInfo.getSingleRegionInfo().getSpan());
-                return;
-            }
-            TiRegion tiRegion =
+            long newStoreId = notLeader.getLeader().getStoreId();
+            TiRegion oldRegion =
                     this.tiSession.getRegionManager().getRegionById(notLeader.getRegionId());
             LOG.warn(
                     String.format(
                             "NotLeader Error with region id %d and store id %d, new store id %d",
-                            tiRegion.getId(),
-                            tiRegion.getLeader().getStoreId(),
-                            notLeader.getLeader().getStoreId()));
-            TiRegion newTiRegion =
-                    this.tiSession
-                            .getRegionManager()
-                            .updateLeader(tiRegion, notLeader.getLeader().getStoreId());
-            if (tiRegion.getLeader().getStoreId() == notLeader.getLeader().getStoreId()) {
-                LOG.debug("Ignore store id {} has equal error message.", tiRegion.getLeader().getStoreId());
-                return;
-            }
-            if (newTiRegion != null) {
-                long storeId =  newTiRegion.getLeader().getStoreId();
-                TiStore newStore = this.tiSession
-                        .getRegionManager()
-                        .getStoreById(storeId);
-                errorInfo.getSingleRegionInfo().getRpcCtx().withNewStore(newStore);
-                errorInfo.getSingleRegionInfo().getRpcCtx().withNewAddress(newStore.getStore().getAddress());
-                LOG.info(
-                        "Switch region {} to new region {} and new storeId {} to specific leader due to kv return NotLeader.",
-                        notLeader.getRegionId(),
-                        newTiRegion.getId(), newTiRegion.getLeader().getStoreId());
+                            oldRegion.getId(), oldRegion.getLeader().getStoreId(), newStoreId));
+            if (newStoreId != NO_LEADER_STORE_ID) {
+                TiRegion newRegion =
+                        this.tiSession
+                                .getRegionManager()
+                                .updateLeader(oldRegion, notLeader.getLeader().getStoreId());
+                if (newRegion == null) {
+                    LOG.error(
+                            "Invalidate region {} cache due to cannot find peer when updating leader.error info is {}",
+                            notLeader.getRegionId(),
+                            errorInfo.getErrorCode());
+                    this.tiSession.getRegionManager().onRequestFail(oldRegion);
+                    divideToRegions(errorInfo.getSingleRegionInfo().getSpan());
+                    return;
+                }
+                // When switch leader fails or the region changed its region epoch,
+                // it would be necessary to re-split task's key range for new region.
+                if (!oldRegion.getRegionEpoch().equals(newRegion.getRegionEpoch())) {
+                    divideToRegions(errorInfo.getSingleRegionInfo().getSpan());
+                    return;
+                }
+                if (oldRegion.getLeader().getStoreId() == notLeader.getLeader().getStoreId()) {
+                    LOG.debug(
+                            "Ignore store id {} has equal error message {}.",
+                            oldRegion.getLeader().getStoreId(),
+                            errorInfo.getErrorCode());
+                    return;
+                } else {
+                    TiStore newStore = this.tiSession.getRegionManager().getStoreById(newStoreId);
+                    // update store add.
+                    errorInfo.getSingleRegionInfo().getRpcCtx().setTiStore(newStore);
+                    String address = newStore.getStore().getAddress();
+                    if (newStore.getProxyStore() != null) {
+                        address = newStore.getProxyStore().getAddress();
+                    }
+                    errorInfo.getSingleRegionInfo().getRpcCtx().setAddress(address);
+                    LOG.info(
+                            "Switch region {} to new region {} and new storeId {} to specific leader due to kv return NotLeader.",
+                            notLeader.getRegionId(),
+                            newRegion.getId(),
+                            newRegion.getLeader().getStoreId());
+                }
             } else {
-                LOG.error(
-                        "Invalidate region {} cache due to cannot find peer when updating leader.error is {}",
-                        notLeader.getRegionId(),
-                        errorInfo.getErrorCode());
-                this.tiSession.getRegionManager().invalidateRegion(tiRegion);
+                LOG.info("Received zero store id, from region {} try next time", oldRegion.getId());
+                throw new ClientException(
+                        String.format(
+                                "Received zero store id, from region %d try next time",
+                                oldRegion.getId()));
             }
         } else if (errorInfo.getErrorCode().hasEpochNotMatch()) {
             divideToRegions(errorInfo.getSingleRegionInfo().getSpan());
@@ -695,7 +714,7 @@ public class CDCClient {
                     this.tiSession
                             .getRegionManager()
                             .getRegionById(errorInfo.getSingleRegionInfo().getVerID().getId());
-            this.tiSession.getRegionManager().invalidateRegion(tiRegion);
+            this.tiSession.getRegionManager().onRequestFail(tiRegion);
             throw new ClientException("Receive empty or unknown error msg");
         }
         Optional<TiTableInfo> tableInfoOptional = getTableInfo(dbName, tableName);
@@ -703,7 +722,7 @@ public class CDCClient {
                 tableInfo -> {
                     requestRegionToStore(
                             errorInfo.getSingleRegionInfo(),
-                            this.checkpointTs.getAndIncrement(),// ignore error massege
+                            this.checkpointTs.getAndIncrement(), // ignore error massege
                             tableInfo.getId());
                 });
     }
