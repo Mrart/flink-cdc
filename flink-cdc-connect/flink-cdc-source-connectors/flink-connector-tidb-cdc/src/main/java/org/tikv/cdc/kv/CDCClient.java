@@ -659,7 +659,21 @@ public class CDCClient {
                             notLeader.getRegionId(),
                             errorInfo.getErrorCode());
                     this.tiSession.getRegionManager().onRequestFail(oldRegion);
-                    divideToRegions(errorInfo.getSingleRegionInfo().getSpan());
+                    List<RegionStateManager.SingleRegionInfo> sriList =
+                            divideToRegions(errorInfo.getSingleRegionInfo().getSpan());
+                    Optional<TiTableInfo> tableInfoOptional = getTableInfo(dbName, tableName);
+                    sriList.forEach(
+                            singleRegionInfo -> {
+                                tableInfoOptional.ifPresent(
+                                        tableInfo -> {
+                                            requestRegionToStore(
+                                                    errorInfo.getSingleRegionInfo(),
+                                                    this.checkpointTs
+                                                            .getAndIncrement(), // ignore error
+                                                    // massege
+                                                    tableInfo.getId());
+                                        });
+                            });
                     return;
                 }
                 // When switch leader fails or the region changed its region epoch,
