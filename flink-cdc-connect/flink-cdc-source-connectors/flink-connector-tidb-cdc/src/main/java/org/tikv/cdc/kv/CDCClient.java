@@ -1,9 +1,8 @@
 package org.tikv.cdc.kv;
 
-import org.apache.flink.cdc.connectors.tidb.table.utils.TableKeyRangeUtils;
-
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import org.apache.flink.cdc.connectors.tidb.table.utils.TableKeyRangeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tikv.cdc.CDCConfig;
@@ -15,6 +14,7 @@ import org.tikv.cdc.frontier.KeyRangeFrontier;
 import org.tikv.cdc.model.*;
 import org.tikv.common.TiConfiguration;
 import org.tikv.common.TiSession;
+import org.tikv.common.event.CacheInvalidateEvent;
 import org.tikv.common.meta.TiTableInfo;
 import org.tikv.common.region.TiRegion;
 import org.tikv.common.region.TiStore;
@@ -41,6 +41,7 @@ import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -662,7 +663,7 @@ public class CDCClient {
                         newRegionId,
                         errorInfo.getErrorCode());
                 this.tiSession.getRegionManager().onRequestFail(oldRegion);
-                sriList = divideToRegions(errorInfo.getSingleRegionInfo().getSpan());
+                notifyRegionLeaderError(oldRegion);
             } else {
                 // When switch leader fails or the region changed its region epoch,
                 // it would be necessary to re-split task's key range for new region.
@@ -726,5 +727,43 @@ public class CDCClient {
                                         errorInfo.getSingleRegionInfo(), tableInfo.getId());
                             });
                 });
+    }
+
+    private void notifyRegionLeaderError(TiRegion ctxRegion) {
+        notifyRegionRequestError(ctxRegion, 0, CacheInvalidateEvent.CacheType.LEADER);
+    }
+
+    private void notifyRegionRequestError(
+            TiRegion ctxRegion, long storeId, CacheInvalidateEvent.CacheType type) {
+        CacheInvalidateEvent event;
+        // When store(region) id is invalid,
+        // it implies that the error was not caused by store(region) error.
+        switch (type) {
+            case REGION:
+            case LEADER:
+                event = new CacheInvalidateEvent(ctxRegion.getId(), 0, true, false, type);
+                break;
+            case REGION_STORE:
+                event = new CacheInvalidateEvent(ctxRegion.getId(), storeId, true, true, type);
+                break;
+            case REQ_FAILED:
+                event = new CacheInvalidateEvent(0, 0, false, false, type);
+                break;
+            default:
+                throw new IllegalArgumentException("Unexpect invalid cache invalid type " + type);
+        }
+        if (this.tiSession.getRegionManager().getCacheInvalidateCallbackList() != null) {
+            for (Function<CacheInvalidateEvent, Void> cacheInvalidateCallBack :
+                    this.tiSession.getRegionManager().getCacheInvalidateCallbackList()) {
+                this.tiSession.getRegionManager().getCallBackThreadPool().submit(
+                        () -> {
+                            try {
+                                cacheInvalidateCallBack.apply(event);
+                            } catch (Exception e) {
+                                LOG.error(String.format("CacheInvalidCallBack failed %s", e));
+                            }
+                        });
+            }
+        }
     }
 }
