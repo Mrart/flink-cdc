@@ -26,7 +26,6 @@ public class RegionWorker {
     private final EventFeedStream stream;
     private final Consumer<RegionFeedEvent> eventConsumer;
     private final Consumer<RegionErrorInfo> regionErrorConsumer;
-    private final CDCConfig cdcConfig;
     private final RegionStateManager.RegionStateManagerImpl rstManager;
     private final int workerConcurrency;
     private final LinkedBlockingQueue<RtsUpdateEvent> rtsUpdateQueque = new LinkedBlockingQueue();
@@ -41,7 +40,6 @@ public class RegionWorker {
         this.stream = stream;
         this.eventConsumer = eventConsumer;
         this.regionErrorConsumer = regionErrorConsumer;
-        this.cdcConfig = cdcConfig;
         this.workerConcurrency = cdcConfig.getWorkerPoolSize();
         this.executorService = Executors.newFixedThreadPool(cdcConfig.getWorkerPoolSize());
         this.rstManager =
@@ -187,7 +185,7 @@ public class RegionWorker {
             }
             regionKeyRange.add(new RegionKeyRange(regionID, state.getSri().getSpan()));
         }
-        if (regionKeyRange.size() == 0) {
+        if (regionKeyRange.isEmpty()) {
             return;
         }
         rtsUpdateQueque.offer(new RtsUpdateEvent(regions, resovledTs));
