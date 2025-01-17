@@ -1,8 +1,9 @@
 package org.tikv.cdc.kv;
 
+import org.apache.flink.cdc.connectors.tidb.table.utils.TableKeyRangeUtils;
+
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import org.apache.flink.cdc.connectors.tidb.table.utils.TableKeyRangeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tikv.cdc.CDCConfig;
@@ -105,7 +106,7 @@ public class CDCClient {
     }
 
     public void start(final long startTs) {
-        LOG.debug(
+        LOG.info(
                 "Start cdc client at time {},database {} table {} listening.",
                 startTs,
                 dbName,
@@ -663,34 +664,25 @@ public class CDCClient {
                         newRegionId,
                         errorInfo.getErrorCode());
                 this.tiSession.getRegionManager().onRequestFail(oldRegion);
-                notifyRegionLeaderError(oldRegion);
-                return;
+                throw new ClientException("Update leader failed");
             } else {
                 // When switch leader fails or the region changed its region epoch,
                 // it would be necessary to re-split task's key range for new region.
                 if (!oldRegion.getRegionEpoch().equals(newRegion.getRegionEpoch())) {
                     sriList = divideToRegions(errorInfo.getSingleRegionInfo().getSpan());
                 } else {
-                    if (oldRegion.getLeader().getStoreId() == newStoreId) {
-                        LOG.info(
-                                "Ignore store id [{}] has equal error message {}.",
-                                oldRegion.getLeader().getStoreId(),
-                                errorInfo.getErrorCode());
-                    } else {
-                        TiStore newStore =
-                                this.tiSession.getRegionManager().getStoreById(newStoreId);
-                        // update store add.
-                        errorInfo.getSingleRegionInfo().getRpcCtx().setTiStore(newStore);
-                        String address = newStore.getStore().getAddress();
-                        if (newStore.getProxyStore() != null) {
-                            address = newStore.getProxyStore().getAddress();
-                        }
-                        errorInfo.getSingleRegionInfo().getRpcCtx().setAddress(address);
-                        LOG.info(
-                                "Switch region [{}] to new storeId [{}] to specific leader due to kv return NotLeader.",
-                                newRegionId,
-                                newRegion.getLeader().getStoreId());
+                    TiStore newStore = this.tiSession.getRegionManager().getStoreById(newStoreId);
+                    // update store add.
+                    errorInfo.getSingleRegionInfo().getRpcCtx().setTiStore(newStore);
+                    String address = newStore.getStore().getAddress();
+                    if (newStore.getProxyStore() != null) {
+                        address = newStore.getProxyStore().getAddress();
                     }
+                    errorInfo.getSingleRegionInfo().getRpcCtx().setAddress(address);
+                    LOG.info(
+                            "Switch region [{}] to new storeId [{}] to specific leader due to kv return NotLeader.",
+                            newRegionId,
+                            newRegion.getLeader().getStoreId());
                 }
             }
         } else if (errorInfo.getErrorCode().hasEpochNotMatch()) {
@@ -756,14 +748,18 @@ public class CDCClient {
         if (this.tiSession.getRegionManager().getCacheInvalidateCallbackList() != null) {
             for (Function<CacheInvalidateEvent, Void> cacheInvalidateCallBack :
                     this.tiSession.getRegionManager().getCacheInvalidateCallbackList()) {
-                this.tiSession.getRegionManager().getCallBackThreadPool().submit(
-                        () -> {
-                            try {
-                                cacheInvalidateCallBack.apply(event);
-                            } catch (Exception e) {
-                                LOG.error(String.format("CacheInvalidCallBack failed %s", e));
-                            }
-                        });
+                this.tiSession
+                        .getRegionManager()
+                        .getCallBackThreadPool()
+                        .submit(
+                                () -> {
+                                    try {
+                                        cacheInvalidateCallBack.apply(event);
+                                    } catch (Exception e) {
+                                        LOG.error(
+                                                String.format("CacheInvalidCallBack failed %s", e));
+                                    }
+                                });
             }
         }
     }
