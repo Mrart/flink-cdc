@@ -664,6 +664,7 @@ public class CDCClient {
                         errorInfo.getErrorCode());
                 this.tiSession.getRegionManager().onRequestFail(oldRegion);
                 notifyRegionLeaderError(oldRegion);
+                return;
             } else {
                 // When switch leader fails or the region changed its region epoch,
                 // it would be necessary to re-split task's key range for new region.
