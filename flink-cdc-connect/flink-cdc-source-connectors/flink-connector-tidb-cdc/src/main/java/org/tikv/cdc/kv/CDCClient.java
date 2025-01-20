@@ -1,9 +1,7 @@
 package org.tikv.cdc.kv;
 
-import org.apache.flink.cdc.connectors.tidb.table.utils.TableKeyRangeUtils;
-
 import com.google.common.collect.Lists;
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import org.apache.flink.cdc.connectors.tidb.table.utils.TableKeyRangeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tikv.cdc.CDCConfig;
@@ -12,10 +10,15 @@ import org.tikv.cdc.TableStoreStats;
 import org.tikv.cdc.exception.ClientException;
 import org.tikv.cdc.frontier.Frontier;
 import org.tikv.cdc.frontier.KeyRangeFrontier;
-import org.tikv.cdc.model.*;
+import org.tikv.cdc.model.OpType;
+import org.tikv.cdc.model.PolymorphicEvent;
+import org.tikv.cdc.model.RawKVEntry;
+import org.tikv.cdc.model.RegionErrorInfo;
+import org.tikv.cdc.model.RegionFeedEvent;
+import org.tikv.cdc.model.RegionKeyRange;
+import org.tikv.cdc.model.RegionStatefulEvent;
 import org.tikv.common.TiConfiguration;
 import org.tikv.common.TiSession;
-import org.tikv.common.event.CacheInvalidateEvent;
 import org.tikv.common.meta.TiTableInfo;
 import org.tikv.common.region.TiRegion;
 import org.tikv.common.region.TiStore;
@@ -24,12 +27,7 @@ import org.tikv.common.util.RangeSplitter;
 import org.tikv.kvproto.Cdcpb;
 import org.tikv.kvproto.Coprocessor.KeyRange;
 import org.tikv.kvproto.Kvrpcpb;
-import org.tikv.shade.io.grpc.ManagedChannel;
 import org.tikv.shade.io.grpc.stub.StreamObserver;
-import org.tikv.shade.io.netty.channel.MultithreadEventLoopGroup;
-import org.tikv.shade.io.netty.channel.epoll.Epoll;
-import org.tikv.shade.io.netty.channel.epoll.EpollEventLoopGroup;
-import org.tikv.shade.io.netty.channel.nio.NioEventLoopGroup;
 import org.tikv.shade.io.netty.util.concurrent.FastThreadLocalThread;
 
 import java.time.Duration;
@@ -38,11 +36,17 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.*;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -102,7 +106,16 @@ public class CDCClient {
                         LOG.error("Events buffer put error!", e);
                     }
                 };
-        errorInfoConsumer = this::handleError;
+            this.errorInfoConsumer = (ed) -> {
+                try {
+                    handleError(ed);
+                } catch (ClientException e) {
+                    LOG.error("Handle error!", e);
+                    for (EventListener listener : listeners) {
+                        listener.onException(e);
+                    }
+                }
+            };
     }
 
     public void start(final long startTs) {
@@ -134,10 +147,15 @@ public class CDCClient {
                                 List<RegionStateManager.SingleRegionInfo> singleRegionInfos =
                                         divideToRegions(keyRange);
                                 for (RegionStateManager.SingleRegionInfo sri : singleRegionInfos) {
-                                    requestRegionToStore(sri, tableInfoOptional.get().getId());
+                                    try {
+                                        requestRegionToStore(sri, tableInfoOptional.get().getId());
+                                    } catch (ClientException ce) {
+                                        for (EventListener eventListener : listeners) {
+                                            eventListener.onException(ce);
+                                        }
+                                    }
                                 }
                                 while (isRunning()) {
-                                    long startTime = Instant.now().toEpochMilli();
                                     Instant lastAdvancedTime = Instant.now();
                                     Instant lastLogSlowRangeTime = Instant.now();
                                     long lastResolvedTs = startTs;
@@ -354,7 +372,7 @@ public class CDCClient {
             try {
                 streamClient.close();
             } catch (Exception ex) {
-                throw new RuntimeException(ex);
+                throw new ClientException("Closed stream client failed", ex);
             }
             // todo sendRequestToStoreError.
             // Delete the stream from the cache so that when next time a region of
@@ -428,33 +446,8 @@ public class CDCClient {
                         LOG.warn("Server completed streaming");
                     }
                 };
-        GRPCClient grpcClient = buildGrpcClient(stream.getChannel());
-        StreamClient streamClient = new StreamClient(grpcClient);
-        boolean started = streamClient.StartReceiver(request, responseObserver);
+        boolean started = stream.StartReceiver(request, responseObserver);
         LOG.info("Grpc Receiver started status: {}", started);
-    }
-
-    private GRPCClient buildGrpcClient(ManagedChannel channel) {
-        ThreadFactory tfac =
-                new ThreadFactoryBuilder()
-                        .setDaemon(true)
-                        .setThreadFactory(EventThread::new)
-                        .setNameFormat("event-pool-%d")
-                        .build();
-        MultithreadEventLoopGroup internalExecutor;
-        if (Epoll.isAvailable()) {
-            internalExecutor = new EpollEventLoopGroup(cdcConfig.getWorkerPoolSize(), tfac);
-        } else {
-            internalExecutor = new NioEventLoopGroup(cdcConfig.getWorkerPoolSize(), tfac);
-        }
-        Executor userExecutor =
-                Executors.newCachedThreadPool(
-                        new ThreadFactoryBuilder()
-                                .setDaemon(true)
-                                .setNameFormat("callback-thread-%d")
-                                .build());
-
-        return new GRPCClient(channel, internalExecutor, userExecutor);
     }
 
     protected static final class EventThread extends FastThreadLocalThread {
@@ -493,7 +486,7 @@ public class CDCClient {
             deleteStreamClient.close();
         } catch (Exception e) {
             LOG.error("Region stream client {} closed failed.", deleteStreamClient.getAddr(), e);
-            throw new RuntimeException(e);
+            throw new ClientException(e);
         }
         storeStreamCache.remove(deleteStreamClient.getAddr());
         LOG.info(
@@ -627,7 +620,7 @@ public class CDCClient {
         }
     }
 
-    private void handleError(RegionErrorInfo errorInfo) {
+    private void handleError(RegionErrorInfo errorInfo) throws ClientException {
         if (errorInfo == null
                 || errorInfo.getErrorCode() == null
                 || errorInfo.getSingleRegionInfo() == null) {
@@ -713,54 +706,11 @@ public class CDCClient {
             sriList.add(errorInfo.getSingleRegionInfo());
         }
         sriList.forEach(
-                singleRegionInfo -> {
+                singleRegionInfo ->
                     tableInfoOptional.ifPresent(
-                            tableInfo -> {
+                            tableInfo ->
                                 requestRegionToStore(
-                                        errorInfo.getSingleRegionInfo(), tableInfo.getId());
-                            });
-                });
-    }
-
-    private void notifyRegionLeaderError(TiRegion ctxRegion) {
-        notifyRegionRequestError(ctxRegion, 0, CacheInvalidateEvent.CacheType.LEADER);
-    }
-
-    private void notifyRegionRequestError(
-            TiRegion ctxRegion, long storeId, CacheInvalidateEvent.CacheType type) {
-        CacheInvalidateEvent event;
-        // When store(region) id is invalid,
-        // it implies that the error was not caused by store(region) error.
-        switch (type) {
-            case REGION:
-            case LEADER:
-                event = new CacheInvalidateEvent(ctxRegion.getId(), 0, true, false, type);
-                break;
-            case REGION_STORE:
-                event = new CacheInvalidateEvent(ctxRegion.getId(), storeId, true, true, type);
-                break;
-            case REQ_FAILED:
-                event = new CacheInvalidateEvent(0, 0, false, false, type);
-                break;
-            default:
-                throw new IllegalArgumentException("Unexpect invalid cache invalid type " + type);
-        }
-        if (this.tiSession.getRegionManager().getCacheInvalidateCallbackList() != null) {
-            for (Function<CacheInvalidateEvent, Void> cacheInvalidateCallBack :
-                    this.tiSession.getRegionManager().getCacheInvalidateCallbackList()) {
-                this.tiSession
-                        .getRegionManager()
-                        .getCallBackThreadPool()
-                        .submit(
-                                () -> {
-                                    try {
-                                        cacheInvalidateCallBack.apply(event);
-                                    } catch (Exception e) {
-                                        LOG.error(
-                                                String.format("CacheInvalidCallBack failed %s", e));
-                                    }
-                                });
-            }
-        }
+                                        errorInfo.getSingleRegionInfo(), tableInfo.getId()))
+                );
     }
 }

@@ -137,7 +137,7 @@ public class TiDBTableSourceFactory implements DynamicTableSourceFactory {
 
         // 作用
         helper.validateExcept(
-                JdbcUrlUtils.PROPERTIES_PREFIX, DebeziumOptions.DEBEZIUM_OPTIONS_PREFIX);
+                JdbcUrlUtils.PROPERTIES_PREFIX, DebeziumOptions.DEBEZIUM_OPTIONS_PREFIX, TiKVOptions.TIKV_OPTIONS_PREFIX);
 
         final ReadableConfig config = helper.getOptions();
 

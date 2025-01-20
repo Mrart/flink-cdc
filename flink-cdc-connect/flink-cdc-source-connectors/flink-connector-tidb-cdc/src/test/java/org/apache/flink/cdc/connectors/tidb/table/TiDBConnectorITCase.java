@@ -24,7 +24,6 @@ import org.apache.flink.table.api.TableResult;
 import org.apache.flink.table.api.bridge.java.StreamTableEnvironment;
 import org.apache.flink.table.planner.factories.TestValuesTableFactory;
 import org.apache.flink.table.utils.LegacyRowResource;
-
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -38,7 +37,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /** Integration tests for TiDB change stream event SQL source. */
 public class TiDBConnectorITCase extends TiDBTestBase {
@@ -81,7 +82,8 @@ public class TiDBConnectorITCase extends TiDBTestBase {
                                 + " 'database-name' = '%s',"
                                 + " 'table-name' = '%s',"
                                 + " 'scan.startup.mode' = '%s',"
-                                + " 'scan.incremental.snapshot.chunk.key-column' = '%s'"
+                                + " 'scan.incremental.snapshot.chunk.key-column' = '%s',"
+                                + " 'tikv.grpc.health_check_timeout' = '60000'"
                                 + ")",
                         PD.getContainerIpAddress() + ":" + PD.getMappedPort(PD_PORT_ORIGIN),
                         TIDB.getHost(),
@@ -129,7 +131,7 @@ public class TiDBConnectorITCase extends TiDBTestBase {
             statement.execute("DELETE FROM products WHERE id=111;");
         }
 
-        waitForSinkSize("sink", 20);
+        waitForSinkSize("sink", Integer.MAX_VALUE);
 
         /*
          * <pre>

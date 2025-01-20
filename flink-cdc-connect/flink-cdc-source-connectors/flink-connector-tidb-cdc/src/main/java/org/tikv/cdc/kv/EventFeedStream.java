@@ -1,25 +1,34 @@
 package org.tikv.cdc.kv;
 
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tikv.common.util.IDAllocator;
 import org.tikv.kvproto.Cdcpb;
 import org.tikv.kvproto.ChangeDataGrpc;
+import org.tikv.shade.io.grpc.ManagedChannel;
 import org.tikv.shade.io.grpc.MethodDescriptor;
 import org.tikv.shade.io.grpc.stub.StreamObserver;
+import org.tikv.shade.io.netty.channel.MultithreadEventLoopGroup;
+import org.tikv.shade.io.netty.channel.epoll.Epoll;
+import org.tikv.shade.io.netty.channel.epoll.EpollEventLoopGroup;
+import org.tikv.shade.io.netty.channel.nio.NioEventLoopGroup;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Pattern;
 
-public class StreamClient implements Closeable {
-    private static final Logger LOG = LoggerFactory.getLogger(StreamClient.class);
+public class EventFeedStream implements Closeable {
+    private static final Logger LOG = LoggerFactory.getLogger(EventFeedStream.class);
     private static final Pattern CANCEL_REASON_PATT =
             Pattern.compile("rpc error: code = (\\w+) desc = (.*)");
 
@@ -28,6 +37,14 @@ public class StreamClient implements Closeable {
     private static final Exception CANCEL_EXCEPTION = new CancellationException();
 
     private final GRPCClient client;
+
+    private final String storeAddr;
+    private final Long storeId;
+    private final long streamId;
+    private final Instant createTime;
+
+    private final RegionStateManager.SyncRegionFeedStateMap regions;
+
     private final Executor observerExecutor; // "parent" executor
     private final Executor eventLoop; // serialized
     private AtomicReference<ReceiveEvent> receiveEvent = new AtomicReference<>();
@@ -36,13 +53,14 @@ public class StreamClient implements Closeable {
 
     private StreamObserver<Cdcpb.ChangeDataRequest> requestStream;
 
-    public StreamClient(GRPCClient client) {
-        this(client, client.getResponseExecutor());
-    }
-
-    public StreamClient(GRPCClient client, Executor observerExecutor) {
-        this.client = client;
-        this.observerExecutor = observerExecutor;
+    public EventFeedStream(String storeAddr, long storeId, ManagedChannel channel) {
+        this.client = buildGrpcClient(channel);
+        this.storeAddr = storeAddr;
+        this.storeId = storeId;
+        this.streamId = IDAllocator.allocateStreamClientID();
+        this.regions = new RegionStateManager.SyncRegionFeedStateMap();
+        this.createTime = Instant.now();
+        this.observerExecutor =this.client.getResponseExecutor();
         this.eventLoop = GRPCClient.serialized(client.getInternalExecutor());
     }
 
@@ -168,7 +186,7 @@ public class StreamClient implements Closeable {
                             if (closed || GRPCClient.causedBy(t, CancellationException.class)) {
                                 return;
                             }
-                            synchronized (StreamClient.this) {
+                            synchronized (EventFeedStream.this) {
                                 if (closed) {
                                     return;
                                 }
@@ -208,7 +226,7 @@ public class StreamClient implements Closeable {
                                 StreamObserver<Cdcpb.ChangeDataRequest> newReqStream,
                                 Exception err) {
                             List<ReceiveEvent> pending = new ArrayList<>();
-                            synchronized (StreamClient.this) {
+                            synchronized (EventFeedStream.this) {
                                 requestStream = newReqStream;
                                 if (receiveEvent.get() != null) {
                                     pending.add(receiveEvent.get());
@@ -223,7 +241,7 @@ public class StreamClient implements Closeable {
                                 if (newReqStream != null) {
                                     Cdcpb.ChangeDataRequest newReq =
                                             rEvent.newCreateChangeDateRequest();
-                                    synchronized (StreamClient.this) {
+                                    synchronized (EventFeedStream.this) {
                                         if (!closed) {
                                             requestStream.onNext(newReq);
                                             receiveEvent.getAndSet(rEvent);
@@ -252,6 +270,54 @@ public class StreamClient implements Closeable {
         re.processEvent(event);
     }
 
+    public boolean getIsCanceled() {
+        return !closed;
+    }
+
+    private GRPCClient buildGrpcClient(ManagedChannel channel) {
+        ThreadFactory tfac =
+                new ThreadFactoryBuilder()
+                        .setDaemon(true)
+                        .setThreadFactory(CDCClient.EventThread::new)
+                        .setNameFormat("event-pool-%d")
+                        .build();
+        MultithreadEventLoopGroup internalExecutor;
+        if (Epoll.isAvailable()) {
+            // todo
+            internalExecutor = new EpollEventLoopGroup(4, tfac);
+        } else {
+            internalExecutor = new NioEventLoopGroup(4, tfac);
+        }
+        Executor userExecutor =
+                Executors.newCachedThreadPool(
+                        new ThreadFactoryBuilder()
+                                .setDaemon(true)
+                                .setNameFormat("callback-thread-%d")
+                                .build());
+
+        return new GRPCClient(channel, internalExecutor, userExecutor);
+    }
+
+    public String getAddr() {
+        return storeAddr;
+    }
+
+    public Long getStoreId() {
+        return storeId;
+    }
+
+    public long getStreamId() {
+        return streamId;
+    }
+
+    public RegionStateManager.SyncRegionFeedStateMap getRegions() {
+        return regions;
+    }
+
+    public Instant getCreateTime() {
+        return createTime;
+    }
+
     @Override
     public void close() throws IOException {
         if (closed) {
@@ -260,7 +326,7 @@ public class StreamClient implements Closeable {
         eventLoop.execute(
                 () -> {
                     if (!closed)
-                        synchronized (StreamClient.this) {
+                        synchronized (EventFeedStream.this) {
                             if (closed) {
                                 return;
                             }
