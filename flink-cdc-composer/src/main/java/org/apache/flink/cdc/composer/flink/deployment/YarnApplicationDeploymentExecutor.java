@@ -58,6 +58,9 @@ public class YarnApplicationDeploymentExecutor implements PipelineDeploymentExec
     private static final Logger LOG =
             LoggerFactory.getLogger(YarnApplicationDeploymentExecutor.class);
     private static final String FLINK_CDC_HOME_ENV_VAR = "FLINK_CDC_HOME";
+    private static final String FLINK_CDC_DIST_JAR_NAME =
+            "^flink-cdc-dist-(\\d+(\\.\\d+)*)(-SNAPSHOT)?\\.jar$";
+    private static final String FLINK_CDC_CLI_MAIN_CLASS = "org.apache.flink.cdc.cli.CliExecutor";
 
     @Override
     public PipelineExecution.ExecutionInfo deploy(
@@ -87,9 +90,7 @@ public class YarnApplicationDeploymentExecutor implements PipelineDeploymentExec
         YarnLogConfigUtil.setLogConfigFileInConfig(
                 flinkConfig, Joiner.on(File.separator).join(flinkHome, "conf"));
 
-        flinkConfig.set(
-                ApplicationConfiguration.APPLICATION_MAIN_CLASS,
-                "org.apache.flink.cdc.cli.CliExecutor");
+        flinkConfig.set(ApplicationConfiguration.APPLICATION_MAIN_CLASS, FLINK_CDC_CLI_MAIN_CLASS);
         final YarnClusterClientFactory yarnClusterClientFactory = new YarnClusterClientFactory();
         final YarnClusterDescriptor descriptor =
                 yarnClusterClientFactory.createClusterDescriptor(flinkConfig);
@@ -138,13 +139,8 @@ public class YarnApplicationDeploymentExecutor implements PipelineDeploymentExec
         Optional<Path> distJars =
                 Arrays.stream(fileStatuses)
                         .filter(status -> !status.isDir())
-                        .filter(
-                                file ->
-                                        file.getPath()
-                                                .getName()
-                                                .matches(
-                                                        "^flink-cdc-dist-(\\d+(\\.\\d+)*)(-SNAPSHOT)?\\.jar$"))
                         .map(FileStatus::getPath)
+                        .filter(path -> path.getName().matches(FLINK_CDC_DIST_JAR_NAME))
                         .findFirst();
 
         if (distJars.isPresent()) {
@@ -153,9 +149,7 @@ public class YarnApplicationDeploymentExecutor implements PipelineDeploymentExec
         } else {
             throw new FileNotFoundException(
                     "Failed to fetch Flink CDC dist jar from path + "
-                            + distJars.get()
-                                    .makeQualified(distJars.get().getFileSystem())
-                                    .toString());
+                            + flinkCDCLibPath.makeQualified(flinkCDCLibPath.getFileSystem()));
         }
     }
 }

@@ -19,12 +19,13 @@ package org.apache.flink.cdc.connectors.polardbx;
 
 import org.apache.flink.cdc.common.utils.TestCaseUtils;
 import org.apache.flink.table.planner.factories.TestValuesTableFactory;
-import org.apache.flink.test.util.AbstractTestBaseJUnit4;
+import org.apache.flink.test.util.AbstractTestBase;
 import org.apache.flink.types.Row;
 
 import org.apache.commons.lang3.StringUtils;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
+import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.GenericContainer;
@@ -37,6 +38,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.time.Duration;
@@ -53,13 +55,9 @@ import java.util.stream.Stream;
 
 import static java.lang.String.format;
 import static org.apache.flink.util.Preconditions.checkState;
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 
 /** Basic class for testing Database Polardbx which supported the mysql protocol. */
-public abstract class PolardbxSourceTestBase extends AbstractTestBaseJUnit4 {
+public abstract class PolardbxSourceTestBase extends AbstractTestBase {
     private static final Logger LOG = LoggerFactory.getLogger(PolardbxSourceTestBase.class);
     private static final Pattern COMMENT_PATTERN = Pattern.compile("^(.*)--.*$");
 
@@ -86,17 +84,18 @@ public abstract class PolardbxSourceTestBase extends AbstractTestBaseJUnit4 {
         return POLARDBX_CONTAINER.getMappedPort(INNER_PORT);
     }
 
-    @BeforeClass
-    public static void startContainers() {
+    @BeforeAll
+    public static void startContainers() throws InterruptedException {
         Startables.deepStart(Stream.of(POLARDBX_CONTAINER)).join();
-        LOG.info("Containers are started.");
-
+        // wait and check PolarDBx CDC node is ready
+        Thread.sleep(30_000);
         TestCaseUtils.repeatedCheck(
-                PolardbxSourceTestBase::checkConnection, WAITING_TIMEOUT, Duration.ofSeconds(1));
+                PolardbxSourceTestBase::checkConnection, WAITING_TIMEOUT, Duration.ofSeconds(20));
+        LOG.info("Containers are started.");
     }
 
-    @AfterClass
-    public static void stopContainers() {
+    @AfterAll
+    static void stopContainers() {
         LOG.info("Stopping Polardbx containers...");
         POLARDBX_CONTAINER.stop();
         LOG.info("Polardbx containers are stopped.");
@@ -113,14 +112,35 @@ public abstract class PolardbxSourceTestBase extends AbstractTestBaseJUnit4 {
     }
 
     protected static Boolean checkConnection() {
-        LOG.info("check polardbx connection validation...");
-        try {
-            Connection connection = getJdbcConnection();
-            return connection.isValid(3);
+        LOG.info("check PolarDBx CDC node status...");
+        boolean cdcReady = false;
+        try (Connection connection = getJdbcConnection();
+                Statement statement = connection.createStatement()) {
+            ResultSet rs = statement.executeQuery("SHOW MASTER STATUS");
+            if (rs.next()) {
+                String binlogFilename = rs.getString(1);
+                long binlogPosition = rs.getLong(2);
+                // the initial binlog position is 4
+                cdcReady = StringUtils.isNotEmpty(binlogFilename) && binlogPosition > 4L;
+                if (cdcReady) {
+                    LOG.info(
+                            "PolarDBx CDC node is ready at offset {}:{}",
+                            binlogFilename,
+                            binlogPosition);
+                } else {
+                    LOG.warn(
+                            "PolarDBx CDC node is not ready at offset {}:{},  waiting...",
+                            binlogFilename,
+                            binlogPosition);
+                }
+            } else {
+                LOG.warn("PolarDBx CDC node is not ready, waiting...");
+            }
         } catch (SQLException e) {
-            LOG.warn("polardbx connection is not valid... caused by:" + e.getMessage());
-            return false;
+            cdcReady = false;
+            LOG.warn("PolarDBx CDC node is not ready... caused by:{}", e.getMessage());
         }
+        return cdcReady;
     }
 
     /** initialize database and tables with ${databaseName}.sql for testing. */
@@ -128,7 +148,7 @@ public abstract class PolardbxSourceTestBase extends AbstractTestBaseJUnit4 {
             String databaseName, Function<String, Boolean> filter) throws InterruptedException {
         final String ddlFile = String.format("ddl/%s.sql", databaseName);
         final URL ddlTestFile = PolardbxSourceTestBase.class.getClassLoader().getResource(ddlFile);
-        assertNotNull("Cannot locate " + ddlFile, ddlTestFile);
+        Assertions.assertThat(ddlTestFile).withFailMessage("Cannot locate " + ddlFile).isNotNull();
         // need to sleep 1s, make sure the jdbc connection can be created
         Thread.sleep(1000);
         try (Connection connection = getJdbcConnection();
@@ -154,8 +174,8 @@ public abstract class PolardbxSourceTestBase extends AbstractTestBaseJUnit4 {
             for (String stmt : statements) {
                 statement.execute(stmt);
             }
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+        } catch (Throwable t) {
+            throw new RuntimeException(t);
         }
     }
 
@@ -208,15 +228,10 @@ public abstract class PolardbxSourceTestBase extends AbstractTestBaseJUnit4 {
     }
 
     protected static void assertEqualsInAnyOrder(List<String> expected, List<String> actual) {
-        assertTrue(expected != null && actual != null);
-        assertEqualsInOrder(
-                expected.stream().sorted().collect(Collectors.toList()),
-                actual.stream().sorted().collect(Collectors.toList()));
+        Assertions.assertThat(actual).containsExactlyInAnyOrderElementsOf(expected);
     }
 
     protected static void assertEqualsInOrder(List<String> expected, List<String> actual) {
-        assertTrue(expected != null && actual != null);
-        assertEquals(expected.size(), actual.size());
-        assertArrayEquals(expected.toArray(new String[0]), actual.toArray(new String[0]));
+        Assertions.assertThat(actual).containsExactlyElementsOf(expected);
     }
 }

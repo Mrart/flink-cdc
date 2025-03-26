@@ -77,7 +77,7 @@ public class Db2TableSource implements ScanTableSource, SupportsReadingMetadata 
     private final String chunkKeyColumn;
     private final boolean closeIdleReaders;
     private final boolean skipSnapshotBackfill;
-    private final boolean assignEndingChunkFirst;
+    private final boolean assignUnboundedChunkFirst;
 
     /** Metadata that is appended at the end of a physical source row. */
     protected List<String> metadataKeys;
@@ -105,7 +105,7 @@ public class Db2TableSource implements ScanTableSource, SupportsReadingMetadata 
             @Nullable String chunkKeyColumn,
             boolean closeIdleReaders,
             boolean skipSnapshotBackfill,
-            boolean assignEndingChunkFirst) {
+            boolean assignUnboundedChunkFirst) {
         this.physicalSchema = physicalSchema;
         this.port = port;
         this.hostname = hostname;
@@ -130,7 +130,7 @@ public class Db2TableSource implements ScanTableSource, SupportsReadingMetadata 
         this.chunkKeyColumn = chunkKeyColumn;
         this.closeIdleReaders = closeIdleReaders;
         this.skipSnapshotBackfill = skipSnapshotBackfill;
-        this.assignEndingChunkFirst = assignEndingChunkFirst;
+        this.assignUnboundedChunkFirst = assignUnboundedChunkFirst;
     }
 
     @Override
@@ -177,7 +177,7 @@ public class Db2TableSource implements ScanTableSource, SupportsReadingMetadata 
                             .chunkKeyColumn(chunkKeyColumn)
                             .closeIdleReaders(closeIdleReaders)
                             .skipSnapshotBackfill(skipSnapshotBackfill)
-                            .assignEndingChunkFirst(assignEndingChunkFirst)
+                            .assignUnboundedChunkFirst(assignUnboundedChunkFirst)
                             .build();
             return SourceProvider.of(db2ChangeEventSource);
         } else {
@@ -239,7 +239,7 @@ public class Db2TableSource implements ScanTableSource, SupportsReadingMetadata 
                         chunkKeyColumn,
                         closeIdleReaders,
                         skipSnapshotBackfill,
-                        assignEndingChunkFirst);
+                        assignUnboundedChunkFirst);
         source.metadataKeys = metadataKeys;
         source.producedDataType = producedDataType;
         return source;
@@ -275,7 +275,8 @@ public class Db2TableSource implements ScanTableSource, SupportsReadingMetadata 
                 && Objects.equals(distributionFactorLower, that.distributionFactorLower)
                 && Objects.equals(chunkKeyColumn, that.chunkKeyColumn)
                 && Objects.equals(closeIdleReaders, that.closeIdleReaders)
-                && Objects.equals(skipSnapshotBackfill, that.skipSnapshotBackfill);
+                && Objects.equals(skipSnapshotBackfill, that.skipSnapshotBackfill)
+                && Objects.equals(assignUnboundedChunkFirst, that.assignUnboundedChunkFirst);
     }
 
     @Override
@@ -302,7 +303,8 @@ public class Db2TableSource implements ScanTableSource, SupportsReadingMetadata 
                 distributionFactorLower,
                 chunkKeyColumn,
                 closeIdleReaders,
-                skipSnapshotBackfill);
+                skipSnapshotBackfill,
+                assignUnboundedChunkFirst);
     }
 
     @Override

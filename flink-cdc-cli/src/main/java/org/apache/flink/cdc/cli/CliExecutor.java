@@ -37,8 +37,6 @@ import org.apache.commons.cli.CommandLine;
 
 import java.util.List;
 
-import static org.apache.flink.cdc.composer.flink.deployment.ComposeDeployment.REMOTE;
-
 /** Executor for doing the composing and submitting logic for {@link CliFrontend}. */
 public class CliExecutor {
 
@@ -69,7 +67,7 @@ public class CliExecutor {
         // Create Submit Executor to deployment flink cdc job Or Run Flink CDC Job
         String deploymentTargetStr = getDeploymentTarget();
         ComposeDeployment deploymentTarget =
-                ComposeDeployment.getDeploymentFromName(getDeploymentTarget());
+                ComposeDeployment.getDeploymentFromName(deploymentTargetStr);
         switch (deploymentTarget) {
             case KUBERNETES_APPLICATION:
                 return deployWithApplicationComposer(new K8SApplicationDeploymentExecutor());
