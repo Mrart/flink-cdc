@@ -87,7 +87,19 @@ public abstract class DebeziumEventDeserializationSchema extends SourceRecordEve
     /** Changelog Mode to use for encoding changes in Flink internal data structure. */
     protected final DebeziumChangelogMode changelogMode;
 
+    protected boolean appendOnly;
+
     private final Map<io.debezium.relational.TableId, CreateTableEvent> createTableEventCache;
+
+    public DebeziumEventDeserializationSchema(
+            SchemaDataTypeInference schemaDataTypeInference,
+            DebeziumChangelogMode changelogMode,
+            boolean appendOnly) {
+        this.schemaDataTypeInference = schemaDataTypeInference;
+        this.changelogMode = changelogMode;
+        this.appendOnly = appendOnly;
+        this.createTableEventCache = new HashMap<>();
+    }
 
     public DebeziumEventDeserializationSchema(
             SchemaDataTypeInference schemaDataTypeInference, DebeziumChangelogMode changelogMode) {

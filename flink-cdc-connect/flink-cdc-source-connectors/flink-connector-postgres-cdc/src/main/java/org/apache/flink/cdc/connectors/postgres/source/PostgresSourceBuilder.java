@@ -293,6 +293,17 @@ public class PostgresSourceBuilder<T> {
         return this;
     }
 
+    /**
+     * Whether the {@link PostgresSourceEnumerator} should append-only the tables or not.
+     *
+     * <p>If append-only is enabled, the {@link PostgresSourceEnumerator} will only emit the
+     * snapshot of the tables and ignore the stream events.
+     */
+    public PostgresSourceBuilder<T> appendOnly(boolean appendOnly) {
+        this.configFactory.appendOnly(appendOnly);
+        return this;
+    }
+
     /** Set the {@code LSN} checkpoints delay number for Postgres to commit the offsets. */
     public PostgresSourceBuilder<T> lsnCommitCheckpointsDelay(int lsnCommitDelay) {
         this.configFactory.setLsnCommitCheckpointsDelay(lsnCommitDelay);

@@ -53,14 +53,11 @@ public class PostgresEventDeserializer extends DebeziumEventDeserializationSchem
 
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
-    public PostgresEventDeserializer(DebeziumChangelogMode changelogMode) {
-        super(new PostgresSchemaDataTypeInference(), changelogMode);
-    }
-
     public PostgresEventDeserializer(
             DebeziumChangelogMode changelogMode,
+            boolean appendOnly,
             List<PostgreSQLReadableMetadata> readableMetadataList) {
-        super(new PostgresSchemaDataTypeInference(), changelogMode);
+        super(new PostgresSchemaDataTypeInference(), changelogMode, appendOnly);
         this.readableMetadataList = readableMetadataList;
     }
 

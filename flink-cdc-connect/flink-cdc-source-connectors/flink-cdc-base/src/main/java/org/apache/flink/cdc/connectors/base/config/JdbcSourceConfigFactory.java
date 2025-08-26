@@ -63,6 +63,8 @@ public abstract class JdbcSourceConfigFactory implements Factory<JdbcSourceConfi
     protected boolean assignUnboundedChunkFirst =
             JdbcSourceOptions.SCAN_INCREMENTAL_SNAPSHOT_UNBOUNDED_CHUNK_FIRST_ENABLED
                     .defaultValue();
+    protected boolean appendOnly =
+            SourceOptions.SCAN_READ_CHANGELOG_AS_APPEND_ONLY_ENABLED.defaultValue();
 
     /** Integer port number of the database server. */
     public JdbcSourceConfigFactory hostname(String hostname) {
@@ -262,6 +264,14 @@ public abstract class JdbcSourceConfigFactory implements Factory<JdbcSourceConfi
      */
     public JdbcSourceConfigFactory assignUnboundedChunkFirst(boolean assignUnboundedChunkFirst) {
         this.assignUnboundedChunkFirst = assignUnboundedChunkFirst;
+        return this;
+    }
+
+    /**
+     * Whether to Whether to convert the changelog data stream to an append-only data stream false.
+     */
+    public JdbcSourceConfigFactory appendOnly(boolean appendOnly) {
+        this.appendOnly = appendOnly;
         return this;
     }
 

@@ -65,8 +65,10 @@ public class PostgresDataSource implements DataSource {
 
     @Override
     public EventSourceProvider getEventSourceProvider() {
+        boolean appendOnly = postgresSourceConfig.isAppendOnly();
         DebeziumEventDeserializationSchema deserializer =
-                new PostgresEventDeserializer(DebeziumChangelogMode.ALL, readableMetadataList);
+                new PostgresEventDeserializer(
+                        DebeziumChangelogMode.ALL, appendOnly, readableMetadataList);
 
         PostgresOffsetFactory postgresOffsetFactory = new PostgresOffsetFactory();
         PostgresDialect postgresDialect = new PostgresDialect(postgresSourceConfig);
