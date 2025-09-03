@@ -148,8 +148,11 @@ public class PostgresSourceFetchTaskContext extends JdbcSourceFetchTaskContext {
                             dbzConfig
                                     .getConfig()
                                     .edit()
-                                    // never drop slot for stream split, which is also global split
-                                    .with(DROP_SLOT_ON_STOP.name(), false)
+                                    // When startup.mode='snapshot' drop slot for stream split,
+                                    // which is also global split
+                                    .with(
+                                            DROP_SLOT_ON_STOP.name(),
+                                            sourceConfig.getStartupOptions().isSnapshotOnly())
                                     .build());
         }
 
